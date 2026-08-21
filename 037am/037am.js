@@ -207,6 +207,18 @@ async function extractStreamUrl(url) {
             const hash = match[1];
             const masterUrl = `https://mycdn-hd.xyz/cdn/hls/${hash}/master.txt?s=1&d=`;
 
+            // 1. Fast Stream (Default - Fast load time & native HLS)
+            streams.push({
+                title: "037AM • 720p HD (Fast Stream)",
+                streamUrl: masterUrl + "#cell.m3u8",
+                url: masterUrl + "#cell.m3u8",
+                headers: {
+                    "Referer": "https://mycdn-hd.xyz/",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+                }
+            });
+
+            // 2. Full Episode Rewritten Data URI Stream
             const m3u8Text = await httpGet(masterUrl, {
                 "Referer": embedUrl,
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
@@ -223,12 +235,11 @@ async function extractStreamUrl(url) {
                     });
 
                     if (variantM3u8) {
-                        // 1. Rewrite all .html segment extensions to .html#cell.ts for continuous playback
                         const fixedVariantM3u8 = variantM3u8.replace(/\.html/g, '.html#cell.ts');
                         const dataUri = "data:application/x-mpegurl;base64," + toBase64(fixedVariantM3u8) + "#cell.m3u8";
 
                         streams.push({
-                            title: "037AM • 720p HD (Full Episode)",
+                            title: "037AM • 720p HD (Full Episode Rewritten)",
                             streamUrl: dataUri,
                             url: dataUri,
                             headers: {
@@ -239,17 +250,6 @@ async function extractStreamUrl(url) {
                     }
                 }
             }
-
-            // Fallback Direct & Master Streams
-            streams.push({
-                title: "037AM • 720p HD (Master)",
-                streamUrl: masterUrl + "#cell.m3u8",
-                url: masterUrl + "#cell.m3u8",
-                headers: {
-                    "Referer": "https://mycdn-hd.xyz/",
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-                }
-            });
         }
 
         return JSON.stringify({
