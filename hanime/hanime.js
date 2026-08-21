@@ -49,7 +49,7 @@ async function httpGet(url) {
 async function searchResults(keyword) {
     try {
         const query = encodeURIComponent(keyword || "");
-        const searchUrl = `https://hanime-scraper.premmiz-real.workers.dev/api/search?q=${query}`;
+        const searchUrl = `https://hanime-scraper.sapis.workers.dev/api/search?q=${query}`;
 
         const responseText = await httpGet(searchUrl);
         if (!responseText || responseText === "undefined" || responseText.trim() === "") {
@@ -79,7 +79,7 @@ async function searchResults(keyword) {
 async function extractDetails(url) {
     try {
         const slug = getSlug(url);
-        const apiUrl = `https://hanime-scraper.premmiz-real.workers.dev/api/video/${encodeURIComponent(slug)}`;
+        const apiUrl = `https://hanime-scraper.sapis.workers.dev/api/video/${encodeURIComponent(slug)}`;
 
         const responseText = await httpGet(apiUrl);
         if (!responseText || responseText === "undefined" || responseText.trim() === "") {
@@ -143,7 +143,7 @@ async function extractEpisodes(url) {
 async function extractStreamUrl(url) {
     try {
         const slug = getSlug(url);
-        const apiUrl = `https://hanime-scraper.premmiz-real.workers.dev/api/video/${encodeURIComponent(slug)}`;
+        const apiUrl = `https://hanime-scraper.sapis.workers.dev/api/video/${encodeURIComponent(slug)}`;
 
         const responseText = await httpGet(apiUrl);
         const streams = [];
