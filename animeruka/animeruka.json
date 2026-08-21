@@ -1,0 +1,10 @@
+{
+  "name": "AnimeRuka",
+  "author": "Varomine",
+  "version": "1.0.0",
+  "description": "AnimeRuka extension module for Luna and Sora (Thai Anime Provider).",
+  "baseUrl": "https://animeruka.com/",
+  "lang": "th",
+  "type": "anime",
+  "script": "https://raw.githubusercontent.com/Varomine/luna-service/main/animeruka/animeruka.js"
+}

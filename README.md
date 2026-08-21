@@ -1,28 +1,28 @@
-# [Luna](https://testflight.apple.com/join/8kfpEPD5) Service 🌙
+# Luna & Sora Extension Modules Repository
 
-Welcome to **Luna Service**, a curated repository & directory of extension modules for **Luna**, **Sora**, **Dartotsu**, **Mojuru**, **Anymex**, and compatible web scraping applications.
+Collection of high-performance extension modules for **Luna** and **Sora** anime streaming apps.
 
----
+## 📦 Available Modules
 
-## 🚀 Available Modules
-
-| Module Name | Type | Language | Stream Type | Version | Module Manifest Link |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **037AM** | Anime | Thai (Dubbed/Subbed) | HLS | `1.0.0` | [`https://raw.githubusercontent.com/Varomine/luna-service/main/037am/037am.json`](https://raw.githubusercontent.com/Varomine/luna-service/main/037am/037am.json) |
-| **Hanime** | Anime | English | HLS | `1.1.0` | [`https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json`](https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json) |
+- [037AM Module](./037am/) — Thai Anime Provider (`https://037am.com/`)
+- [AnimeRuka Module](./animeruka/) — Thai Anime Provider (`https://animeruka.com/`)
+- [Hanime Module](./hanime/) — HAnime Provider (`https://hanime.tv/`)
 
 ---
 
-## 📲 How to Install Modules in Luna / Sora
+## 📲 Quick Import Links
 
-1. Copy the **Module Manifest Link** of the module you wish to install.
-2. Open the **Luna** (or Sora/Dartotsu) app.
-3. Go to **Settings** $\rightarrow$ **Modules** $\rightarrow$ **Add Module / Import URL**.
-4. Paste the URL and click **Import**.
+### 037AM Module
+```
+https://raw.githubusercontent.com/Varomine/luna-service/main/037am/037am.json
+```
 
----
+### AnimeRuka Module
+```
+https://raw.githubusercontent.com/Varomine/luna-service/main/animeruka/animeruka.json
+```
 
-## 🌐 Modules Directory (GitHub Pages)
-
-Visit our interactive web directory page:
-👉 [https://varomine.github.io/luna-service/](https://varomine.github.io/luna-service/)
+### Hanime Module
+```
+https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json
+```

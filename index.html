@@ -1,222 +1,267 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luna Service - Modules Hub</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f4f3ff',
-                            100: '#ebe9fe',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                            900: '#312e81',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- FontAwesome icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
-        }
-        .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .glass-card:hover {
-            border-color: rgba(99, 102, 241, 0.4);
-            box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.3);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Luna Service - Extension Modules Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0c;
+      --bg-card: #13131a;
+      --bg-card-hover: #1c1c26;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border: #27273a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 3rem 1.5rem;
+      text-align: center;
+      background: radial-gradient(circle at top, rgba(99, 102, 241, 0.15), transparent 70%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 2.5rem auto;
+      padding: 0 1.5rem;
+      flex: 1;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      background: rgba(99, 102, 241, 0.1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .card-badge {
+      font-size: 0.75rem;
+      background: #1e1e2d;
+      color: var(--accent);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .card-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: #27273a;
+      color: var(--text-main);
+    }
+
+    .btn-secondary:hover {
+      background: #34344d;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--accent);
+      color: white;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased">
-    
-    <!-- Navbar -->
-    <nav class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
-                    <i class="fa-solid fa-moon text-xl"></i>
-                </div>
-                <span class="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">Luna Service</span>
-            </div>
-            <a href="https://github.com/Varomine/luna-service" target="_blank" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl border border-slate-700 transition">
-                <i class="fa-brands fa-github text-lg"></i>
-                <span class="text-sm font-semibold hidden sm:inline">GitHub Repository</span>
-            </a>
-        </div>
-    </nav>
+<body>
 
-    <!-- Hero Header -->
-    <header class="py-16 px-4 text-center relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-b from-indigo-500/10 via-transparent to-transparent pointer-events-none"></div>
-        <div class="max-w-3xl mx-auto relative z-10">
-            <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-6">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Extension Modules Hub
-            </span>
-            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4 text-white">
-                Discover & Install Modules for <span class="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Luna</span>
-            </h1>
-            <p class="text-slate-400 text-base sm:text-lg mb-8 max-w-2xl mx-auto">
-                Collection of high-performance modules for Luna, Sora, Dartotsu, Mojuru, and Anymex. Easily copy module manifest links into your app.
-            </p>
+  <header>
+    <h1>Luna Extension Service</h1>
+    <p>Official custom module repository for Luna & Sora streaming clients</p>
+  </header>
 
-            <!-- Search Bar -->
-            <div class="max-w-xl mx-auto relative">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input type="text" id="searchInput" onkeyup="filterModules()" placeholder="Search modules by name, language, type, or tag..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-3.5 pl-11 pr-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
-            </div>
-        </div>
-    </header>
+  <main>
+    <div class="grid">
 
-    <!-- Main Grid -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
-        <div class="flex items-center justify-between mb-8 border-b border-slate-800 pb-4">
-            <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-cubes text-indigo-400"></i> Available Modules
-                <span id="moduleCount" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">2</span>
-            </h2>
-        </div>
-
-        <!-- Modules Container -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="modulesGrid">
-            
-            <!-- 037AM Module Card -->
-            <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="037am thai anime dub sub hls">
-                <div>
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-center space-x-3">
-                            <img src="https://037am.com/wp-content/uploads/2025/09/cropped-LOGO-1-192x192.png" alt="037AM Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700">
-                            <div>
-                                <h3 class="text-lg font-bold text-white leading-snug">037AM</h3>
-                                <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
-                            </div>
-                        </div>
-                        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.0.0</span>
-                    </div>
-                    <p class="text-slate-300 text-sm mb-4 leading-relaxed">
-                        Thai anime streaming module for 037AM (ซับไทย / พากย์ไทย) featuring episode extraction and mycdn-hd HLS stream resolution.
-                    </p>
-                    
-                    <div class="flex flex-wrap gap-1.5 mb-6">
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">HLS Stream</span>
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Thai (TH)</span>
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Anime</span>
-                    </div>
-                </div>
-
-                <div class="pt-4 border-t border-slate-800/80">
-                    <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/037am/037am.json', this)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/20">
-                        <i class="fa-regular fa-copy"></i>
-                        <span>Copy Manifest URL</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Hanime Module Card -->
-            <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="hanime anime hls 1080p english">
-                <div>
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-center space-x-3">
-                            <img src="https://github.com/Varomine/luna-service/blob/main/hanime/st_small_507x507-pad_600x600_f8f8f8-removebg-preview.png?raw=true" alt="Hanime Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700">
-                            <div>
-                                <h3 class="text-lg font-bold text-white leading-snug">Hanime</h3>
-                                <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
-                            </div>
-                        </div>
-                        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.1.0</span>
-                    </div>
-                    <p class="text-slate-300 text-sm mb-4 leading-relaxed">
-                        High-performance scraper for Hanime powered by dedicated Cloudflare Worker API with 1080p HLS stream extraction.
-                    </p>
-                    
-                    <div class="flex flex-wrap gap-1.5 mb-6">
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">HLS Stream</span>
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">1080p</span>
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Anime</span>
-                    </div>
-                </div>
-
-                <div class="pt-4 border-t border-slate-800/80">
-                    <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json', this)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/20">
-                        <i class="fa-regular fa-copy"></i>
-                        <span>Copy Manifest URL</span>
-                    </button>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 border border-emerald-500/40 text-slate-100 px-5 py-3 rounded-2xl shadow-2xl transition duration-300 opacity-0 pointer-events-none flex items-center space-x-3">
-        <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-            <i class="fa-solid fa-check"></i>
-        </div>
+      <!-- 037AM Card -->
+      <div class="card">
         <div>
-            <p class="text-sm font-semibold text-white">Copied to Clipboard!</p>
-            <p class="text-xs text-slate-400">Paste this URL into Luna app settings.</p>
+          <div class="card-header">
+            <div class="card-icon">⚡</div>
+            <div>
+              <div class="card-title">037AM</div>
+              <span class="card-badge">Anime • Thai</span>
+            </div>
+          </div>
+          <p class="card-desc">Full anime provider for 037am.com with instant Master HLS streaming, full 24-min pre-buffering, episode extraction, and title search.</p>
         </div>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="copyManifest('https://raw.githubusercontent.com/Varomine/luna-service/main/037am/037am.json')">Copy Link</button>
+          <a class="btn btn-secondary" href="https://github.com/Varomine/luna-service/tree/main/037am" target="_blank">View Code</a>
+        </div>
+      </div>
+
+      <!-- AnimeRuka Card -->
+      <div class="card">
+        <div>
+          <div class="card-header">
+            <div class="card-icon">🌸</div>
+            <div>
+              <div class="card-title">AnimeRuka</div>
+              <span class="card-badge">Anime • Thai</span>
+            </div>
+          </div>
+          <p class="card-desc">Thai anime provider for animeruka.com with multi-server DooPlayer extraction (AnimeMami & Abyss), full episode lists, and search.</p>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="copyManifest('https://raw.githubusercontent.com/Varomine/luna-service/main/animeruka/animeruka.json')">Copy Link</button>
+          <a class="btn btn-secondary" href="https://github.com/Varomine/luna-service/tree/main/animeruka" target="_blank">View Code</a>
+        </div>
+      </div>
+
+      <!-- Hanime Card -->
+      <div class="card">
+        <div>
+          <div class="card-header">
+            <div class="card-icon">🌙</div>
+            <div>
+              <div class="card-title">Hanime</div>
+              <span class="card-badge">Hentai</span>
+            </div>
+          </div>
+          <p class="card-desc">High-performance custom Hanime module powered by Cloudflare Workers. Supports full HLS stream links, search, and details.</p>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="copyManifest('https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json')">Copy Link</button>
+          <a class="btn btn-secondary" href="https://github.com/Varomine/luna-service/tree/main/hanime" target="_blank">View Code</a>
+        </div>
+      </div>
+
     </div>
+  </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-slate-800 bg-slate-900/50 py-8 mt-12 text-center text-xs text-slate-500">
-        <p>© 2026 Luna Service by Varomine. Built for Luna, Sora, and compatible streaming clients.</p>
-    </footer>
+  <footer>
+    &copy; 2026 Varomine &bull; Built for Luna & Sora Client Extensions
+  </footer>
 
-    <script>
-        function filterModules() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const cards = document.querySelectorAll('.module-card');
-            let visibleCount = 0;
+  <div id="toast" class="toast">Manifest link copied!</div>
 
-            cards.forEach(card => {
-                const searchData = card.getAttribute('data-name').toLowerCase() + " " + card.textContent.toLowerCase();
-                if (searchData.includes(query)) {
-                    card.style.display = "flex";
-                    visibleCount++;
-                } else {
-                    card.style.display = "none";
-                }
-            });
-
-            document.getElementById('moduleCount').innerText = visibleCount;
-        }
-
-        function copyToClipboard(text, btnElement) {
-            navigator.clipboard.writeText(text).then(() => {
-                const toast = document.getElementById('toast');
-                toast.classList.remove('opacity-0', 'pointer-events-none');
-                toast.classList.add('opacity-100');
-
-                const originalHTML = btnElement.innerHTML;
-                btnElement.innerHTML = `<i class="fa-solid fa-check"></i><span>Copied!</span>`;
-                btnElement.classList.replace('bg-indigo-600', 'bg-emerald-600');
-
-                setTimeout(() => {
-                    toast.classList.remove('opacity-100');
-                    toast.classList.add('opacity-0', 'pointer-events-none');
-                    btnElement.innerHTML = originalHTML;
-                    btnElement.classList.replace('bg-emerald-600', 'bg-indigo-600');
-                }, 2500);
-            });
-        }
-    </script>
+  <script>
+    function copyManifest(url) {
+      navigator.clipboard.writeText(url).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+      });
+    }
+  </script>
 </body>
 </html>
