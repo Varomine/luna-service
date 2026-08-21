@@ -1,23 +1,27 @@
-# Hanime Module for Luna / Sora / Dartotsu
+# Luna Service 🌙
 
-This directory contains the source code for the **Hanime** module for the **Luna** application.
+Welcome to **Luna Service**, a curated repository & directory of extension modules for **Luna**, **Sora**, **Dartotsu**, **Mojuru**, **Anymex**, and compatible web scraping applications.
 
-## Files Included
+---
 
-- `hanime.json` - Module manifest containing source metadata, supported platforms, icon, and script URL.
-- `hanime.js` - Module script implementing `searchResults`, `extractDetails`, `extractEpisodes`, and `extractStreamUrl`.
+## 🚀 Available Modules
 
-## How to Deploy to GitHub (`https://github.com/Varomine/luna-service`)
+| Module Name | Type | Stream Type | Version | Module Manifest Link |
+| :--- | :--- | :--- | :--- | :--- |
+| **Hanime** | Anime | HLS | `1.1.0` | [`https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json`](https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json) |
 
-1. Copy or push `hanime.json` and `hanime.js` into your repository:
-   ```bash
-   git add hanime.json hanime.js
-   git commit -m "Add Hanime module for Luna"
-   git push origin main
-   ```
+---
 
-2. Make sure the raw URL in `hanime.json` matches your repository location:
-   - `scriptUrl`: `https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.js` (or `https://raw.githubusercontent.com/Varomine/luna-service/main/hanime.js`)
+## 📲 How to Install Modules in Luna / Sora
 
-3. In the Luna app, import the module using your raw manifest URL:
-   - `https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json` (or `https://raw.githubusercontent.com/Varomine/luna-service/main/hanime.json`)
+1. Copy the **Module Manifest Link** of the module you wish to install.
+2. Open the **Luna** (or Sora/Dartotsu) app.
+3. Go to **Settings** $\rightarrow$ **Modules** $\rightarrow$ **Add Module / Import URL**.
+4. Paste the URL and click **Import**.
+
+---
+
+## 🌐 Modules Directory (GitHub Pages)
+
+Visit our interactive web directory page:
+👉 [https://varomine.github.io/luna-service/](https://varomine.github.io/luna-service/)
