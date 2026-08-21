@@ -15,12 +15,13 @@ function getSlug(url) {
 }
 
 function getEpisodeNumber(slug) {
-    if (!slug) return "1";
+    if (!slug) return 1;
     const match = slug.match(/(?:-|\b)(\d+)$/);
     if (match) {
-        return match[1];
+        const parsed = parseInt(match[1], 10);
+        return isNaN(parsed) || parsed < 1 ? 1 : parsed;
     }
-    return "1";
+    return 1;
 }
 
 async function httpGet(url) {
@@ -134,7 +135,7 @@ async function extractEpisodes(url) {
         console.error("[Hanime] extractEpisodes error: " + error.message);
         return JSON.stringify([{
             href: url,
-            number: "1"
+            number: 1
         }]);
     }
 }
