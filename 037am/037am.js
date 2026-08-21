@@ -196,30 +196,9 @@ async function extractStreamUrl(url) {
             const hash = match[1];
             const masterUrl = `https://mycdn-hd.xyz/cdn/hls/${hash}/master.txt?s=1&d=&ext=.m3u8`;
 
-            const m3u8Text = await httpGet(masterUrl, {
-                "Referer": embedUrl,
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-            });
-
-            if (m3u8Text) {
-                const streamRegex = /https:\/\/mycdn-hd\.xyz\/hls\/[^\s\r\n]+/gi;
-                let sMatch = streamRegex.exec(m3u8Text);
-                if (sMatch) {
-                    const variantUrl = sMatch[0] + "?ext=.m3u8";
-                    streams.push({
-                        title: "037AM • 720p HD",
-                        streamUrl: variantUrl,
-                        url: variantUrl,
-                        headers: {
-                            "Referer": "https://mycdn-hd.xyz/",
-                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-                        }
-                    });
-                }
-            }
-
+            // Master HLS Stream (Native pre-buffering for smooth continuous 24-min playback)
             streams.push({
-                title: "037AM • Auto Master",
+                title: "037AM • 720p HD (Master Stream)",
                 streamUrl: masterUrl,
                 url: masterUrl,
                 headers: {
