@@ -6,9 +6,10 @@ Welcome to **Luna Service**, a curated repository & directory of extension modul
 
 ## 🚀 Available Modules
 
-| Module Name | Type | Stream Type | Version | Module Manifest Link |
-| :--- | :--- | :--- | :--- | :--- |
-| **Hanime** | Anime | HLS | `1.1.0` | [`https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json`](https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json) |
+| Module Name | Type | Language | Stream Type | Version | Module Manifest Link |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **037AM** | Anime | Thai (Dubbed/Subbed) | HLS | `1.0.0` | [`https://raw.githubusercontent.com/Varomine/luna-service/main/037am/037am.json`](https://raw.githubusercontent.com/Varomine/luna-service/main/037am/037am.json) |
+| **Hanime** | Anime | English | HLS | `1.1.0` | [`https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json`](https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json) |
 
 ---
 

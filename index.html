@@ -80,7 +80,7 @@
             <!-- Search Bar -->
             <div class="max-w-xl mx-auto relative">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input type="text" id="searchInput" onkeyup="filterModules()" placeholder="Search modules by name, type, or tag..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-3.5 pl-11 pr-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
+                <input type="text" id="searchInput" onkeyup="filterModules()" placeholder="Search modules by name, language, type, or tag..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-3.5 pl-11 pr-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
             </div>
         </div>
     </header>
@@ -90,15 +90,47 @@
         <div class="flex items-center justify-between mb-8 border-b border-slate-800 pb-4">
             <h2 class="text-xl font-bold text-white flex items-center gap-2">
                 <i class="fa-solid fa-cubes text-indigo-400"></i> Available Modules
-                <span id="moduleCount" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">1</span>
+                <span id="moduleCount" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">2</span>
             </h2>
         </div>
 
         <!-- Modules Container -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="modulesGrid">
             
+            <!-- 037AM Module Card -->
+            <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="037am thai anime dub sub hls">
+                <div>
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <img src="https://037am.com/wp-content/uploads/2025/09/cropped-LOGO-1-192x192.png" alt="037AM Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700">
+                            <div>
+                                <h3 class="text-lg font-bold text-white leading-snug">037AM</h3>
+                                <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.0.0</span>
+                    </div>
+                    <p class="text-slate-300 text-sm mb-4 leading-relaxed">
+                        Thai anime streaming module for 037AM (ซับไทย / พากย์ไทย) featuring episode extraction and mycdn-hd HLS stream resolution.
+                    </p>
+                    
+                    <div class="flex flex-wrap gap-1.5 mb-6">
+                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">HLS Stream</span>
+                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Thai (TH)</span>
+                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Anime</span>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-800/80">
+                    <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/037am/037am.json', this)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/20">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copy Manifest URL</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- Hanime Module Card -->
-            <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="hanime anime hls 1080p">
+            <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="hanime anime hls 1080p english">
                 <div>
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center space-x-3">
