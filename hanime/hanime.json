@@ -1,0 +1,31 @@
+{
+    "sourceName": "Hanime",
+    "iconUrl": "https://hanime.tv/favicon.ico",
+    "author": {
+        "name": "Varomine",
+        "icon": "https://avatars.githubusercontent.com/Varomine"
+    },
+    "version": "1.0.0",
+    "language": "English",
+    "languageType": [
+        "Subbed"
+    ],
+    "streamType": "HLS",
+    "quality": "1080p",
+    "baseUrl": "https://hanime.tv/",
+    "searchBaseUrl": "https://hanime.tv/",
+    "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.js",
+    "type": "anime",
+    "asyncJS": true,
+    "softsub": true,
+    "downloadSupport": true,
+    "supportsSora": true,
+    "supportsLuna": true,
+    "supportsMojuru": true,
+    "supportsDartotsu": true,
+    "supportsAnymex": true,
+    "supportsTsumi": true,
+    "supportsHiyoku": true,
+    "supportsShirox": true,
+    "supportsEclipse": true
+}
