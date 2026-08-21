@@ -14,6 +14,15 @@ function getSlug(url) {
     return cleaned;
 }
 
+function getEpisodeNumber(slug) {
+    if (!slug) return "1";
+    const match = slug.match(/(?:-|\b)(\d+)$/);
+    if (match) {
+        return match[1];
+    }
+    return "1";
+}
+
 async function httpGet(url) {
     try {
         let res;
@@ -115,35 +124,12 @@ async function extractDetails(url) {
 async function extractEpisodes(url) {
     try {
         const slug = getSlug(url);
-        const apiUrl = `https://hanime-scraper.premmiz-real.workers.dev/api/video/${encodeURIComponent(slug)}`;
+        const epNum = getEpisodeNumber(slug);
 
-        const responseText = await httpGet(apiUrl);
-        const episodes = [];
-
-        if (responseText && responseText !== "undefined" && responseText.trim() !== "") {
-            const data = JSON.parse(responseText);
-            const franchise = (data && data.success) ? data.franchise : null;
-            if (franchise && Array.isArray(franchise.videos) && franchise.videos.length > 0) {
-                franchise.videos.forEach((item, index) => {
-                    const numMatch = (item.name || "").match(/(?:episode\s*|ep\s*|\s+)(\d+)$/i);
-                    const epNum = numMatch ? numMatch[1] : String(index + 1);
-
-                    episodes.push({
-                        href: `https://hanime.tv/videos/hentai/${item.slug}`,
-                        number: epNum
-                    });
-                });
-            }
-        }
-
-        if (episodes.length === 0) {
-            episodes.push({
-                href: `https://hanime.tv/videos/hentai/${slug}`,
-                number: "1"
-            });
-        }
-
-        return JSON.stringify(episodes);
+        return JSON.stringify([{
+            href: `https://hanime.tv/videos/hentai/${slug}`,
+            number: epNum
+        }]);
     } catch (error) {
         console.error("[Hanime] extractEpisodes error: " + error.message);
         return JSON.stringify([{
