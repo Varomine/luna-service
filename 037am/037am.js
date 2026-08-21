@@ -1,5 +1,5 @@
 /**
- * 037AM Module for Luna / Sora / Dartotsu / Mojuru / Anymex
+ * 037AM Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://037am.com/
  */
@@ -7,17 +7,6 @@
 const DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 };
-
-function toBase64(str) {
-    try {
-        if (typeof btoa !== "undefined") {
-            return btoa(unescape(encodeURIComponent(str)));
-        } else if (typeof Buffer !== "undefined") {
-            return Buffer.from(str, "utf-8").toString("base64");
-        }
-    } catch (e) {}
-    return "";
-}
 
 async function httpGet(url, headers = DEFAULT_HEADERS) {
     try {
@@ -205,20 +194,8 @@ async function extractStreamUrl(url) {
 
         if (match) {
             const hash = match[1];
-            const masterUrl = `https://mycdn-hd.xyz/cdn/hls/${hash}/master.txt?s=1&d=`;
+            const masterUrl = `https://mycdn-hd.xyz/cdn/hls/${hash}/master.txt?s=1&d=&ext=.m3u8`;
 
-            // 1. Fast Stream (Default - Fast load time & native HLS)
-            streams.push({
-                title: "037AM • 720p HD (Fast Stream)",
-                streamUrl: masterUrl + "#cell.m3u8",
-                url: masterUrl + "#cell.m3u8",
-                headers: {
-                    "Referer": "https://mycdn-hd.xyz/",
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-                }
-            });
-
-            // 2. Full Episode Rewritten Data URI Stream
             const m3u8Text = await httpGet(masterUrl, {
                 "Referer": embedUrl,
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
@@ -228,28 +205,28 @@ async function extractStreamUrl(url) {
                 const streamRegex = /https:\/\/mycdn-hd\.xyz\/hls\/[^\s\r\n]+/gi;
                 let sMatch = streamRegex.exec(m3u8Text);
                 if (sMatch) {
-                    const variantUrl = sMatch[0];
-                    const variantM3u8 = await httpGet(variantUrl, {
-                        "Referer": "https://mycdn-hd.xyz/",
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+                    const variantUrl = sMatch[0] + "?ext=.m3u8";
+                    streams.push({
+                        title: "037AM • 720p HD",
+                        streamUrl: variantUrl,
+                        url: variantUrl,
+                        headers: {
+                            "Referer": "https://mycdn-hd.xyz/",
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+                        }
                     });
-
-                    if (variantM3u8) {
-                        const fixedVariantM3u8 = variantM3u8.replace(/\.html/g, '.html#cell.ts');
-                        const dataUri = "data:application/x-mpegurl;base64," + toBase64(fixedVariantM3u8) + "#cell.m3u8";
-
-                        streams.push({
-                            title: "037AM • 720p HD (Full Episode Rewritten)",
-                            streamUrl: dataUri,
-                            url: dataUri,
-                            headers: {
-                                "Referer": "https://mycdn-hd.xyz/",
-                                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-                            }
-                        });
-                    }
                 }
             }
+
+            streams.push({
+                title: "037AM • Auto Master",
+                streamUrl: masterUrl,
+                url: masterUrl,
+                headers: {
+                    "Referer": "https://mycdn-hd.xyz/",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+                }
+            });
         }
 
         return JSON.stringify({
