@@ -189,37 +189,47 @@ async function extractStreamUrl(url) {
 
         const cleanHtml = embedHtml.replace(/\\\//g, '/');
         const match = cleanHtml.match(/\/cdn\/hls\/([a-f0-9]+)\/master\.txt/);
-        if (!match) {
-            return JSON.stringify({ streams: [], subtitle: "" });
-        }
+        
+        const streams = [];
 
-        const hash = match[1];
-        const masterUrl = `https://mycdn-hd.xyz/cdn/hls/${hash}/master.txt?s=1&d=`;
+        if (match) {
+            const hash = match[1];
+            const masterUrl = `https://mycdn-hd.xyz/cdn/hls/${hash}/master.txt?s=1&d=`;
 
-        const m3u8Text = await httpGet(masterUrl, {
-            "Referer": embedUrl,
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-        });
-
-        if (!m3u8Text) {
-            return JSON.stringify({ streams: [], subtitle: "" });
-        }
-
-        const streamUrls = [];
-        const streamRegex = /https:\/\/mycdn-hd\.xyz\/hls\/[^\s\r\n]+/gi;
-        let streamMatch;
-        while ((streamMatch = streamRegex.exec(m3u8Text)) !== null) {
-            streamUrls.push(streamMatch[0]);
-        }
-
-        const streams = streamUrls.map(sUrl => ({
-            title: "HD • 037AM",
-            streamUrl: sUrl,
-            headers: {
-                "Referer": "https://mycdn-hd.xyz/",
+            const m3u8Text = await httpGet(masterUrl, {
+                "Referer": embedUrl,
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+            });
+
+            // 1. Add Master Playlist URL (tagged with #cell.m3u8 for iOS AVPlayer HLS detection)
+            streams.push({
+                title: "037AM • 720p HD (Master)",
+                streamUrl: masterUrl + "#cell.m3u8",
+                url: masterUrl + "#cell.m3u8",
+                headers: {
+                    "Referer": "https://mycdn-hd.xyz/",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+                }
+            });
+
+            if (m3u8Text) {
+                // 2. Add Direct Stream Variant URLs (tagged with #cell.m3u8 for iOS AVPlayer HLS detection)
+                const streamRegex = /https:\/\/mycdn-hd\.xyz\/hls\/[^\s\r\n]+/gi;
+                let streamMatch;
+                while ((streamMatch = streamRegex.exec(m3u8Text)) !== null) {
+                    const variantUrl = streamMatch[0] + "#cell.m3u8";
+                    streams.push({
+                        title: "037AM • 720p HD (Direct)",
+                        streamUrl: variantUrl,
+                        url: variantUrl,
+                        headers: {
+                            "Referer": "https://mycdn-hd.xyz/",
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+                        }
+                    });
+                }
             }
-        }));
+        }
 
         return JSON.stringify({
             streams: streams,
