@@ -2,7 +2,7 @@
  * AnimeRuka Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://animeruka.com/
- * Cloudflare Proxy: https://animeruka-worker.sapis.workers.dev
+ * Cloudflare HLS Master Resolver: https://animeruka-worker.sapis.workers.dev
  */
 
 const DEFAULT_HEADERS = {
@@ -168,60 +168,27 @@ async function extractStreamUrl(url) {
         const streams = [];
 
         if (postId) {
-            const types = [
-                { type: 'tv/1', name: 'Server 1 (AnimeMami)' },
-                { type: 'tv/2', name: 'Server 2 (Abyss)' },
-                { type: 'tv/3', name: 'Server 3 (OK.ru)' },
-                { type: 'movie/1', name: 'Backup 1 (AnimeMami)' },
-                { type: 'movie/2', name: 'Backup 2 (Abyss)' }
-            ];
+            // Server 1 (AnimeMami) - Primary High Performance Server
+            const apiResult = await httpGet(`https://animeruka.com/wp-json/dooplayer/v2/${postId}/tv/1`) ||
+                              await httpGet(`https://animeruka.com/wp-json/dooplayer/v2/${postId}/movie/1`);
 
-            for (const t of types) {
-                const apiResult = await httpGet(`https://animeruka.com/wp-json/dooplayer/v2/${postId}/${t.type}`);
-                if (apiResult) {
-                    try {
-                        const data = JSON.parse(apiResult);
-                        if (data && data.embed_url) {
-                            const embedUrl = data.embed_url;
-                            const proxiedUrl = `https://animeruka-worker.sapis.workers.dev/proxy?url=${encodeURIComponent(embedUrl)}`;
+            if (apiResult) {
+                try {
+                    const data = JSON.parse(apiResult);
+                    if (data && data.embed_url) {
+                        const embedUrl = data.embed_url;
+                        const masterHlsUrl = `https://animeruka-worker.sapis.workers.dev/hls?url=${encodeURIComponent(embedUrl)}&ext=.m3u8`;
 
-                            // Proxied Stream (Worker bypasses 403 Forbidden Referer checks & CORS blocks)
-                            streams.push({
-                                title: `AnimeRuka • ${t.name}`,
-                                streamUrl: proxiedUrl,
-                                url: proxiedUrl,
-                                isIframe: true,
-                                type: "iframe",
-                                format: "embed",
-                                headers: {
-                                    "Referer": "https://animeruka.com/",
-                                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-                                }
-                            });
-                        }
-                    } catch (e) {}
-                }
-            }
-        }
-
-        if (streams.length === 0) {
-            const iframeMatch = html.match(/<iframe[^>]+src="([^"]+)"/i);
-            if (iframeMatch) {
-                const embedUrl = iframeMatch[1];
-                const proxiedUrl = `https://animeruka-worker.sapis.workers.dev/proxy?url=${encodeURIComponent(embedUrl)}`;
-
-                streams.push({
-                    title: "AnimeRuka • Main Stream",
-                    streamUrl: proxiedUrl,
-                    url: proxiedUrl,
-                    isIframe: true,
-                    type: "iframe",
-                    format: "embed",
-                    headers: {
-                        "Referer": "https://animeruka.com/",
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+                        streams.push({
+                            title: "AnimeRuka • Server 1 (1080p HD)",
+                            streamUrl: masterHlsUrl,
+                            url: masterHlsUrl,
+                            headers: {
+                                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+                            }
+                        });
                     }
-                });
+                } catch (e) {}
             }
         }
 
