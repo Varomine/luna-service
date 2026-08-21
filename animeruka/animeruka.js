@@ -2,6 +2,7 @@
  * AnimeRuka Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://animeruka.com/
+ * Cloudflare Proxy: https://animeruka-worker.sapis.workers.dev
  */
 
 const DEFAULT_HEADERS = {
@@ -167,22 +168,31 @@ async function extractStreamUrl(url) {
         const streams = [];
 
         if (postId) {
-            const types = ['tv/1', 'tv/2', 'tv/3', 'movie/1', 'movie/2'];
-            for (const type of types) {
-                const apiResult = await httpGet(`https://animeruka.com/wp-json/dooplayer/v2/${postId}/${type}`);
+            const types = [
+                { type: 'tv/1', name: 'Server 1 (AnimeMami)' },
+                { type: 'tv/2', name: 'Server 2 (Abyss)' },
+                { type: 'tv/3', name: 'Server 3 (OK.ru)' },
+                { type: 'movie/1', name: 'Backup 1 (AnimeMami)' },
+                { type: 'movie/2', name: 'Backup 2 (Abyss)' }
+            ];
+
+            for (const t of types) {
+                const apiResult = await httpGet(`https://animeruka.com/wp-json/dooplayer/v2/${postId}/${t.type}`);
                 if (apiResult) {
                     try {
                         const data = JSON.parse(apiResult);
                         if (data && data.embed_url) {
                             const embedUrl = data.embed_url;
-                            const title = type.includes('1') ? "AnimeRuka • Server 1 (AnimeMami)" :
-                                          type.includes('2') ? "AnimeRuka • Server 2 (Abyss)" :
-                                          `AnimeRuka • Server ${type}`;
-                            
+                            const proxiedUrl = `https://animeruka-worker.sapis.workers.dev/proxy?url=${encodeURIComponent(embedUrl)}`;
+
+                            // Proxied Stream (Worker bypasses 403 Forbidden Referer checks & CORS blocks)
                             streams.push({
-                                title: title,
-                                streamUrl: embedUrl,
-                                url: embedUrl,
+                                title: `AnimeRuka • ${t.name}`,
+                                streamUrl: proxiedUrl,
+                                url: proxiedUrl,
+                                isIframe: true,
+                                type: "iframe",
+                                format: "embed",
                                 headers: {
                                     "Referer": "https://animeruka.com/",
                                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
@@ -197,10 +207,16 @@ async function extractStreamUrl(url) {
         if (streams.length === 0) {
             const iframeMatch = html.match(/<iframe[^>]+src="([^"]+)"/i);
             if (iframeMatch) {
+                const embedUrl = iframeMatch[1];
+                const proxiedUrl = `https://animeruka-worker.sapis.workers.dev/proxy?url=${encodeURIComponent(embedUrl)}`;
+
                 streams.push({
                     title: "AnimeRuka • Main Stream",
-                    streamUrl: iframeMatch[1],
-                    url: iframeMatch[1],
+                    streamUrl: proxiedUrl,
+                    url: proxiedUrl,
+                    isIframe: true,
+                    type: "iframe",
+                    format: "embed",
                     headers: {
                         "Referer": "https://animeruka.com/",
                         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
