@@ -20,6 +20,45 @@ const DEFAULT_HEADERS = {
     "Referer": "https://hanime.tv/"
 };
 
+async function fetchVideoData(slug) {
+    const apiUrl = `https://hanime.tv/api/v8/video?id=${encodeURIComponent(slug)}`;
+    let text = null;
+
+    if (typeof fetchv2 !== "undefined") {
+        try {
+            const res = await fetchv2(apiUrl, DEFAULT_HEADERS);
+            if (res) {
+                text = typeof res.text === "function" ? await res.text() : (typeof res === "string" ? res : null);
+            }
+        } catch (e) {
+            console.warn("[Hanime] Direct video API fetch failed: " + e.message);
+        }
+    }
+
+    if (!text || text === "undefined" || text.trim() === "") {
+        try {
+            const proxyUrl = `https://tmdbproxy22.simplepostrequest.workers.dev/solver?url=${encodeURIComponent(apiUrl)}`;
+            const res = await fetchv2(proxyUrl, DEFAULT_HEADERS);
+            if (res) {
+                text = typeof res.text === "function" ? await res.text() : (typeof res === "string" ? res : null);
+            }
+        } catch (e) {
+            console.error("[Hanime] Proxy video API fetch failed: " + e.message);
+        }
+    }
+
+    if (!text || text === "undefined" || text.trim() === "") {
+        return null;
+    }
+
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        console.error("[Hanime] JSON parse error in fetchVideoData: " + e.message);
+        return null;
+    }
+}
+
 async function searchResults(keyword) {
     try {
         const searchUrl = "https://search.htv-services.com/";
@@ -39,36 +78,54 @@ async function searchResults(keyword) {
             ...DEFAULT_HEADERS
         };
 
-        let response;
+        let responseText = null;
+
+        // 1. Try direct fetchv2
         if (typeof fetchv2 !== "undefined") {
-            response = await fetchv2(searchUrl, headers, "POST", JSON.stringify(payload));
-        } else {
-            response = await fetch(searchUrl, {
-                method: "POST",
-                headers: headers,
-                body: JSON.stringify(payload)
-            });
+            try {
+                const res = await fetchv2(searchUrl, headers, "POST", payload);
+                if (res) {
+                    responseText = typeof res.text === "function" ? await res.text() : (typeof res === "string" ? res : null);
+                }
+            } catch (err) {
+                console.warn("[Hanime] fetchv2 direct search failed: " + err.message);
+            }
         }
 
-        const text = await response.text();
-        const data = JSON.parse(text);
+        // 2. Fallback to Cloudflare solver proxy if direct DNS/network fails
+        if (!responseText || responseText === "undefined" || responseText.trim() === "") {
+            try {
+                const proxyUrl = `https://tmdbproxy22.simplepostrequest.workers.dev/solver?url=${encodeURIComponent(searchUrl)}`;
+                const res = await fetchv2(proxyUrl, headers, "POST", payload);
+                if (res) {
+                    responseText = typeof res.text === "function" ? await res.text() : (typeof res === "string" ? res : null);
+                }
+            } catch (err) {
+                console.warn("[Hanime] proxy search failed: " + err.message);
+            }
+        }
 
+        if (!responseText || responseText === "undefined" || responseText.trim() === "") {
+            return JSON.stringify([]);
+        }
+
+        const data = JSON.parse(responseText);
         let hits = [];
-        if (data.hits) {
+        if (data && data.hits) {
             if (typeof data.hits === "string") {
                 hits = JSON.parse(data.hits);
             } else if (Array.isArray(data.hits)) {
                 hits = data.hits;
             }
+        } else if (Array.isArray(data)) {
+            hits = data;
         }
 
-        const results = hits.map(hit => {
-            return {
-                title: hit.name || hit.title || "Untitled",
-                image: hit.cover_url || hit.poster_url || "",
-                href: `https://hanime.tv/videos/hentai/${hit.slug || hit.id}`
-            };
-        });
+        const results = hits.map(hit => ({
+            title: hit.name || hit.title || "Untitled",
+            image: hit.cover_url || hit.poster_url || "",
+            href: `https://hanime.tv/videos/hentai/${hit.slug || hit.id}`
+        }));
 
         return JSON.stringify(results);
     } catch (error) {
@@ -80,20 +137,17 @@ async function searchResults(keyword) {
 async function extractDetails(url) {
     try {
         const slug = getSlug(url);
-        const apiUrl = `https://hanime.tv/api/v8/video?id=${encodeURIComponent(slug)}`;
+        const data = await fetchVideoData(slug);
 
-        let response;
-        if (typeof fetchv2 !== "undefined") {
-            response = await fetchv2(apiUrl, DEFAULT_HEADERS);
-        } else {
-            response = await fetch(apiUrl, { headers: DEFAULT_HEADERS });
+        if (!data || !data.hentai_video) {
+            return JSON.stringify([{
+                description: "No details available.",
+                aliases: "N/A",
+                airdate: "N/A"
+            }]);
         }
 
-        const text = await response.text();
-        const data = JSON.parse(text);
-
-        const video = data.hentai_video || {};
-
+        const video = data.hentai_video;
         let description = video.description || "No description available.";
         description = description.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').trim();
 
@@ -126,25 +180,15 @@ async function extractDetails(url) {
 async function extractEpisodes(url) {
     try {
         const slug = getSlug(url);
-        const apiUrl = `https://hanime.tv/api/v8/video?id=${encodeURIComponent(slug)}`;
+        const data = await fetchVideoData(slug);
 
-        let response;
-        if (typeof fetchv2 !== "undefined") {
-            response = await fetchv2(apiUrl, DEFAULT_HEADERS);
-        } else {
-            response = await fetch(apiUrl, { headers: DEFAULT_HEADERS });
-        }
-
-        const text = await response.text();
-        const data = JSON.parse(text);
-
-        const franchiseVideos = data.hentai_franchise_hentai_videos;
         const episodes = [];
+        const franchiseVideos = data ? data.hentai_franchise_hentai_videos : null;
 
         if (Array.isArray(franchiseVideos) && franchiseVideos.length > 0) {
             franchiseVideos.forEach((item, index) => {
                 const numMatch = (item.name || "").match(/(?:episode\s*|ep\s*|\s+)(\d+)$/i);
-                const epNum = numMatch ? parseInt(numMatch[1]) : (index + 1);
+                const epNum = numMatch ? numMatch[1] : String(index + 1);
 
                 episodes.push({
                     href: `https://hanime.tv/videos/hentai/${item.slug}`,
@@ -154,7 +198,7 @@ async function extractEpisodes(url) {
         } else {
             episodes.push({
                 href: `https://hanime.tv/videos/hentai/${slug}`,
-                number: 1
+                number: "1"
             });
         }
 
@@ -163,7 +207,7 @@ async function extractEpisodes(url) {
         console.error("[Hanime] extractEpisodes error: " + error.message);
         return JSON.stringify([{
             href: url,
-            number: 1
+            number: "1"
         }]);
     }
 }
@@ -171,20 +215,10 @@ async function extractEpisodes(url) {
 async function extractStreamUrl(url) {
     try {
         const slug = getSlug(url);
-        const apiUrl = `https://hanime.tv/api/v8/video?id=${encodeURIComponent(slug)}`;
-
-        let response;
-        if (typeof fetchv2 !== "undefined") {
-            response = await fetchv2(apiUrl, DEFAULT_HEADERS);
-        } else {
-            response = await fetch(apiUrl, { headers: DEFAULT_HEADERS });
-        }
-
-        const text = await response.text();
-        const data = JSON.parse(text);
+        const data = await fetchVideoData(slug);
 
         const streams = [];
-        const servers = (data.videos_manifest && data.videos_manifest.servers) || [];
+        const servers = (data && data.videos_manifest && data.videos_manifest.servers) || [];
 
         servers.forEach(server => {
             if (Array.isArray(server.streams)) {

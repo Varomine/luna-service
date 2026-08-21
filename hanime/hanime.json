@@ -5,7 +5,7 @@
         "name": "Varomine",
         "icon": "https://avatars.githubusercontent.com/Varomine"
     },
-    "version": "1.0.0",
+    "version": "1.0.1",
     "language": "English",
     "languageType": [
         "Subbed"
@@ -13,7 +13,7 @@
     "streamType": "HLS",
     "quality": "1080p",
     "baseUrl": "https://hanime.tv/",
-    "searchBaseUrl": "https://hanime.tv/",
+    "searchBaseUrl": "https://hanime.tv/search?q=%s",
     "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.js",
     "type": "anime",
     "asyncJS": true,
