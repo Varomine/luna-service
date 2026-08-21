@@ -1,6 +1,7 @@
 /**
- * 037AM High-Performance HLS Proxy & Scraper Worker for Cloudflare Workers
- * Resolves 037am.com anime streams & proxies HLS TS segments with proper video/mp2t MIME type for iOS AVPlayer.
+ * 037AM Cloudflare Worker - HLS Stream Resolver & Redirector
+ * Author: Varomine
+ * Resolves 037AM episodes & redirects (302) to direct HLS Master Stream URLs for Luna, Sora, and browser video players.
  */
 
 export default {
@@ -81,19 +82,26 @@ export default {
         });
       }
 
-      // 3. Stream Route: /api/stream?url={pageUrl} OR /api/m3u8?post={postId}&group_idx={groupIdx}&ep={epIdx}
-      if (pathname === "/api/stream" || pathname === "/api/m3u8" || pathname.endsWith(".m3u8")) {
+      // 3. Direct Combined HLS Stream Route (Redirects 302 to Master HLS URL)
+      if (pathname === "/api/stream" || pathname === "/api/m3u8" || pathname === "/m3u8" || pathname.endsWith(".m3u8")) {
         let postId = url.searchParams.get("post");
         let groupIdx = url.searchParams.get("group_idx") || "0";
         let epIdx = url.searchParams.get("ep") || "0";
         const pageUrl = url.searchParams.get("url");
 
-        if (pageUrl && !postId) {
+        if (pageUrl && (!postId || postId === "null")) {
           const qMatch = pageUrl.match(/[?&]post=(\d+)[&]group_idx=(\d+)[&]ep=(\d+)/);
           if (qMatch) {
             postId = qMatch[1];
             groupIdx = qMatch[2];
             epIdx = qMatch[3];
+          } else {
+            const resPage = await fetch(pageUrl.split("?")[0], {
+              headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" }
+            });
+            const pageHtml = await resPage.text();
+            const pidMatch = pageHtml.match(/window\.ton2025_post_id\s*=\s*(\d+)/i) || pageHtml.match(/postid-(\d+)/i);
+            if (pidMatch) postId = pidMatch[1];
           }
         }
 
@@ -120,6 +128,7 @@ export default {
           return new Response("Embed URL not found", { status: 404, headers: corsHeaders });
         }
 
+        // Fetch embed HTML to extract master hash
         const embedRes = await fetch(embedUrl, {
           headers: {
             "Referer": "https://037am.com/",
@@ -128,81 +137,42 @@ export default {
         });
         const embedHtml = await embedRes.text();
         const cleanHtml = embedHtml.replace(/\\\//g, '/');
-        const match = cleanHtml.match(/\/cdn\/hls\/([a-f0-9]+)\/master\.txt/);
+        const hashMatch = cleanHtml.match(/\/cdn\/hls\/([a-f0-9]+)\/master\.txt/);
 
-        if (!match) {
+        if (!hashMatch) {
           return new Response("HLS master hash not found", { status: 404, headers: corsHeaders });
         }
 
-        const hash = match[1];
-        const masterUrl = `https://mycdn-hd.xyz/cdn/hls/${hash}/master.txt?s=1&d=`;
-        const masterRes = await fetch(masterUrl, {
-          headers: {
-            "Referer": embedUrl,
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-          }
-        });
-        const m3u8Text = await masterRes.text();
+        const hash = hashMatch[1];
+        const masterUrl = `https://mycdn-hd.xyz/cdn/hls/${hash}/master.txt?s=1&d=&ext=.m3u8`;
 
-        const streamRegex = /https:\/\/mycdn-hd\.xyz\/hls\/[^\s\r\n]+/gi;
-        const sMatch = streamRegex.exec(m3u8Text);
-
-        if (sMatch) {
-          const variantUrl = sMatch[0];
-          const variantRes = await fetch(variantUrl, {
-            headers: {
-              "Referer": "https://mycdn-hd.xyz/",
-              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            }
-          });
-          const variantM3u8 = await variantRes.text();
-
-          // Rewrite all .html segment links to proxy through /api/segment with video/mp2t MIME type
-          const workerHost = url.origin;
-          const rewrittenM3u8 = variantM3u8.replace(/(https:\/\/cdnj[^\s\r\n]+)/g, (segUrl) => {
-            return `${workerHost}/api/segment?url=${encodeURIComponent(segUrl)}&ext=.ts`;
-          });
-
-          return new Response(rewrittenM3u8, {
-            headers: {
-              ...corsHeaders,
-              "Content-Type": "application/vnd.apple.mpegurl",
-              "Cache-Control": "no-cache"
-            }
-          });
-        }
-
-        return new Response(m3u8Text, {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/vnd.apple.mpegurl"
-          }
-        });
+        // Redirect directly (302) to Master HLS URL for direct client playback
+        return Response.redirect(masterUrl, 302);
       }
 
-      // 4. Segment Proxy Route: /api/segment?url={segUrl}
-      if (pathname === "/api/segment") {
-        const segUrl = url.searchParams.get("url");
-        if (!segUrl) return new Response("Missing segUrl", { status: 400, headers: corsHeaders });
+      // 4. Proxy Fallback Route: /api/proxy?url={targetUrl}
+      if (pathname === "/api/proxy" || pathname === "/proxy") {
+        const targetUrl = url.searchParams.get("url");
+        if (!targetUrl) return new Response("Missing target url", { status: 400, headers: corsHeaders });
 
-        const segRes = await fetch(segUrl, {
+        const res = await fetch(targetUrl, {
           headers: {
             "Referer": "https://mycdn-hd.xyz/",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
           }
         });
 
-        return new Response(segRes.body, {
-          status: segRes.status,
+        return new Response(res.body, {
+          status: res.status,
           headers: {
             ...corsHeaders,
-            "Content-Type": "video/mp2t",
+            "Content-Type": res.headers.get("content-type") || "application/octet-stream",
             "Cache-Control": "public, max-age=86400"
           }
         });
       }
 
-      return new Response("037AM Cloudflare Worker API is active", { headers: corsHeaders });
+      return new Response("037AM Combined M3U8 Worker is active", { headers: corsHeaders });
     } catch (err) {
       return new Response(`Worker Internal Error: ${err.message}`, { status: 500, headers: corsHeaders });
     }

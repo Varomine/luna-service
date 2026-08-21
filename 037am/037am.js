@@ -2,6 +2,7 @@
  * 037AM Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://037am.com/
+ * Cloudflare Worker Proxy: https://037am-worker.sapis.workers.dev
  */
 
 const DEFAULT_HEADERS = {
@@ -143,70 +144,18 @@ async function extractEpisodes(url) {
 
 async function extractStreamUrl(url) {
     try {
-        let postId = null;
-        let groupIdx = 0;
-        let epIdx = 0;
+        const workerStreamUrl = `https://037am-worker.sapis.workers.dev/api/stream?url=${encodeURIComponent(url)}`;
 
-        const queryMatch = url.match(/[?&]post=(\d+)[&]group_idx=(\d+)[&]ep=(\d+)/);
-        if (queryMatch) {
-            postId = queryMatch[1];
-            groupIdx = queryMatch[2];
-            epIdx = queryMatch[3];
-        }
-
-        let embedUrl = null;
-        if (postId) {
-            const epApiUrl = `https://037am.com/wp-json/ton2025/v1/ep?post=${postId}&group_idx=${groupIdx}&ep=${epIdx}`;
-            const apiText = await httpGet(epApiUrl);
-            if (apiText) {
-                try {
-                    const apiData = JSON.parse(apiText);
-                    embedUrl = apiData.embed || apiData.backup || null;
-                } catch (e) {}
-            }
-        }
-
-        if (!embedUrl) {
-            const html = await httpGet(url.split('?')[0]);
-            if (html) {
-                const iframeMatch = html.match(/src="(https:\/\/mycdn-hd\.xyz\/video\/[^"]+)"/i);
-                if (iframeMatch) embedUrl = iframeMatch[1];
-            }
-        }
-
-        if (!embedUrl) {
-            return JSON.stringify({ streams: [], subtitle: "" });
-        }
-
-        const embedHtml = await httpGet(embedUrl, {
-            "Referer": "https://037am.com/",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-        });
-
-        if (!embedHtml) {
-            return JSON.stringify({ streams: [], subtitle: "" });
-        }
-
-        const cleanHtml = embedHtml.replace(/\\\//g, '/');
-        const match = cleanHtml.match(/\/cdn\/hls\/([a-f0-9]+)\/master\.txt/);
-        
-        const streams = [];
-
-        if (match) {
-            const hash = match[1];
-            const masterUrl = `https://mycdn-hd.xyz/cdn/hls/${hash}/master.txt?s=1&d=&ext=.m3u8`;
-
-            // Master HLS Stream (Native pre-buffering for smooth continuous 24-min playback)
-            streams.push({
-                title: "037AM • 720p HD (Master Stream)",
-                streamUrl: masterUrl,
-                url: masterUrl,
+        const streams = [
+            {
+                title: "037AM • 720p HD (Worker Master HLS)",
+                streamUrl: workerStreamUrl,
+                url: workerStreamUrl,
                 headers: {
-                    "Referer": "https://mycdn-hd.xyz/",
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
                 }
-            });
-        }
+            }
+        ];
 
         return JSON.stringify({
             streams: streams,
