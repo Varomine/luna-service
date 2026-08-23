@@ -772,8 +772,166 @@ export default {
         });
       }
 
-      // Root Status Page
-      return new Response("⚡ AniKoto Cloudflare Worker API is active!", { headers: corsHeaders });
+      // Root Docs & Interactive API Playground Page
+      const docsHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AniKoto Worker API Documentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { background-color: #0b0f19; color: #f3f4f6; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        .glass { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glow { box-shadow: 0 0 50px -10px rgba(99, 102, 241, 0.25); }
+        code { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="min-h-screen pb-16">
+    <div class="max-w-6xl mx-auto px-4 py-10">
+        <!-- Header -->
+        <div class="glass rounded-2xl p-8 mb-10 text-center relative overflow-hidden glow">
+            <div class="absolute -right-10 -top-10 w-40 h-40 bg-indigo-600/20 rounded-full blur-3xl"></div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-4 border border-indigo-500/20">
+                <i class="fa-solid fa-bolt"></i> Live API Docs & Playground
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-3">
+                AniKoto <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">Worker API</span>
+            </h1>
+            <p class="text-gray-400 text-sm md:text-base max-w-2xl mx-auto mb-6">
+                High-performance Cloudflare Worker API for AnimePahe stream resolution, search, and CORS proxying. Powering Luna, Sora, and Dartotsu.
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-3 text-sm">
+                <a href="${workerOrigin}/api/search?q=naruto" target="_blank" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition flex items-center gap-2">
+                    <i class="fa-solid fa-play"></i> Try Test Endpoint
+                </a>
+                <button onclick="copyManifestUrl()" class="px-4 py-2 rounded-xl glass hover:bg-white/10 text-gray-300 font-medium transition flex items-center gap-2">
+                    <i class="fa-solid fa-copy"></i> Copy Luna Module URL
+                </button>
+            </div>
+        </div>
+
+        <!-- Luna Module URL Box -->
+        <div class="glass rounded-xl p-5 mb-10 flex flex-col md:flex-row items-center justify-between gap-4 border-l-4 border-indigo-500">
+            <div>
+                <h3 class="text-white font-semibold flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-cube text-indigo-400"></i> Luna Extension Manifest
+                </h3>
+                <p class="text-gray-400 text-xs mt-1">Import this URL into Luna / Sora / Dartotsu extensions settings</p>
+            </div>
+            <div class="flex items-center gap-2 w-full md:w-auto">
+                <input type="text" id="manifestUrl" readonly value="https://raw.githubusercontent.com/Varomine/luna-service/main/anikoto/anikoto.json" class="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-indigo-300 font-mono w-full md:w-96 select-all focus:outline-none">
+                <button onclick="copyManifestUrl()" class="px-3 py-2 bg-indigo-600/80 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition whitespace-nowrap">
+                    Copy
+                </button>
+            </div>
+        </div>
+
+        <!-- Endpoints Grid -->
+        <div class="space-y-6">
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-indigo-400"></i> API Endpoints
+            </h2>
+
+            <!-- Endpoint 1: Search -->
+            <div class="glass rounded-xl p-6 transition hover:border-indigo-500/40">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                    <div class="flex items-center gap-3">
+                        <span class="px-2.5 py-1 rounded-md bg-green-500/20 text-green-400 font-bold text-xs">GET</span>
+                        <code class="text-white font-semibold text-sm">/api/search?q={query}</code>
+                    </div>
+                    <a href="${workerOrigin}/api/search?q=naruto" target="_blank" class="text-xs text-indigo-400 hover:underline flex items-center gap-1">
+                        Test in Browser <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+                <p class="text-gray-400 text-xs mb-3">Searches AnimePahe for titles matching the query string.</p>
+                <div class="bg-black/50 rounded-lg p-3 text-xs text-gray-300 font-mono">
+                    <span class="text-gray-500">// Example:</span> ${workerOrigin}/api/search?q=naruto
+                </div>
+            </div>
+
+            <!-- Endpoint 2: Episodes -->
+            <div class="glass rounded-xl p-6 transition hover:border-indigo-500/40">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                    <div class="flex items-center gap-3">
+                        <span class="px-2.5 py-1 rounded-md bg-green-500/20 text-green-400 font-bold text-xs">GET</span>
+                        <code class="text-white font-semibold text-sm">/api/episodes?session={session}</code>
+                    </div>
+                    <a href="${workerOrigin}/api/episodes?session=3995abf2d946c09a486b30c7a424f254" target="_blank" class="text-xs text-indigo-400 hover:underline flex items-center gap-1">
+                        Test in Browser <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+                <p class="text-gray-400 text-xs mb-3">Fetches the complete episode release list for an anime session ID.</p>
+                <div class="bg-black/50 rounded-lg p-3 text-xs text-gray-300 font-mono">
+                    <span class="text-gray-500">// Example:</span> ${workerOrigin}/api/episodes?session=3995abf2d946c09a486b30c7a424f254
+                </div>
+            </div>
+
+            <!-- Endpoint 3: Details -->
+            <div class="glass rounded-xl p-6 transition hover:border-indigo-500/40">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                    <div class="flex items-center gap-3">
+                        <span class="px-2.5 py-1 rounded-md bg-green-500/20 text-green-400 font-bold text-xs">GET</span>
+                        <code class="text-white font-semibold text-sm">/api/details?session={session}</code>
+                    </div>
+                    <a href="${workerOrigin}/api/details?session=3995abf2d946c09a486b30c7a424f254" target="_blank" class="text-xs text-indigo-400 hover:underline flex items-center gap-1">
+                        Test in Browser <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+                <p class="text-gray-400 text-xs mb-3">Scrapes anime metadata, synopsis, airdate, duration, and genres.</p>
+                <div class="bg-black/50 rounded-lg p-3 text-xs text-gray-300 font-mono">
+                    <span class="text-gray-500">// Example:</span> ${workerOrigin}/api/details?session=3995abf2d946c09a486b30c7a424f254
+                </div>
+            </div>
+
+            <!-- Endpoint 4: Stream -->
+            <div class="glass rounded-xl p-6 transition hover:border-indigo-500/40">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                    <div class="flex items-center gap-3">
+                        <span class="px-2.5 py-1 rounded-md bg-green-500/20 text-green-400 font-bold text-xs">GET</span>
+                        <code class="text-white font-semibold text-sm">/api/stream?url={episodeHref}</code>
+                    </div>
+                    <a href="${workerOrigin}/api/stream?url=anime/3995abf2d946c09a486b30c7a424f254/b4b747479d4a76a9f3a98d9537735426?num=1" target="_blank" class="text-xs text-indigo-400 hover:underline flex items-center gap-1">
+                        Test in Browser <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+                <p class="text-gray-400 text-xs mb-3">Resolves Megaplay, Vidplay, and Kwik HLS stream URLs + subtitles with CORS proxying.</p>
+                <div class="bg-black/50 rounded-lg p-3 text-xs text-gray-300 font-mono">
+                    <span class="text-gray-500">// Example:</span> ${workerOrigin}/api/stream?url=anime/3995abf2d946c09a486b30c7a424f254/b4b747479d4a76a9f3a98d9537735426?num=1
+                </div>
+            </div>
+
+            <!-- Endpoint 5: M3U8 Proxy -->
+            <div class="glass rounded-xl p-6 transition hover:border-indigo-500/40">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                    <div class="flex items-center gap-3">
+                        <span class="px-2.5 py-1 rounded-md bg-purple-500/20 text-purple-400 font-bold text-xs">HLS</span>
+                        <code class="text-white font-semibold text-sm">/api/m3u8?url={targetM3u8}&referer={referer}</code>
+                    </div>
+                </div>
+                <p class="text-gray-400 text-xs mb-3">Proxies & rewrites M3U8 master and child playlists with custom Referer headers.</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-12 text-center text-xs text-gray-500 border-t border-white/5 pt-6">
+            AniKoto Service API &copy; 2026 Varomine &bull; Powered by Cloudflare Workers
+        </div>
+    </div>
+
+    <script>
+        function copyManifestUrl() {
+            const input = document.getElementById('manifestUrl');
+            input.select();
+            document.execCommand('copy');
+            alert('Luna Manifest URL copied to clipboard!');
+        }
+    </script>
+</body>
+</html>`;
+
+      return new Response(docsHtml, { headers: { "Content-Type": "text/html; charset=utf-8" } });
     } catch (err) {
       return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
