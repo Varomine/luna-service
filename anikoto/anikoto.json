@@ -1,0 +1,9 @@
+{
+  "sourceName": "AniKoto",
+  "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/anikoto/anikoto.js",
+  "iconUrl": "https://animepahetv.to/favicon.ico",
+  "version": "1.0.0",
+  "author": "Varomine",
+  "supportsLuna": true,
+  "description": "AniKoto (AnimePahe) extension powered by Cloudflare Worker API for Luna, Sora, and Dartotsu."
+}
