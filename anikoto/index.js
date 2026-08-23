@@ -516,6 +516,7 @@ export default {
     const url = new URL(request.url);
     const pathname = url.pathname;
     const acceptHeader = request.headers.get("accept") || "";
+    const workerOrigin = url.origin;
 
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
@@ -573,7 +574,84 @@ export default {
         });
       }
 
-      // 4. Stream Route: /api/stream?url={url} OR ?session={epSession}
+      // 4. M3U8 Proxy & Rewriter Route: /api/m3u8?url={m3u8Url}&referer={referer}
+      if (pathname === "/api/m3u8") {
+        const targetM3u8Url = url.searchParams.get("url");
+        const referer = url.searchParams.get("referer") || "https://megaplay.buzz/";
+
+        if (!targetM3u8Url) {
+          return new Response("Missing m3u8 url", { status: 400, headers: corsHeaders });
+        }
+
+        const m3u8Res = await fetch(targetM3u8Url, {
+          headers: {
+            "Referer": referer,
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+          }
+        });
+
+        if (!m3u8Res.ok) {
+          return new Response(`Failed to fetch M3U8: ${m3u8Res.status}`, { status: m3u8Res.status, headers: corsHeaders });
+        }
+
+        const m3u8Text = await m3u8Res.text();
+        const baseUrl = targetM3u8Url.substring(0, targetM3u8Url.lastIndexOf('/') + 1);
+
+        // If Master M3U8 Playlist (contains child .m3u8 links)
+        if (m3u8Text.includes('.m3u8')) {
+          const rewrittenMaster = m3u8Text.replace(/^([^#\s\r\n]+\.m3u8[^\s\r\n]*)/gm, (match) => {
+            const fullChildUrl = match.startsWith('http') ? match : (baseUrl + match);
+            return `${workerOrigin}/api/m3u8?url=${encodeURIComponent(fullChildUrl)}&referer=${encodeURIComponent(referer)}`;
+          });
+          return new Response(rewrittenMaster, {
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/vnd.apple.mpegurl; charset=utf-8",
+              "Cache-Control": "public, max-age=3600"
+            }
+          });
+        }
+
+        // If Child M3U8 Playlist (contains segment .ts, .jpg, .html, .png files)
+        const rewrittenChild = m3u8Text.replace(/^([^#\s\r\n]+)/gm, (line) => {
+          if (!line.trim() || line.startsWith('#')) return line;
+          const fullSegUrl = line.startsWith('http') ? line : (baseUrl + line);
+          return `${workerOrigin}/api/proxy?url=${encodeURIComponent(fullSegUrl)}&referer=${encodeURIComponent(referer)}`;
+        });
+
+        return new Response(rewrittenChild, {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/vnd.apple.mpegurl; charset=utf-8",
+            "Cache-Control": "public, max-age=3600"
+          }
+        });
+      }
+
+      // 5. Segment Proxy Route: /api/proxy?url={targetUrl}&referer={referer}
+      if (pathname === "/api/proxy" || pathname === "/proxy") {
+        const targetUrl = url.searchParams.get("url");
+        const referer = url.searchParams.get("referer") || "https://megaplay.buzz/";
+        if (!targetUrl) return new Response("Missing target url", { status: 400, headers: corsHeaders });
+
+        const res = await fetch(targetUrl, {
+          headers: {
+            "Referer": referer,
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+          }
+        });
+
+        return new Response(res.body, {
+          status: res.status,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": res.headers.get("content-type") || "video/mp2t",
+            "Cache-Control": "public, max-age=86400"
+          }
+        });
+      }
+
+      // 6. Stream Endpoint: /api/stream?url={url} OR ?session={epSession}
       if (pathname === "/api/stream") {
         const targetUrl = url.searchParams.get("url");
         const epSession = url.searchParams.get("session") || url.searchParams.get("id");
@@ -613,32 +691,39 @@ export default {
 
           if (megaSubRes.status === "fulfilled" && megaSubRes.value) {
             const s = megaSubRes.value;
-            streams.push({ title: "Megaplay SUB (1080p HD)", streamUrl: s.streamUrl, headers: s.headers });
+            const proxiedM3u8Url = `${workerOrigin}/api/m3u8?url=${encodeURIComponent(s.streamUrl)}&referer=${encodeURIComponent("https://megaplay.buzz/")}`;
+            streams.push({ title: "Megaplay SUB (1080p HD)", streamUrl: proxiedM3u8Url, url: proxiedM3u8Url, headers: { Referer: "https://megaplay.buzz/" } });
             if (!subtitles && s.subtitles) { subtitles = s.subtitles; subtitlesHeaders = s.subtitlesHeaders; }
             if (s.allSubtitles?.length) allSubtitles.push(...s.allSubtitles);
           }
           if (megaDubRes.status === "fulfilled" && megaDubRes.value) {
             const s = megaDubRes.value;
-            streams.push({ title: "Megaplay DUB (1080p HD)", streamUrl: s.streamUrl, headers: s.headers });
+            const proxiedM3u8Url = `${workerOrigin}/api/m3u8?url=${encodeURIComponent(s.streamUrl)}&referer=${encodeURIComponent("https://megaplay.buzz/")}`;
+            streams.push({ title: "Megaplay DUB (1080p HD)", streamUrl: proxiedM3u8Url, url: proxiedM3u8Url, headers: { Referer: "https://megaplay.buzz/" } });
             if (!subtitles && s.subtitles) { subtitles = s.subtitles; subtitlesHeaders = s.subtitlesHeaders; }
             if (s.allSubtitles?.length) allSubtitles.push(...s.allSubtitles);
           }
 
           if (vidSubRes.status === "fulfilled" && vidSubRes.value) {
             const s = vidSubRes.value;
-            streams.push({ title: "Vidplay SUB (1080p HD)", streamUrl: s.streamUrl, headers: s.headers });
+            const proxiedM3u8Url = `${workerOrigin}/api/m3u8?url=${encodeURIComponent(s.streamUrl)}&referer=${encodeURIComponent("https://vidwish.live/")}`;
+            streams.push({ title: "Vidplay SUB (1080p HD)", streamUrl: proxiedM3u8Url, url: proxiedM3u8Url, headers: { Referer: "https://vidwish.live/" } });
             if (!subtitles && s.subtitles) { subtitles = s.subtitles; subtitlesHeaders = s.subtitlesHeaders; }
             if (s.allSubtitles?.length) allSubtitles.push(...s.allSubtitles);
           }
           if (vidDubRes.status === "fulfilled" && vidDubRes.value) {
             const s = vidDubRes.value;
-            streams.push({ title: "Vidplay DUB (1080p HD)", streamUrl: s.streamUrl, headers: s.headers });
+            const proxiedM3u8Url = `${workerOrigin}/api/m3u8?url=${encodeURIComponent(s.streamUrl)}&referer=${encodeURIComponent("https://vidwish.live/")}`;
+            streams.push({ title: "Vidplay DUB (1080p HD)", streamUrl: proxiedM3u8Url, url: proxiedM3u8Url, headers: { Referer: "https://vidwish.live/" } });
             if (!subtitles && s.subtitles) { subtitles = s.subtitles; subtitlesHeaders = s.subtitlesHeaders; }
             if (s.allSubtitles?.length) allSubtitles.push(...s.allSubtitles);
           }
 
           if (kiwiRes.status === "fulfilled" && kiwiRes.value) {
-            streams.push(...kiwiRes.value);
+            kiwiRes.value.forEach(s => {
+              const proxiedM3u8Url = `${workerOrigin}/api/m3u8?url=${encodeURIComponent(s.streamUrl)}&referer=${encodeURIComponent("https://kwik.cx/")}`;
+              streams.push({ title: s.title, streamUrl: proxiedM3u8Url, url: proxiedM3u8Url, headers: { Referer: "https://kwik.cx/" } });
+            });
           }
         }
 
@@ -684,29 +769,6 @@ export default {
 
         return new Response(JSON.stringify({ streams, subtitles, subtitlesHeaders, allSubtitles }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" }
-        });
-      }
-
-      // 5. Proxy Fallback Route: /api/proxy?url={targetUrl}
-      if (pathname === "/api/proxy" || pathname === "/proxy") {
-        const targetUrl = url.searchParams.get("url");
-        const referer = url.searchParams.get("referer") || "https://megaplay.buzz/";
-        if (!targetUrl) return new Response("Missing target url", { status: 400, headers: corsHeaders });
-
-        const res = await fetch(targetUrl, {
-          headers: {
-            "Referer": referer,
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-          }
-        });
-
-        return new Response(res.body, {
-          status: res.status,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": res.headers.get("content-type") || "application/octet-stream",
-            "Cache-Control": "public, max-age=86400"
-          }
         });
       }
 
