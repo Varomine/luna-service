@@ -60,7 +60,7 @@ async function searchResults(keyword) {
 
         while ((match = cardRegex.exec(html)) !== null) {
             const content = match[1];
-            const linkMatch = content.match(/href="(https:\/\/www\.alpha-hen\.com\/[^"]+)"/i);
+            const linkMatch = content.match(/href="(https:\/\/www\.alpha-hen\.com\/[a-z0-9\-]+\/)"/i);
             if (!linkMatch) continue;
 
             const href = linkMatch[1];
@@ -70,10 +70,11 @@ async function searchResults(keyword) {
                                content.match(/<h\d[^>]*>([\s\S]*?)<\/h\d>/i);
             let title = "Untitled";
             if (titleMatch) {
-                title = titleMatch[1].replace(/<[^>]+>/g, '').trim();
+                title = titleMatch[1].replace(/<[^>]+>/g, '').replace(/^Hentai/i, '').trim();
             }
 
-            const imgMatch = content.match(/srcset="([^"]+)"/i) || content.match(/src="([^"]+)"/i) || content.match(/data-src="([^"]+)"/i);
+            const imgMatch = content.match(/src="(https:\/\/www\.alpha-hen\.com\/wp-content\/uploads\/[^"]+)"/i) ||
+                             content.match(/srcset="([^"]+)"/i);
             let image = "";
             if (imgMatch) {
                 const rawImg = imgMatch[1].split(',')[0].split(' ')[0];
