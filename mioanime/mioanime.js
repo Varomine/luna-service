@@ -2,8 +2,10 @@
  * MioAnime Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://www.mioanime.com/ (https://www.mioanime.net/)
- * Pure Client-Side Implementation (No Cloudflare Worker Required)
+ * Powered by Dedicated Cloudflare Worker Stream Proxy
  */
+
+const PROXY_WORKER = "https://mioanime-worker.sapis.workers.dev/api/m3u8?url=";
 
 const DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
@@ -157,7 +159,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (JuicyCodes & Master/Sub Playlist Resolution) ───
+// ─── Extract Stream URL (Cloudflare Proxy Resolution) ───
 async function extractStreamUrl(url) {
     try {
         const pageHtml = await httpGet(url, DEFAULT_HEADERS);
@@ -216,50 +218,17 @@ async function extractStreamUrl(url) {
 
         const masterUrls = [...new Set([...playlistMatches, ...m3u8Matches])];
 
-        for (const masterUrl of masterUrls) {
-            // Fetch master playlist to parse direct sub-playlist URLs (e.g. 1080p)
-            const masterText = await httpGet(masterUrl, DEFAULT_HEADERS);
-
-            if (masterText && masterText.includes('#EXTM3U')) {
-                try {
-                    const origin = new URL(masterUrl).origin;
-                    const lines = masterText.split('\n');
-                    let currentRes = "1080p";
-
-                    for (let i = 0; i < lines.length; i++) {
-                        const line = lines[i].trim();
-                        if (line.startsWith('#EXT-X-STREAM-INF:')) {
-                            const resMatch = line.match(/RESOLUTION=\d+x(\d+)/i);
-                            if (resMatch) currentRes = `${resMatch[1]}p`;
-                        } else if (line.startsWith('/hls/') || line.endsWith('.m3u8')) {
-                            const subUrl = line.startsWith('http') ? line : (origin + line);
-                            streams.push({
-                                title: `MioAnime (${currentRes})`,
-                                streamUrl: subUrl,
-                                url: subUrl,
-                                headers: {
-                                    "Referer": "https://www.mioanime.net/",
-                                    "User-Agent": DEFAULT_HEADERS["User-Agent"]
-                                }
-                            });
-                        }
-                    }
-                } catch (e) {
-                    console.error("[MioAnime] Error parsing sub-playlist: " + e.message);
-                }
-            }
-
-            // Always add master playlist URL as fallback
+        masterUrls.forEach((masterUrl, idx) => {
+            const proxiedUrl = `${PROXY_WORKER}${encodeURIComponent(masterUrl)}`;
             streams.push({
-                title: `MioAnime (Master HLS)`,
-                streamUrl: masterUrl,
-                url: masterUrl,
+                title: `MioAnime (1080p Proxy)`,
+                streamUrl: proxiedUrl,
+                url: proxiedUrl,
                 headers: {
-                    "Referer": "https://www.mioanime.net/",
                     "User-Agent": DEFAULT_HEADERS["User-Agent"]
                 }
             });
-        }
+        });
 
         return JSON.stringify({ streams, subtitle: "" });
     } catch (error) {
