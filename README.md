@@ -4,7 +4,7 @@ Collection of high-performance extension modules for **Luna** and **Sora** anime
 
 ## 📦 Available Modules
 
-- [037AM Module](./037am/) — Thai Anime Provider (`https://037am.com/`)
+- [Alpha-Hen Module](./alpha-hen/) — Thai Anime Provider (`https://alpha-hen.com/`)
 - [AnimeRuka Module](./animeruka/) — Thai Anime Provider (`https://animeruka.com/`)
 - [Hanime Module](./hanime/) — HAnime Provider (`https://hanime.tv/`)
 
@@ -12,9 +12,9 @@ Collection of high-performance extension modules for **Luna** and **Sora** anime
 
 ## 📲 Quick Import Links
 
-### 037AM Module
+### Alphe-Hen Module
 ```
-https://raw.githubusercontent.com/Varomine/luna-service/main/037am/037am.json
+https://raw.githubusercontent.com/Varomine/luna-service/refs/heads/main/alpha-hen/alpha-hen.json
 ```
 
 ### AnimeRuka Module
