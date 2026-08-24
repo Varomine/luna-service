@@ -2,7 +2,7 @@
  * Anifume Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://anifume.com/
- * Reference Architecture: Luna Sources (AnimePahe / VidEasy)
+ * Specification: https://soradocs.readthedocs.io/en/latest/files/asnycjsmode.html
  */
 
 async function soraFetch(url, options = { headers: {}, method: 'GET', body: null }) {
@@ -157,12 +157,12 @@ async function extractStreamUrl(url) {
                 "Referer": "https://anifume.com/"
             }
         });
-        if (!response) return JSON.stringify({ streams: [], subtitle: "" });
+        if (!response) return JSON.stringify({ streams: [], url: "", subtitle: "" });
         const epHtml = await response.text();
-        if (!epHtml) return JSON.stringify({ streams: [], subtitle: "" });
+        if (!epHtml) return JSON.stringify({ streams: [], url: "", subtitle: "" });
 
         const ajaxMatches = [...epHtml.matchAll(/url:\s*["']([^"']+)["']/gi)].map(m => m[1]);
-        if (ajaxMatches.length === 0) return JSON.stringify({ streams: [], subtitle: "" });
+        if (ajaxMatches.length === 0) return JSON.stringify({ streams: [], url: "", subtitle: "" });
 
         const streams = [];
 
@@ -211,6 +211,9 @@ async function extractStreamUrl(url) {
                             streams.push({
                                 title: `[${serverName}] ${label}`,
                                 streamUrl: src.file,
+                                url: src.file,
+                                file: src.file,
+                                link: src.file,
                                 headers: {
                                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
                                     "Referer": "https://anifume.com/"
@@ -230,6 +233,9 @@ async function extractStreamUrl(url) {
                     streams.push({
                         title: `[${serverName}] ${label}`,
                         streamUrl: mp4Url,
+                        url: mp4Url,
+                        file: mp4Url,
+                        link: mp4Url,
                         headers: {
                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
                             "Referer": "https://anifume.com/"
@@ -239,12 +245,16 @@ async function extractStreamUrl(url) {
             }
         }
 
+        const primaryUrl = streams.length > 0 ? streams[0].streamUrl : "";
+
         return JSON.stringify({
             streams: streams,
+            url: primaryUrl,
+            streamUrl: primaryUrl,
             subtitle: ""
         });
     } catch (error) {
         console.error("[Anifume] extractStreamUrl error: " + error.message);
-        return JSON.stringify({ streams: [], subtitle: "" });
+        return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
     }
 }
