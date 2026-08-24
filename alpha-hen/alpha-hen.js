@@ -2,10 +2,8 @@
  * Alpha-Hen Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://www.alpha-hen.com/
- * Cloudflare Worker API: https://alpha-hen-worker.sapis.workers.dev
+ * Pure Client-Side Implementation (No Cloudflare Worker Required)
  */
-
-const WORKER_BASE = "https://alpha-hen-worker.sapis.workers.dev";
 
 const DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
@@ -37,19 +35,6 @@ async function httpGet(url, headers = DEFAULT_HEADERS) {
 async function searchResults(keyword) {
     try {
         const query = keyword ? keyword.trim() : "";
-        const apiUrl = `${WORKER_BASE}/api/search?q=${encodeURIComponent(query)}`;
-        const jsonText = await httpGet(apiUrl);
-
-        if (jsonText) {
-            try {
-                const items = JSON.parse(jsonText);
-                if (Array.isArray(items) && items.length > 0) {
-                    return JSON.stringify(items);
-                }
-            } catch (e) {}
-        }
-
-        // Direct Fallback Search
         const targetUrl = query !== "" ? `https://www.alpha-hen.com/?s=${encodeURIComponent(query)}` : "https://www.alpha-hen.com/";
         const html = await httpGet(targetUrl);
         if (!html) return JSON.stringify([]);
@@ -94,20 +79,8 @@ async function searchResults(keyword) {
 // ─── Extract Details ───
 async function extractDetails(url) {
     try {
-        const apiUrl = `${WORKER_BASE}/api/details?url=${encodeURIComponent(url)}`;
-        const jsonText = await httpGet(apiUrl);
-
-        if (jsonText) {
-            try {
-                const details = JSON.parse(jsonText);
-                if (Array.isArray(details) && details.length > 0) {
-                    return JSON.stringify(details);
-                }
-            } catch (e) {}
-        }
-
-        // Direct Fallback Details
-        const html = await httpGet(url.split("?")[0]);
+        const targetUrl = url.split("?")[0];
+        const html = await httpGet(targetUrl);
         if (!html) {
             return JSON.stringify([{ description: "No details available.", aliases: "Alpha-Hen", airdate: "N/A" }]);
         }
@@ -132,19 +105,6 @@ async function extractDetails(url) {
 // ─── Extract Episodes ───
 async function extractEpisodes(url) {
     try {
-        const apiUrl = `${WORKER_BASE}/api/episodes?url=${encodeURIComponent(url)}`;
-        const jsonText = await httpGet(apiUrl);
-
-        if (jsonText) {
-            try {
-                const epList = JSON.parse(jsonText);
-                if (Array.isArray(epList) && epList.length > 0) {
-                    return JSON.stringify(epList);
-                }
-            } catch (e) {}
-        }
-
-        // Direct Fallback Episodes
         const baseUrl = url.split("?")[0];
         const html = await httpGet(baseUrl);
         if (!html) return JSON.stringify([{ href: baseUrl, number: 1, title: "Episode 1" }]);
@@ -181,30 +141,94 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL ───
+// ─── Extract Stream URL (Direct Extraction) ───
 async function extractStreamUrl(url) {
     try {
-        const apiUrl = `${WORKER_BASE}/api/stream?url=${encodeURIComponent(url)}`;
-        const jsonText = await httpGet(apiUrl);
+        const pageHtml = await httpGet(url, {
+            "User-Agent": DEFAULT_HEADERS["User-Agent"],
+            "Referer": "https://www.alpha-hen.com/"
+        });
 
-        if (jsonText) {
-            try {
-                const streamData = JSON.parse(jsonText);
-                if (streamData && streamData.streams && streamData.streams.length > 0) {
-                    return JSON.stringify(streamData);
+        if (!pageHtml) return JSON.stringify({ streams: [], subtitle: "" });
+
+        const iframeMatch = pageHtml.match(/<iframe[^>]+src="(https:\/\/www\.alpha-hen\.com\/watch_video\/[^"]+)"/i);
+        if (!iframeMatch) return JSON.stringify({ streams: [], subtitle: "" });
+
+        const embedWatchUrl = iframeMatch[1];
+        const embedHtml = await httpGet(embedWatchUrl, {
+            "User-Agent": DEFAULT_HEADERS["User-Agent"],
+            "Referer": "https://www.alpha-hen.com/"
+        });
+
+        if (!embedHtml) return JSON.stringify({ streams: [], subtitle: "" });
+
+        const redirectMatch = embedHtml.match(/location\.replace\s*\(\s*["']([^"']+)["']\s*\)/i) ||
+                              embedHtml.match(/src=["'](https:\/\/[^"']*qqstream[^"']+)["']/i);
+
+        if (!redirectMatch) return JSON.stringify({ streams: [], subtitle: "" });
+
+        const qqstreamUrl = redirectMatch[1];
+        const qqHtml = await httpGet(qqstreamUrl, {
+            "User-Agent": DEFAULT_HEADERS["User-Agent"],
+            "Referer": "https://www.alpha-hen.com/"
+        });
+
+        if (!qqHtml) return JSON.stringify({ streams: [], subtitle: "" });
+
+        const flowerMatch = qqHtml.match(/https?:\/\/[^\s'"<>]+\/flower\.txt/i) ||
+                            qqHtml.match(/file['"]\s*:\s*['"](https?:\/\/[^'"]+)['"]/i);
+
+        if (!flowerMatch) return JSON.stringify({ streams: [], subtitle: "" });
+
+        const flowerUrl = flowerMatch[1] || flowerMatch[0];
+        const flowerText = await httpGet(flowerUrl, {
+            "User-Agent": DEFAULT_HEADERS["User-Agent"],
+            "Referer": "https://qqstream.stream-aph.xyz/"
+        });
+
+        const streams = [];
+
+        if (flowerText && flowerText.includes("#EXTM3U")) {
+            const baseUrl = flowerUrl.substring(0, flowerUrl.lastIndexOf('/') + 1);
+            const lines = flowerText.split('\n');
+
+            let currentRes = "HD";
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line.startsWith('#EXT-X-STREAM-INF:')) {
+                    const resMatch = line.match(/RESOLUTION=\d+x(\d+)/i);
+                    if (resMatch) currentRes = `${resMatch[1]}p`;
+                } else if (line.endsWith('.m3u8')) {
+                    const streamUrl = line.startsWith('http') ? line : (baseUrl + line);
+                    streams.push({
+                        title: `Alpha-Hen (${currentRes})`,
+                        streamUrl: streamUrl,
+                        url: streamUrl,
+                        headers: {
+                            "Referer": "https://qqstream.stream-aph.xyz/",
+                            "User-Agent": DEFAULT_HEADERS["User-Agent"]
+                        }
+                    });
                 }
-            } catch (e) {}
+            }
         }
 
-        return JSON.stringify({
-            streams: [],
-            subtitle: ""
-        });
+        // Fallback if flower.txt parsing returns empty array
+        if (streams.length === 0 && flowerUrl) {
+            streams.push({
+                title: "Alpha-Hen (Master HLS)",
+                streamUrl: flowerUrl,
+                url: flowerUrl,
+                headers: {
+                    "Referer": "https://qqstream.stream-aph.xyz/",
+                    "User-Agent": DEFAULT_HEADERS["User-Agent"]
+                }
+            });
+        }
+
+        return JSON.stringify({ streams, subtitle: "" });
     } catch (error) {
         console.error("[Alpha-Hen] extractStreamUrl error: " + error.message);
-        return JSON.stringify({
-            streams: [],
-            subtitle: ""
-        });
+        return JSON.stringify({ streams: [], subtitle: "" });
     }
 }
