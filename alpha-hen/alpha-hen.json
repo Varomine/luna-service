@@ -1,9 +1,9 @@
 {
   "sourceName": "Alpha-Hen",
   "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/alpha-hen/alpha-hen.js",
-  "iconUrl": "https://www.alpha-hen.com/wp-content/uploads/2022/02/favicon.png",
+  "iconUrl": "https://www.alpha-hen.com/wp-content/uploads/2022/04/cropped-icon-192x192.png",
   "version": "1.0.0",
   "author": "Varomine",
   "supportsLuna": true,
-  "description": "Alpha-Hen (Uncensored Hentai Subthai) extension powered by Cloudflare Worker API for Luna, Sora, and Dartotsu."
+  "description": "Alpha-Hen (Uncensored Hentai Subthai) extension for Luna, Sora, and Dartotsu."
 }

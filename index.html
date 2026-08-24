@@ -100,7 +100,7 @@
                 <div>
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center space-x-3">
-                            <img src="https://www.alpha-hen.com/wp-content/uploads/2022/02/favicon.png" alt="Alpha-Hen Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700">
+                            <img src="https://www.alpha-hen.com/wp-content/uploads/2022/04/cropped-icon-192x192.png" alt="Alpha-Hen Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700" onerror="this.src='https://www.alpha-hen.com/wp-content/uploads/2018/05/ahlogo-font-NEW-1.png'">
                             <div>
                                 <h3 class="text-lg font-bold text-white leading-snug">Alpha-Hen</h3>
                                 <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
@@ -109,7 +109,7 @@
                         <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-pink-500/10 text-pink-400 border border-pink-500/20">v1.0.0</span>
                     </div>
                     <p class="text-slate-300 text-sm mb-4 leading-relaxed">
-                        Uncensored Hentai Subthai provider for alpha-hen.com with qqstream HLS resolution and Cloudflare Worker referer proxy.
+                        Uncensored Hentai Subthai provider for alpha-hen.com with qqstream HLS resolution and direct client extraction.
                     </p>
                     
                     <div class="flex flex-wrap gap-1.5 mb-6">
@@ -268,19 +268,18 @@
                 toast.classList.add('opacity-100');
 
                 const originalHTML = btnElement.innerHTML;
+                const isPink = btnElement.classList.contains('bg-pink-600');
+
                 btnElement.innerHTML = `<i class="fa-solid fa-check"></i><span>Copied!</span>`;
-                btnElement.classList.replace('bg-indigo-600', 'bg-emerald-600');
-                if (btnElement.classList.contains('bg-pink-600')) {
-                    btnElement.classList.replace('bg-pink-600', 'bg-emerald-600');
-                }
+                btnElement.classList.remove('bg-indigo-600', 'bg-pink-600');
+                btnElement.classList.add('bg-emerald-600');
 
                 setTimeout(() => {
                     toast.classList.remove('opacity-100');
                     toast.classList.add('opacity-0', 'pointer-events-none');
                     btnElement.innerHTML = originalHTML;
-                    if (btnElement.classList.contains('bg-emerald-600')) {
-                        btnElement.classList.replace('bg-emerald-600', 'bg-indigo-600');
-                    }
+                    btnElement.classList.remove('bg-emerald-600');
+                    btnElement.classList.add(isPink ? 'bg-pink-600' : 'bg-indigo-600');
                 }, 2500);
             });
         }
