@@ -24,6 +24,10 @@
             border-color: rgba(99, 102, 241, 0.4);
             box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.2);
         }
+        .glass-modal {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+        }
         select option {
             background-color: #111827;
             color: #f3f4f6;
@@ -80,10 +84,16 @@
                 คอลเลกชันโมดูลส่วนขยายสำหรับ Luna, Sora และแอปสตรีมมิงอนิเมะที่รองรับ (พัฒนาสำหรับชุมชนอนิเมะไทย)
             </p>
 
-            <!-- Search Bar -->
-            <div class="max-w-xl mx-auto relative">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input type="text" id="searchInput" onkeyup="filterModules()" placeholder="ค้นหาโมดูลตามชื่อ, ภาษา, ประเภท..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-3.5 pl-11 pr-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
+            <!-- Search Bar + Request Module Button -->
+            <div class="max-w-3xl mx-auto flex flex-col sm:flex-row items-center gap-3">
+                <div class="relative w-full flex-grow">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="searchInput" onkeyup="filterModules()" placeholder="ค้นหาโมดูลตามชื่อ, ภาษา, ประเภท..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-3.5 pl-11 pr-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
+                </div>
+                <button onclick="openRequestModal()" class="w-full sm:w-auto px-5 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-2xl transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 whitespace-nowrap">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span data-i18n="requestBtn">ขอรีเควสส่วนขยาย</span>
+                </button>
             </div>
         </div>
     </header>
@@ -201,6 +211,53 @@
         </div>
     </main>
 
+    <!-- Request Module Popup Modal -->
+    <div id="requestModal" onclick="handleBackdropClick(event)" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div id="modalCard" class="glass-modal bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative transform scale-95 transition-all duration-300">
+            <!-- Close Button -->
+            <button onclick="closeRequestModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white transition w-8 h-8 rounded-full flex items-center justify-center bg-slate-800/50 hover:bg-slate-800">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-white" data-i18n="modalTitle">ขอรีเควสส่วนขยายใหม่</h3>
+                    <p class="text-xs text-slate-400" data-i18n="modalSub">ระบุเว็บไซต์และเหตุผลเพื่อขอสร้างโมดูลส่วนขยาย</p>
+                </div>
+            </div>
+
+            <form id="requestForm" onsubmit="submitRequest(event)" class="space-y-4">
+                <!-- Site Field -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                        <span data-i18n="labelSite">เว็บไซต์ / URL ที่ต้องการ</span> <span class="text-rose-400">*</span>
+                    </label>
+                    <input type="url" id="reqSite" required placeholder="https://example.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
+                </div>
+
+                <!-- Reason Field -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                        <span data-i18n="labelReason">เหตุผล / รายละเอียดการรีเควส</span> <span class="text-rose-400">*</span>
+                    </label>
+                    <textarea id="reqReason" required rows="4" placeholder="ระบุเหตุผลหรือรายละเอียดที่ต้องการให้ออกแบบโมดูล..." class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition resize-none"></textarea>
+                </div>
+
+                <!-- Submit & Cancel Buttons -->
+                <div class="pt-2 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeRequestModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition" data-i18n="cancelBtn">ยกเลิก</button>
+                    <button type="submit" id="submitReqBtn" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition flex items-center gap-2 shadow-lg shadow-indigo-600/20">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span data-i18n="submitBtn">ส่งคำขอรีเควส</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 border border-emerald-500/40 text-slate-100 px-5 py-3 rounded-2xl shadow-2xl transition duration-300 opacity-0 pointer-events-none flex items-center space-x-3 z-50">
         <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
@@ -218,6 +275,8 @@
     </footer>
 
     <script>
+        const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1059125895132094545/qs3BvOZlFighFSiHl9SYYEZEuBNhCMZM7Vzya8v6HUYRnw6oCv79xJhFhODeOg4BvJNw";
+
         const i18n = {
             th: {
                 testflightBtn: "ดาวน์โหลด Luna (TestFlight)",
@@ -225,6 +284,7 @@
                 heroTitle: "Luna Extension Service",
                 heroDesc: "คอลเลกชันโมดูลส่วนขยายสำหรับ Luna, Sora และแอปสตรีมมิงอนิเมะที่รองรับ (พัฒนาสำหรับชุมชนอนิเมะไทย)",
                 searchPlaceholder: "ค้นหาโมดูลตามชื่อ, ภาษา, ประเภท...",
+                requestBtn: "ขอรีเควสส่วนขยาย",
                 availableModules: "โมดูลที่พร้อมใช้งาน",
                 alphaDesc: "โมดูล Hentai Uncensored ซับไทย สำหรับ alpha-hen.com พร้อมระบบดึงสตรีม HLS คุณภาพสูง",
                 rukaDesc: "โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ animeruka.com ดึงสตรีมมัลติเซิร์ฟเวอร์ (AnimeMami & Abyss Player)",
@@ -232,7 +292,18 @@
                 copyBtn: "คัดลอก Manifest URL",
                 copiedBtn: "คัดลอกสำเร็จ!",
                 toastTitle: "คัดลอกลงคลิปบอร์ดแล้ว!",
-                toastSub: "นำ URL นี้ไปวางในเมนูตั้งค่าโมดูลของแอป Luna"
+                toastSub: "นำ URL นี้ไปวางในเมนูตั้งค่าโมดูลของแอป Luna",
+                modalTitle: "ขอรีเควสส่วนขยายใหม่",
+                modalSub: "ระบุเว็บไซต์และเหตุผลเพื่อขอสร้างโมดูลส่วนขยาย",
+                labelSite: "เว็บไซต์ / URL ที่ต้องการ",
+                labelReason: "เหตุผล / รายละเอียดการรีเควส",
+                sitePlaceholder: "https://example.com",
+                reasonPlaceholder: "ระบุเหตุผลหรือรายละเอียดที่ต้องการให้ออกแบบโมดูล...",
+                cancelBtn: "ยกเลิก",
+                submitBtn: "ส่งคำขอรีเควส",
+                submittingBtn: "กำลังส่ง...",
+                toastReqSuccessTitle: "ส่งคำขอรีเควสสำเร็จ!",
+                toastReqSuccessSub: "เราได้รับคำขอรีเควสส่วนขยายของคุณเรียบร้อยแล้ว"
             },
             en: {
                 testflightBtn: "Luna TestFlight",
@@ -240,6 +311,7 @@
                 heroTitle: "Luna Extension Service",
                 heroDesc: "Collection of high-performance provider extension modules for Luna, Sora, and compatible anime streaming apps.",
                 searchPlaceholder: "Search modules by name, language, type, or tag...",
+                requestBtn: "Request Module",
                 availableModules: "Available Modules",
                 alphaDesc: "Uncensored Hentai Subthai provider for alpha-hen.com with direct HLS stream extraction.",
                 rukaDesc: "Thai anime provider for animeruka.com featuring multi-server DooPlayer stream extraction.",
@@ -247,7 +319,18 @@
                 copyBtn: "Copy Manifest URL",
                 copiedBtn: "Copied!",
                 toastTitle: "Copied to Clipboard!",
-                toastSub: "Paste this URL into Luna app settings."
+                toastSub: "Paste this URL into Luna app settings.",
+                modalTitle: "Request New Extension Module",
+                modalSub: "Enter site URL and reason to request a new provider module.",
+                labelSite: "Target Website / URL",
+                labelReason: "Reason / Request Details",
+                sitePlaceholder: "https://example.com",
+                reasonPlaceholder: "Enter reason or details for requesting this module...",
+                cancelBtn: "Cancel",
+                submitBtn: "Submit Request",
+                submittingBtn: "Submitting...",
+                toastReqSuccessTitle: "Request Submitted!",
+                toastReqSuccessSub: "We have received your extension module request."
             }
         };
 
@@ -265,6 +348,12 @@
 
             const searchInput = document.getElementById('searchInput');
             if (searchInput) searchInput.placeholder = dict.searchPlaceholder;
+
+            const reqSite = document.getElementById('reqSite');
+            if (reqSite) reqSite.placeholder = dict.sitePlaceholder;
+
+            const reqReason = document.getElementById('reqReason');
+            if (reqReason) reqReason.placeholder = dict.reasonPlaceholder;
 
             document.getElementById('toastTitle').textContent = dict.toastTitle;
             document.getElementById('toastSub').textContent = dict.toastSub;
@@ -309,6 +398,96 @@
                     btnElement.classList.add('bg-indigo-600');
                 }, 2500);
             });
+        }
+
+        // --- Modal Popup Handlers ---
+        function openRequestModal() {
+            const modal = document.getElementById('requestModal');
+            const card = document.getElementById('modalCard');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.classList.add('opacity-100');
+            card.classList.remove('scale-95');
+            card.classList.add('scale-100');
+        }
+
+        function closeRequestModal() {
+            const modal = document.getElementById('requestModal');
+            const card = document.getElementById('modalCard');
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-95');
+        }
+
+        function handleBackdropClick(event) {
+            if (event.target.id === 'requestModal') {
+                closeRequestModal();
+            }
+        }
+
+        async function submitRequest(event) {
+            event.preventDefault();
+            const dict = i18n[currentLang] || i18n.th;
+
+            const site = document.getElementById('reqSite').value.trim();
+            const reason = document.getElementById('reqReason').value.trim();
+            if (!site || !reason) return;
+
+            const submitBtn = document.getElementById('submitReqBtn');
+            const originalBtnHTML = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>${dict.submittingBtn}</span>`;
+
+            const embedPayload = {
+                embeds: [
+                    {
+                        title: "📥 New Extension Module Request",
+                        color: 6381811,
+                        fields: [
+                            { name: "🌐 Target Website / URL", value: site, inline: false },
+                            { name: "📝 Reason / Details", value: reason, inline: false }
+                        ],
+                        footer: { text: "Luna Extension Service • User Request System" },
+                        timestamp: new Date().toISOString()
+                    }
+                ]
+            };
+
+            try {
+                const res = await fetch(DISCORD_WEBHOOK_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(embedPayload)
+                });
+
+                if (res.ok || res.status === 204) {
+                    closeRequestModal();
+                    document.getElementById('requestForm').reset();
+
+                    // Show Success Toast
+                    document.getElementById('toastTitle').textContent = dict.toastReqSuccessTitle;
+                    document.getElementById('toastSub').textContent = dict.toastReqSuccessSub;
+
+                    const toast = document.getElementById('toast');
+                    toast.classList.remove('opacity-0', 'pointer-events-none');
+                    toast.classList.add('opacity-100');
+
+                    setTimeout(() => {
+                        toast.classList.remove('opacity-100');
+                        toast.classList.add('opacity-0', 'pointer-events-none');
+                        document.getElementById('toastTitle').textContent = dict.toastTitle;
+                        document.getElementById('toastSub').textContent = dict.toastSub;
+                    }, 3500);
+                } else {
+                    alert("Failed to send request. Please try again.");
+                }
+            } catch (err) {
+                console.error("Webhook submit error:", err);
+                alert("Error sending request: " + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHTML;
+            }
         }
 
         // Initialize default language (Thai)
