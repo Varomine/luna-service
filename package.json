@@ -1,0 +1,10 @@
+{
+  "name": "luna-service",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "npx wrangler dev --cwd anikoto",
+    "dev:anikoto": "npx wrangler dev --cwd anikoto",
+    "dev:animeruka": "npx wrangler dev --cwd animeruka",
+    "dev:037am": "npx wrangler dev --cwd 037am"
+  }
+}

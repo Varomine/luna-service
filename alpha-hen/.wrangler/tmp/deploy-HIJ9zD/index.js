@@ -1,187 +1,139 @@
-/**
- * Alpha-Hen Cloudflare Worker API & Resolver
- * Site: https://www.alpha-hen.com/
- * Author: Varomine
- * Deployable on Cloudflare Workers
- */
-
-export default {
+// index.js
+var index_default = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const pathname = url.pathname;
     const acceptHeader = request.headers.get("accept") || "";
     const workerOrigin = url.origin;
-
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
       "Access-Control-Allow-Headers": "*"
     };
-
     if (request.method === "OPTIONS") {
       return new Response(null, { headers: corsHeaders });
     }
-
     try {
-      // 1. Search Route: /api/search?q={query}
       if (pathname === "/api/search") {
         const query = url.searchParams.get("q") || url.searchParams.get("keyword") || "";
         const targetUrl = query.trim() !== "" ? `https://www.alpha-hen.com/?s=${encodeURIComponent(query)}` : "https://www.alpha-hen.com/";
-
         const res = await fetch(targetUrl, {
           headers: {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
           }
         });
-
         if (!res.ok) {
           return new Response(JSON.stringify([]), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
-
         const html = await res.text();
         const results = [];
         const cardRegex = /<article[^>]*>([\s\S]*?)<\/article>/gi;
         let match;
-
         while ((match = cardRegex.exec(html)) !== null) {
           const content = match[1];
           const linkMatch = content.match(/href="(https:\/\/www\.alpha-hen\.com\/[a-z0-9\-]+\/)"/i);
           if (!linkMatch) continue;
-
           const href = linkMatch[1];
-          if (href.includes('/page/') || href.includes('/category/') || href.includes('/watch/')) continue;
-
-          const titleMatch = content.match(/<h2[^>]*class="[^"]*ez-card-title[^"]*"[^>]*>([\s\S]*?)<\/h2>/i) ||
-                             content.match(/<h\d[^>]*>([\s\S]*?)<\/h\d>/i);
+          if (href.includes("/page/") || href.includes("/category/") || href.includes("/watch/")) continue;
+          const titleMatch = content.match(/<h2[^>]*class="[^"]*ez-card-title[^"]*"[^>]*>([\s\S]*?)<\/h2>/i) || content.match(/<h\d[^>]*>([\s\S]*?)<\/h\d>/i);
           let title = "Untitled";
           if (titleMatch) {
-            title = titleMatch[1].replace(/<[^>]+>/g, '').replace(/^Hentai/i, '').trim();
+            title = titleMatch[1].replace(/<[^>]+>/g, "").replace(/^Hentai/i, "").trim();
           }
-
-          const imgMatch = content.match(/src="(https:\/\/www\.alpha-hen\.com\/wp-content\/uploads\/[^"]+)"/i) ||
-                           content.match(/srcset="([^"]+)"/i);
+          const imgMatch = content.match(/src="(https:\/\/www\.alpha-hen\.com\/wp-content\/uploads\/[^"]+)"/i) || content.match(/srcset="([^"]+)"/i);
           let image = "";
           if (imgMatch) {
-            const rawImg = imgMatch[1].split(',')[0].split(' ')[0];
+            const rawImg = imgMatch[1].split(",")[0].split(" ")[0];
             image = rawImg.trim();
           }
-
           results.push({ title, image, href });
         }
-
         return new Response(JSON.stringify(results), {
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
-
-      // 2. Episodes Route: /api/episodes?url={url}
       if (pathname === "/api/episodes") {
         const targetUrl = url.searchParams.get("url");
         if (!targetUrl) return new Response(JSON.stringify([]), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-
         const baseUrl = targetUrl.split("?")[0];
         const res = await fetch(baseUrl, {
           headers: {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
           }
         });
-
         if (!res.ok) {
           return new Response(JSON.stringify([{ href: baseUrl, number: 1, title: "Episode 1" }]), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
-
         const html = await res.text();
         const episodes = [];
-        const seenHrefs = new Set();
+        const seenHrefs = /* @__PURE__ */ new Set();
         const epRegex = /href="(https:\/\/www\.alpha-hen\.com\/watch\/[^"]+)"/gi;
         let match;
-
         while ((match = epRegex.exec(html)) !== null) {
           const epHref = match[1];
           if (seenHrefs.has(epHref)) continue;
           seenHrefs.add(epHref);
-
           const decoded = decodeURIComponent(epHref);
           const numMatch = decoded.match(/ตอนที่\s*(\d+)/i) || decoded.match(/ep\s*(\d+)/i) || decoded.match(/-(\d+)\/?$/);
-          const number = numMatch ? parseInt(numMatch[1], 10) : (episodes.length + 1);
-
+          const number = numMatch ? parseInt(numMatch[1], 10) : episodes.length + 1;
           episodes.push({
             href: epHref,
-            number: isNaN(number) ? (episodes.length + 1) : number,
-            title: `Episode ${isNaN(number) ? (episodes.length + 1) : number}`
+            number: isNaN(number) ? episodes.length + 1 : number,
+            title: `Episode ${isNaN(number) ? episodes.length + 1 : number}`
           });
         }
-
         if (episodes.length === 0) {
           episodes.push({ href: baseUrl, number: 1, title: "Episode 1" });
         }
-
         return new Response(JSON.stringify(episodes), {
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
-
-      // 3. Details Route: /api/details?url={url}
       if (pathname === "/api/details") {
         const targetUrl = url.searchParams.get("url");
         if (!targetUrl) return new Response(JSON.stringify(null), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-
         const res = await fetch(targetUrl.split("?")[0], {
           headers: {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
           }
         });
-
         if (!res.ok) return new Response(JSON.stringify(null), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-
         const html = await res.text();
         const titleMatch = html.match(/<h1[^>]*>([^<]+)<\/h1>/i) || html.match(/<title>([^<]+)<\/title>/i);
-        const title = titleMatch ? titleMatch[1].replace(/Alpha-Hen/gi, '').replace(/[|-]/g, '').trim() : "Alpha-Hen";
-
-        const descMatch = html.match(/<div class="[^"]*entry-content[^"]*">([\s\S]*?)<\/div>/i) ||
-                          html.match(/<meta name="description" content="([^"]+)"/i);
-        const description = descMatch ? descMatch[1].replace(/<[^>]+>/g, '').trim() : "No description available.";
-
+        const title = titleMatch ? titleMatch[1].replace(/Alpha-Hen/gi, "").replace(/[|-]/g, "").trim() : "Alpha-Hen";
+        const descMatch = html.match(/<div class="[^"]*entry-content[^"]*">([\s\S]*?)<\/div>/i) || html.match(/<meta name="description" content="([^"]+)"/i);
+        const description = descMatch ? descMatch[1].replace(/<[^>]+>/g, "").trim() : "No description available.";
         const yearMatch = html.match(/\b(202\d|201\d)\b/);
         const airdate = yearMatch ? yearMatch[1] : "N/A";
-
         return new Response(JSON.stringify([{
-          title: title,
-          description: description,
+          title,
+          description,
           aliases: "Alpha-Hen",
-          airdate: airdate
+          airdate
         }]), {
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
-
-      // 4. M3U8 Proxy & Rewriter Route: /api/m3u8?url={m3u8Url}&referer={referer}
       if (pathname === "/api/m3u8") {
         const targetM3u8Url = url.searchParams.get("url");
         const referer = url.searchParams.get("referer") || "https://qqstream.stream-aph.xyz/";
-
         if (!targetM3u8Url) {
           return new Response("Missing m3u8 url", { status: 400, headers: corsHeaders });
         }
-
         const m3u8Res = await fetch(targetM3u8Url, {
           headers: {
             "Referer": referer,
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
           }
         });
-
         if (!m3u8Res.ok) {
           return new Response(`Failed to fetch M3U8: ${m3u8Res.status}`, { status: m3u8Res.status, headers: corsHeaders });
         }
-
         const m3u8Text = await m3u8Res.text();
-        const baseUrl = targetM3u8Url.substring(0, targetM3u8Url.lastIndexOf('/') + 1);
-
-        // If Master M3U8 Playlist (contains child .m3u8 links)
-        if (m3u8Text.includes('.m3u8')) {
+        const baseUrl = targetM3u8Url.substring(0, targetM3u8Url.lastIndexOf("/") + 1);
+        if (m3u8Text.includes(".m3u8")) {
           const rewrittenMaster = m3u8Text.replace(/^([^#\s\r\n]+\.m3u8[^\s\r\n]*)/gm, (match) => {
-            const fullChildUrl = match.startsWith('http') ? match : (baseUrl + match);
+            const fullChildUrl = match.startsWith("http") ? match : baseUrl + match;
             return `${workerOrigin}/api/m3u8?url=${encodeURIComponent(fullChildUrl)}&referer=${encodeURIComponent(referer)}`;
           });
           return new Response(rewrittenMaster, {
@@ -192,14 +144,11 @@ export default {
             }
           });
         }
-
-        // If Child M3U8 Playlist (contains segment .ts, .png, .jpg, .html files)
         const rewrittenChild = m3u8Text.replace(/^([^#\s\r\n]+)/gm, (line) => {
-          if (!line.trim() || line.startsWith('#')) return line;
-          const fullSegUrl = line.startsWith('http') ? line : (baseUrl + line);
+          if (!line.trim() || line.startsWith("#")) return line;
+          const fullSegUrl = line.startsWith("http") ? line : baseUrl + line;
           return `${workerOrigin}/api/proxy?url=${encodeURIComponent(fullSegUrl)}&referer=${encodeURIComponent(referer)}`;
         });
-
         return new Response(rewrittenChild, {
           headers: {
             ...corsHeaders,
@@ -208,20 +157,16 @@ export default {
           }
         });
       }
-
-      // 5. Segment Proxy Route: /api/proxy?url={targetUrl}&referer={referer}
       if (pathname === "/api/proxy" || pathname === "/proxy") {
         const targetUrl = url.searchParams.get("url");
         const referer = url.searchParams.get("referer") || "https://qqstream.stream-aph.xyz/";
         if (!targetUrl) return new Response("Missing target url", { status: 400, headers: corsHeaders });
-
         const res = await fetch(targetUrl, {
           headers: {
             "Referer": referer,
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
           }
         });
-
         return new Response(res.body, {
           status: res.status,
           headers: {
@@ -231,68 +176,50 @@ export default {
           }
         });
       }
-
-      // 6. Stream Endpoint: /api/stream?url={watchUrl}
       if (pathname === "/api/stream") {
         const pageUrl = url.searchParams.get("url");
         if (!pageUrl) {
           return new Response(JSON.stringify({ streams: [], subtitle: "" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
-
-        // Step 1: Fetch watch page HTML
         const resPage = await fetch(pageUrl, {
           headers: {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
             "Referer": "https://www.alpha-hen.com/"
           }
         });
-
         if (!resPage.ok) {
           return new Response(JSON.stringify({ streams: [], subtitle: "" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
-
         const pageHtml = await resPage.text();
         const iframeMatch = pageHtml.match(/<iframe[^>]+src="(https:\/\/www\.alpha-hen\.com\/watch_video\/[^"]+)"/i);
         const embedWatchUrl = iframeMatch ? iframeMatch[1] : null;
-
         const streams = [];
-
         if (embedWatchUrl) {
-          // Step 2: Fetch watch_video HTML
           const resEmbed = await fetch(embedWatchUrl, {
             headers: {
               "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
               "Referer": "https://www.alpha-hen.com/"
             }
           });
-
           if (resEmbed.ok) {
             const embedHtml = await resEmbed.text();
-            const redirectMatch = embedHtml.match(/location\.replace\s*\(\s*["']([^"']+)["']\s*\)/i) ||
-                                  embedHtml.match(/src=["'](https:\/\/[^"']*qqstream[^"']+)["']/i);
-
+            const redirectMatch = embedHtml.match(/location\.replace\s*\(\s*["']([^"']+)["']\s*\)/i) || embedHtml.match(/src=["'](https:\/\/[^"']*qqstream[^"']+)["']/i);
             const qqstreamUrl = redirectMatch ? redirectMatch[1] : null;
-
             if (qqstreamUrl) {
-              // Step 3: Fetch qqstream HTML
               const resQq = await fetch(qqstreamUrl, {
                 headers: {
                   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
                   "Referer": "https://www.alpha-hen.com/"
                 }
               });
-
               if (resQq.ok) {
                 const qqHtml = await resQq.text();
-                const flowerMatch = qqHtml.match(/https?:\/\/[^\s'"<>]+\/flower\.txt/i) ||
-                                    qqHtml.match(/file['"]\s*:\s*['"](https?:\/\/[^'"]+)['"]/i);
-
+                const flowerMatch = qqHtml.match(/https?:\/\/[^\s'"<>]+\/flower\.txt/i) || qqHtml.match(/file['"]\s*:\s*['"](https?:\/\/[^'"]+)['"]/i);
                 if (flowerMatch) {
                   const flowerUrl = flowerMatch[1] || flowerMatch[0];
                   const masterHlsUrl = `${workerOrigin}/api/m3u8?url=${encodeURIComponent(flowerUrl)}&referer=${encodeURIComponent("https://qqstream.stream-aph.xyz/")}`;
-
                   streams.push({
-                    title: "Alpha-Hen • Server 1 (1080p HD)",
+                    title: "Alpha-Hen \u2022 Server 1 (1080p HD)",
                     streamUrl: masterHlsUrl,
                     url: masterHlsUrl,
                     headers: {
@@ -305,8 +232,6 @@ export default {
             }
           }
         }
-
-        // HTML Browser player fallback if requested directly in web browser
         if (acceptHeader.includes("text/html") && !url.searchParams.has("raw")) {
           const primaryStream = streams.length > 0 ? streams[0].streamUrl : "";
           const htmlPlayer = `<!DOCTYPE html>
@@ -315,7 +240,7 @@ export default {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alpha-Hen Stream Player</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"><\/script>
     <style>
         body { margin: 0; padding: 0; background-color: #0b0f19; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; color: #fff; }
         .player-container { width: 100%; max-width: 1100px; padding: 1rem; box-sizing: border-box; }
@@ -325,7 +250,7 @@ export default {
 </head>
 <body>
     <div class="player-container">
-        <div class="title">🔞 Alpha-Hen High-Performance HLS Player</div>
+        <div class="title">\u{1F51E} Alpha-Hen High-Performance HLS Player</div>
         <video id="video" controls autoplay crossorigin></video>
     </div>
     <script>
@@ -340,25 +265,22 @@ export default {
             video.src = sourceUrl;
             video.play();
         }
-    </script>
+    <\/script>
 </body>
 </html>`;
           return new Response(htmlPlayer, { headers: { "Content-Type": "text/html; charset=utf-8" } });
         }
-
         return new Response(JSON.stringify({ streams, subtitle: "" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
-
-      // Root Docs & Interactive API Playground Page
       const docsHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alpha-Hen Worker API Documentation</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"><\/script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body { background-color: #0b0f19; color: #f3f4f6; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
@@ -492,13 +414,16 @@ export default {
             document.execCommand('copy');
             alert('Luna Manifest URL copied to clipboard!');
         }
-    </script>
+    <\/script>
 </body>
 </html>`;
-
       return new Response(docsHtml, { headers: { "Content-Type": "text/html; charset=utf-8" } });
     } catch (err) {
       return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
   }
 };
+export {
+  index_default as default
+};
+//# sourceMappingURL=index.js.map
