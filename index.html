@@ -105,12 +105,44 @@
             <h2 class="text-xl font-bold text-white flex items-center gap-2">
                 <i class="fa-solid fa-cubes text-indigo-400"></i>
                 <span data-i18n="availableModules">โมดูลที่พร้อมใช้งาน</span>
-                <span id="moduleCount" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">3</span>
+                <span id="moduleCount" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">4</span>
             </h2>
         </div>
 
         <!-- Modules Container -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="modulesGrid">
+
+            <!-- MioAnime Module Card -->
+            <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="mioanime thai anime dub sub hls 1080p">
+                <div>
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <img src="https://www.mioanime.net/icon/favicon.png" alt="MioAnime Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700">
+                            <div>
+                                <h3 class="text-lg font-bold text-white leading-snug">MioAnime</h3>
+                                <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.0.0</span>
+                    </div>
+                    <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="mioDesc">
+                        โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ mioanime.com ดึงสตรีม Master HLS 1080p คุณภาพสูง
+                    </p>
+                    
+                    <div class="flex flex-wrap gap-1.5 mb-6">
+                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">HLS 1080p</span>
+                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Thai (TH)</span>
+                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Anime</span>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-800/80">
+                    <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/mioanime/mioanime.json', this)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/20">
+                        <i class="fa-regular fa-copy"></i>
+                        <span data-i18n="copyBtn">คัดลอก Manifest URL</span>
+                    </button>
+                </div>
+            </div>
 
             <!-- Alpha-Hen Module Card -->
             <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="alpha-hen hentai subthai uncensored hls 1080p thai">
@@ -286,6 +318,7 @@
                 searchPlaceholder: "ค้นหาโมดูลตามชื่อ, ภาษา, ประเภท...",
                 requestBtn: "ขอรีเควสส่วนขยาย",
                 availableModules: "โมดูลที่พร้อมใช้งาน",
+                mioDesc: "โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ mioanime.com ดึงสตรีม Master HLS 1080p คุณภาพสูง",
                 alphaDesc: "โมดูล Hentai Uncensored ซับไทย สำหรับ alpha-hen.com พร้อมระบบดึงสตรีม HLS คุณภาพสูง",
                 rukaDesc: "โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ animeruka.com ดึงสตรีมมัลติเซิร์ฟเวอร์ (AnimeMami & Abyss Player)",
                 hanimeDesc: "โมดูลสแกนและดึงสตรีม HLS 1080p คุณภาพสูง สำหรับ Hanime",
@@ -313,6 +346,7 @@
                 searchPlaceholder: "Search modules by name, language, type, or tag...",
                 requestBtn: "Request Module",
                 availableModules: "Available Modules",
+                mioDesc: "Thai anime provider for mioanime.com featuring direct 1080p Master HLS stream extraction.",
                 alphaDesc: "Uncensored Hentai Subthai provider for alpha-hen.com with direct HLS stream extraction.",
                 rukaDesc: "Thai anime provider for animeruka.com featuring multi-server DooPlayer stream extraction.",
                 hanimeDesc: "High-performance scraper for Hanime with 1080p HLS stream extraction.",
@@ -328,7 +362,7 @@
                 reasonPlaceholder: "Enter reason or details for requesting this module...",
                 cancelBtn: "Cancel",
                 submitBtn: "Submit Request",
-                submittingBtn: "Submitting...",
+                submittingBtn: "Submit Request",
                 toastReqSuccessTitle: "Request Submitted!",
                 toastReqSuccessSub: "We have received your extension module request."
             }
