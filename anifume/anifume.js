@@ -1,8 +1,8 @@
 /**
- * Anifume Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
+ * Anifume Extension Module for Sora / Luna / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://anifume.com/
- * Pure Client-Side Implementation with Full Stream Headers (Referer & Origin)
+ * Specification: https://soradocs.readthedocs.io/en/latest/
  */
 
 const DEFAULT_HEADERS = {
@@ -33,7 +33,7 @@ async function httpGet(url, headers = DEFAULT_HEADERS) {
     }
 }
 
-// ─── Search Results (Fixed URL path search /search/query) ───
+// ─── Search Results (SoraDocs Spec) ───
 async function searchResults(keyword) {
     try {
         const query = keyword ? keyword.trim() : "";
@@ -49,7 +49,7 @@ async function searchResults(keyword) {
 
         const results = [];
         const seenHrefs = new Set();
-        const cardRegex = /<a[^>]+href=["'](https:\/\/anifume\.com\/\d+\/?|[^"']*\/\d+\/?)["'][^>]*>([\s\S]*?)<\/a>/gi;
+        const cardRegex = /<a[^>]+href=["'](https:\/\/anifume\.com\/\d+\/?|\/\d+\/?)["'][^>]*>([\s\S]*?)<\/a>/gi;
         let match;
 
         while ((match = cardRegex.exec(html)) !== null) {
@@ -57,7 +57,6 @@ async function searchResults(keyword) {
             if (!href.startsWith('http')) href = 'https://anifume.com' + href;
             if (href.endsWith('/')) href = href.slice(0, -1);
 
-            // Filter out notice pages like 41126
             if (href.includes('/41126')) continue;
             if (seenHrefs.has(href)) continue;
 
@@ -84,7 +83,7 @@ async function searchResults(keyword) {
     }
 }
 
-// ─── Extract Details ───
+// ─── Extract Details (SoraDocs Spec) ───
 async function extractDetails(url) {
     try {
         const targetUrl = url.split("?")[0];
@@ -111,49 +110,49 @@ async function extractDetails(url) {
     }
 }
 
-// ─── Extract Episodes ───
+// ─── Extract Episodes (SoraDocs Spec: { href, number }) ───
 async function extractEpisodes(url) {
     try {
         const baseUrl = url.split("?")[0];
         const html = await httpGet(baseUrl);
-        if (!html) return JSON.stringify([{ href: baseUrl, number: 1, title: "Episode 1" }]);
+        if (!html) return JSON.stringify([{ href: baseUrl, number: "1" }]);
 
         const episodes = [];
         const seenHrefs = new Set();
-        const epRegex = /href=["'](https:\/\/anifume\.com\/\d+\/[A-Za-z0-9_\-]+)["']/gi;
+        const epRegex = /href=["'](https:\/\/anifume\.com\/\d+\/[A-Za-z0-9_\-]+|\/\d+\/[A-Za-z0-9_\-]+)["']/gi;
         let match;
 
         while ((match = epRegex.exec(html)) !== null) {
-            const epHref = match[1];
+            let epHref = match[1];
+            if (!epHref.startsWith('http')) epHref = 'https://anifume.com' + epHref;
             if (seenHrefs.has(epHref)) continue;
             seenHrefs.add(epHref);
 
             episodes.push({
                 href: epHref,
-                number: episodes.length + 1,
-                title: `Episode ${episodes.length + 1}`
+                number: (episodes.length + 1).toString()
             });
         }
 
         if (episodes.length === 0) {
-            episodes.push({ href: baseUrl, number: 1, title: "Episode 1" });
+            episodes.push({ href: baseUrl, number: "1" });
         }
 
         return JSON.stringify(episodes);
     } catch (error) {
         console.error("[Anifume] extractEpisodes error: " + error.message);
-        return JSON.stringify([{ href: url, number: 1, title: "Episode 1" }]);
+        return JSON.stringify([{ href: url, number: "1" }]);
     }
 }
 
-// ─── Extract Stream URL (Pure Client-Side MP4 Stream Extraction with Full Stream Headers) ───
+// ─── Extract Stream URL (SoraDocs Spec) ───
 async function extractStreamUrl(url) {
     try {
         const epHtml = await httpGet(url, DEFAULT_HEADERS);
-        if (!epHtml) return JSON.stringify({ streams: [], subtitle: "" });
+        if (!epHtml) return "";
 
         const ajaxMatches = [...epHtml.matchAll(/url:\s*["']([^"']+)["']/gi)].map(m => m[1]);
-        if (ajaxMatches.length === 0) return JSON.stringify({ streams: [], subtitle: "" });
+        if (ajaxMatches.length === 0) return "";
 
         const streams = [];
 
@@ -179,7 +178,6 @@ async function extractStreamUrl(url) {
 
             if (!playerHtml) continue;
 
-            // Parse sources from JWPlayer setup JSON inside playerHtml
             const sourcesMatch = playerHtml.match(/"sources"\s*:\s*(\[[\s\S]*?\])/i);
             let parsedAny = false;
 
@@ -209,7 +207,6 @@ async function extractStreamUrl(url) {
                 }
             }
 
-            // Direct regex fallback for MP4 URLs if JSON parsing missed any
             if (!parsedAny) {
                 const mp4Matches = [...playerHtml.matchAll(/https?:\/\/[^\s'"<>]+\.mp4[^\s'"<>]*/gi)].map(m => m[0]);
                 mp4Matches.forEach((mp4Url, idx) => {
@@ -230,9 +227,16 @@ async function extractStreamUrl(url) {
             }
         }
 
-        return JSON.stringify({ streams, subtitle: "" });
+        if (streams.length === 0) return "";
+
+        // Return JSON string containing streams array for Luna / Sora StreamAsync mode
+        return JSON.stringify({
+            streams: streams,
+            url: streams[0].streamUrl,
+            subtitle: ""
+        });
     } catch (error) {
         console.error("[Anifume] extractStreamUrl error: " + error.message);
-        return JSON.stringify({ streams: [], subtitle: "" });
+        return "";
     }
 }
