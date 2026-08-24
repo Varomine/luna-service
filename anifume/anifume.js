@@ -2,12 +2,13 @@
  * Anifume Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://anifume.com/
- * Pure Client-Side Implementation (Multi-Server Direct MP4 Stream Extraction)
+ * Pure Client-Side Implementation with Full Stream Headers (Referer & Origin)
  */
 
 const DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-    "Referer": "https://anifume.com/"
+    "Referer": "https://anifume.com/",
+    "Origin": "https://anifume.com"
 };
 
 async function httpGet(url, headers = DEFAULT_HEADERS) {
@@ -32,11 +33,17 @@ async function httpGet(url, headers = DEFAULT_HEADERS) {
     }
 }
 
-// ─── Search Results ───
+// ─── Search Results (Fixed URL path search /search/query) ───
 async function searchResults(keyword) {
     try {
         const query = keyword ? keyword.trim() : "";
-        const targetUrl = query !== "" ? `https://anifume.com/?s=${encodeURIComponent(query)}` : "https://anifume.com/";
+        let targetUrl = "https://anifume.com/";
+
+        if (query !== "") {
+            const formattedQuery = query.replace(/ /g, '+');
+            targetUrl = `https://anifume.com/search/${encodeURIComponent(formattedQuery)}`;
+        }
+
         const html = await httpGet(targetUrl);
         if (!html) return JSON.stringify([]);
 
@@ -139,16 +146,12 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (Multi-Server Direct MP4 Extraction) ───
+// ─── Extract Stream URL (Pure Client-Side MP4 Stream Extraction with Full Stream Headers) ───
 async function extractStreamUrl(url) {
     try {
-        const epHtml = await httpGet(url, {
-            "User-Agent": DEFAULT_HEADERS["User-Agent"],
-            "Referer": "https://anifume.com/"
-        });
+        const epHtml = await httpGet(url, DEFAULT_HEADERS);
         if (!epHtml) return JSON.stringify({ streams: [], subtitle: "" });
 
-        // Find all AJAX endpoints for player servers (Server 1 Main, Server 2 Backup)
         const ajaxMatches = [...epHtml.matchAll(/url:\s*["']([^"']+)["']/gi)].map(m => m[1]);
         if (ajaxMatches.length === 0) return JSON.stringify({ streams: [], subtitle: "" });
 
@@ -162,6 +165,7 @@ async function extractStreamUrl(url) {
             const ajaxHtml = await httpGet(ajaxUrl, {
                 "User-Agent": DEFAULT_HEADERS["User-Agent"],
                 "Referer": url,
+                "Origin": "https://anifume.com",
                 "X-Requested-With": "XMLHttpRequest"
             });
 
@@ -171,10 +175,7 @@ async function extractStreamUrl(url) {
             if (!iframeMatch) continue;
 
             const playerUrl = iframeMatch[1].startsWith('http') ? iframeMatch[1] : ('https://anifume.com' + iframeMatch[1]);
-            const playerHtml = await httpGet(playerUrl, {
-                "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                "Referer": "https://anifume.com/"
-            });
+            const playerHtml = await httpGet(playerUrl, DEFAULT_HEADERS);
 
             if (!playerHtml) continue;
 
@@ -193,9 +194,12 @@ async function extractStreamUrl(url) {
                                 title: `Anifume (${serverName} ${label})`,
                                 streamUrl: src.file,
                                 url: src.file,
+                                link: src.file,
+                                quality: label,
                                 headers: {
                                     "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                                    "Referer": "https://anifume.com/"
+                                    "Referer": "https://anifume.com/",
+                                    "Origin": "https://anifume.com"
                                 }
                             });
                         }
@@ -214,9 +218,12 @@ async function extractStreamUrl(url) {
                         title: `Anifume (${serverName} ${label})`,
                         streamUrl: mp4Url,
                         url: mp4Url,
+                        link: mp4Url,
+                        quality: label,
                         headers: {
                             "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                            "Referer": "https://anifume.com/"
+                            "Referer": "https://anifume.com/",
+                            "Origin": "https://anifume.com"
                         }
                     });
                 });
