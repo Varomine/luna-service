@@ -1,9 +1,31 @@
 {
-  "sourceName": "Alpha-Hen",
-  "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/alpha-hen/alpha-hen.js",
-  "iconUrl": "https://www.alpha-hen.com/wp-content/uploads/2022/04/cropped-icon-192x192.png",
-  "version": "1.0.0",
-  "author": "Varomine",
-  "supportsLuna": true,
-  "description": "Alpha-Hen (Uncensored Hentai Subthai) extension for Luna, Sora, and Dartotsu."
+    "sourceName": "Alpha-Hen",
+    "iconUrl": "https://www.alpha-hen.com/wp-content/uploads/2022/04/cropped-icon-192x192.png",
+    "author": {
+        "name": "Varomine",
+        "icon": "https://avatars.githubusercontent.com/Varomine"
+    },
+    "version": "1.0.0",
+    "language": "Thai",
+    "languageType": [
+        "Subbed"
+    ],
+    "streamType": "HLS",
+    "quality": "1080p",
+    "baseUrl": "https://www.alpha-hen.com/",
+    "searchBaseUrl": "https://www.alpha-hen.com/?s=%s",
+    "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/alpha-hen/alpha-hen.js",
+    "type": "anime",
+    "asyncJS": true,
+    "softsub": true,
+    "downloadSupport": true,
+    "supportsSora": true,
+    "supportsLuna": true,
+    "supportsMojuru": true,
+    "supportsDartotsu": true,
+    "supportsAnymex": true,
+    "supportsTsumi": true,
+    "supportsHiyoku": true,
+    "supportsShirox": true,
+    "supportsEclipse": true
 }

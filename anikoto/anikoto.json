@@ -1,9 +1,32 @@
 {
-  "sourceName": "AniKoto",
-  "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/anikoto/anikoto.js",
-  "iconUrl": "https://animepahetv.to/favicon.ico",
-  "version": "1.0.0",
-  "author": "Varomine",
-  "supportsLuna": true,
-  "description": "AniKoto (AnimePahe) extension powered by Cloudflare Worker API for Luna, Sora, and Dartotsu."
+    "sourceName": "AniKoto",
+    "iconUrl": "https://animepahetv.to/app-icon.png",
+    "author": {
+        "name": "Varomine / Ibro",
+        "icon": "https://avatars.githubusercontent.com/Varomine"
+    },
+    "version": "1.0.0",
+    "language": "English",
+    "languageType": [
+        "Dubbed",
+        "Subbed"
+    ],
+    "streamType": "HLS",
+    "quality": "1080p",
+    "baseUrl": "https://animepahetv.to/",
+    "searchBaseUrl": "https://animepahetv.to/search?q=%s",
+    "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/anikoto/anikoto.js",
+    "type": "anime",
+    "asyncJS": true,
+    "softsub": true,
+    "downloadSupport": true,
+    "supportsSora": true,
+    "supportsLuna": true,
+    "supportsMojuru": true,
+    "supportsDartotsu": true,
+    "supportsAnymex": true,
+    "supportsTsumi": true,
+    "supportsHiyoku": true,
+    "supportsShirox": true,
+    "supportsEclipse": true
 }
