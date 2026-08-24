@@ -55,11 +55,11 @@
                     <span>GitHub</span>
                 </a>
 
-                <!-- Language Selector Dropdown -->
+                <!-- Language Selector Dropdown (TH / EN) -->
                 <div class="relative">
-                    <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-slate-900 border border-slate-700/80 text-slate-200 rounded-xl px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-indigo-500 cursor-pointer">
-                        <option value="th" selected>🇹🇭 ภาษาไทย (TH)</option>
-                        <option value="en">🇺🇸 English (EN)</option>
+                    <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-slate-900 border border-slate-700/80 text-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-indigo-500 cursor-pointer">
+                        <option value="th" selected>TH</option>
+                        <option value="en">EN</option>
                     </select>
                 </div>
             </div>
@@ -77,13 +77,13 @@
                 Luna Extension Service
             </h1>
             <p class="text-slate-400 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed" data-i18n="heroDesc">
-                คอลเลกชันมอดูลส่วนขยายสำหรับ Luna, Sora และแอปสตรีมมิงอนิเมะที่รองรับ (พัฒนาสำหรับชุมชนอนิเมะไทย)
+                คอลเลกชันโมดูลส่วนขยายสำหรับ Luna, Sora และแอปสตรีมมิงอนิเมะที่รองรับ (พัฒนาสำหรับชุมชนอนิเมะไทย)
             </p>
 
             <!-- Search Bar -->
             <div class="max-w-xl mx-auto relative">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input type="text" id="searchInput" onkeyup="filterModules()" placeholder="ค้นหามอดูลตามชื่อ, ภาษา, ประเภท..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-3.5 pl-11 pr-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
+                <input type="text" id="searchInput" onkeyup="filterModules()" placeholder="ค้นหาโมดูลตามชื่อ, ภาษา, ประเภท..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-3.5 pl-11 pr-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
             </div>
         </div>
     </header>
@@ -94,7 +94,7 @@
         <div class="flex items-center justify-between mb-8 border-b border-slate-800 pb-4">
             <h2 class="text-xl font-bold text-white flex items-center gap-2">
                 <i class="fa-solid fa-cubes text-indigo-400"></i>
-                <span data-i18n="availableModules">มอดูลที่พร้อมใช้งาน</span>
+                <span data-i18n="availableModules">โมดูลที่พร้อมใช้งาน</span>
                 <span id="moduleCount" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">3</span>
             </h2>
         </div>
@@ -116,7 +116,7 @@
                         <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">v1.0.0</span>
                     </div>
                     <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="alphaDesc">
-                        มอดูล Hentai Uncensored ซับไทย สำหรับ alpha-hen.com พร้อมระบบดึงสตรีม HLS คุณภาพสูง
+                        โมดูล Hentai Uncensored ซับไทย สำหรับ alpha-hen.com พร้อมระบบดึงสตรีม HLS คุณภาพสูง
                     </p>
                     
                     <div class="flex flex-wrap gap-1.5 mb-6">
@@ -148,7 +148,7 @@
                         <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.0.0</span>
                     </div>
                     <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="rukaDesc">
-                        มอดูลอนิเมะซับไทย/พากย์ไทย สำหรับ animeruka.com ดึงสตรีมมัลติเซิร์ฟเวอร์ (AnimeMami & Abyss Player)
+                        โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ animeruka.com ดึงสตรีมมัลติเซิร์ฟเวอร์ (AnimeMami & Abyss Player)
                     </p>
                     
                     <div class="flex flex-wrap gap-1.5 mb-6">
@@ -180,7 +180,7 @@
                         <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.1.0</span>
                     </div>
                     <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="hanimeDesc">
-                        มอดูลสแกนและดึงสตรีม HLS 1080p คุณภาพสูง สำหรับ Hanime
+                        โมดูลสแกนและดึงสตรีม HLS 1080p คุณภาพสูง สำหรับ Hanime
                     </p>
                     
                     <div class="flex flex-wrap gap-1.5 mb-6">
@@ -208,7 +208,7 @@
         </div>
         <div>
             <p class="text-sm font-semibold text-white" id="toastTitle">คัดลอกลงคลิปบอร์ดแล้ว!</p>
-            <p class="text-xs text-slate-400" id="toastSub">นำ URL นี้ไปวางในเมนูตั้งค่ามอดูลของแอป Luna</p>
+            <p class="text-xs text-slate-400" id="toastSub">นำ URL นี้ไปวางในเมนูตั้งค่าโมดูลของแอป Luna</p>
         </div>
     </div>
 
@@ -223,16 +223,16 @@
                 testflightBtn: "ดาวน์โหลด Luna (TestFlight)",
                 heroBadge: "Luna Provider Modules",
                 heroTitle: "Luna Extension Service",
-                heroDesc: "คอลเลกชันมอดูลส่วนขยายสำหรับ Luna, Sora และแอปสตรีมมิงอนิเมะที่รองรับ (พัฒนาสำหรับชุมชนอนิเมะไทย)",
-                searchPlaceholder: "ค้นหามอดูลตามชื่อ, ภาษา, ประเภท...",
-                availableModules: "มอดูลที่พร้อมใช้งาน",
-                alphaDesc: "มอดูล Hentai Uncensored ซับไทย สำหรับ alpha-hen.com พร้อมระบบดึงสตรีม HLS คุณภาพสูง",
-                rukaDesc: "มอดูลอนิเมะซับไทย/พากย์ไทย สำหรับ animeruka.com ดึงสตรีมมัลติเซิร์ฟเวอร์ (AnimeMami & Abyss Player)",
-                hanimeDesc: "มอดูลสแกนและดึงสตรีม HLS 1080p คุณภาพสูง สำหรับ Hanime",
+                heroDesc: "คอลเลกชันโมดูลส่วนขยายสำหรับ Luna, Sora และแอปสตรีมมิงอนิเมะที่รองรับ (พัฒนาสำหรับชุมชนอนิเมะไทย)",
+                searchPlaceholder: "ค้นหาโมดูลตามชื่อ, ภาษา, ประเภท...",
+                availableModules: "โมดูลที่พร้อมใช้งาน",
+                alphaDesc: "โมดูล Hentai Uncensored ซับไทย สำหรับ alpha-hen.com พร้อมระบบดึงสตรีม HLS คุณภาพสูง",
+                rukaDesc: "โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ animeruka.com ดึงสตรีมมัลติเซิร์ฟเวอร์ (AnimeMami & Abyss Player)",
+                hanimeDesc: "โมดูลสแกนและดึงสตรีม HLS 1080p คุณภาพสูง สำหรับ Hanime",
                 copyBtn: "คัดลอก Manifest URL",
                 copiedBtn: "คัดลอกสำเร็จ!",
                 toastTitle: "คัดลอกลงคลิปบอร์ดแล้ว!",
-                toastSub: "นำ URL นี้ไปวางในตั้งค่าแอป Luna"
+                toastSub: "นำ URL นี้ไปวางในเมนูตั้งค่าโมดูลของแอป Luna"
             },
             en: {
                 testflightBtn: "Luna TestFlight",
