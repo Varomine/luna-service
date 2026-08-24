@@ -63,11 +63,19 @@ async function searchResults(keyword) {
             seenHrefs.add(href);
 
             const content = match[2];
-            const imgMatch = content.match(/src=["']([^"']+)["']/i) || content.match(/data-src=["']([^"']+)["']/i);
+
+            const dataSrcMatch = content.match(/data-src=["']([^"']+)["']/i);
+            const srcMatch = content.match(/src=["']([^"']+)["']/i);
+
             let image = "";
-            if (imgMatch) {
-                image = imgMatch[1];
-                if (image.startsWith('/')) image = 'https://www.mioanime.net' + image;
+            if (dataSrcMatch && !dataSrcMatch[1].startsWith('data:')) {
+                image = dataSrcMatch[1];
+            } else if (srcMatch && !srcMatch[1].startsWith('data:')) {
+                image = srcMatch[1];
+            }
+
+            if (image && image.startsWith('/')) {
+                image = 'https://www.mioanime.net' + image;
             }
 
             const titleMatch = content.match(/alt=["']([^"']+)["']/i) || content.match(/title=["']([^"']+)["']/i);
@@ -149,7 +157,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (JuicyCodes Resolution) ───
+// ─── Extract Stream URL (JuicyCodes & Master/Sub Playlist Resolution) ───
 async function extractStreamUrl(url) {
     try {
         const pageHtml = await httpGet(url, DEFAULT_HEADERS);
@@ -159,7 +167,6 @@ async function extractStreamUrl(url) {
         if (iframeMatches.length === 0) return JSON.stringify({ streams: [], subtitle: "" });
 
         let playerHtml = null;
-        let playerUrl = "";
 
         // Check each iframe until we find core player with JuicyCodes
         for (const frameSrc of iframeMatches) {
@@ -167,7 +174,6 @@ async function extractStreamUrl(url) {
             const html = await httpGet(targetFrame, DEFAULT_HEADERS);
             if (html && (html.includes('JuicyCodes') || html.includes('/player/'))) {
                 playerHtml = html;
-                playerUrl = targetFrame;
 
                 // Check if inner iframe exists
                 const innerFrameMatch = html.match(/<iframe[^>]+src=["']([^"']+)["']/i);
@@ -176,7 +182,6 @@ async function extractStreamUrl(url) {
                     const innerHtml = await httpGet(innerUrl, DEFAULT_HEADERS);
                     if (innerHtml && innerHtml.includes('JuicyCodes')) {
                         playerHtml = innerHtml;
-                        playerUrl = innerUrl;
                     }
                 }
                 break;
@@ -205,23 +210,56 @@ async function extractStreamUrl(url) {
         const unpacked = unpackDeanEdwards(decoded);
         const streams = [];
 
-        // Extract playlist URLs
+        // Extract master playlist URL
         const playlistMatches = [...unpacked.matchAll(/https?:\/\/[^\s'"<>\)\};]+\/hls\/playlist\/[^\s'"<>\)\};]+/gi)].map(m => m[0]);
         const m3u8Matches = [...unpacked.matchAll(/https?:\/\/[^\s'"<>\)\};]+\.m3u8[^\s'"<>\)\};]*/gi)].map(m => m[0]);
 
-        const allUrls = [...new Set([...playlistMatches, ...m3u8Matches])];
+        const masterUrls = [...new Set([...playlistMatches, ...m3u8Matches])];
 
-        allUrls.forEach((streamUrl, idx) => {
+        for (const masterUrl of masterUrls) {
+            // Fetch master playlist to parse direct sub-playlist URLs (e.g. 1080p)
+            const masterText = await httpGet(masterUrl, DEFAULT_HEADERS);
+
+            if (masterText && masterText.includes('#EXTM3U')) {
+                try {
+                    const origin = new URL(masterUrl).origin;
+                    const lines = masterText.split('\n');
+                    let currentRes = "1080p";
+
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (line.startsWith('#EXT-X-STREAM-INF:')) {
+                            const resMatch = line.match(/RESOLUTION=\d+x(\d+)/i);
+                            if (resMatch) currentRes = `${resMatch[1]}p`;
+                        } else if (line.startsWith('/hls/') || line.endsWith('.m3u8')) {
+                            const subUrl = line.startsWith('http') ? line : (origin + line);
+                            streams.push({
+                                title: `MioAnime (${currentRes})`,
+                                streamUrl: subUrl,
+                                url: subUrl,
+                                headers: {
+                                    "Referer": "https://www.mioanime.net/",
+                                    "User-Agent": DEFAULT_HEADERS["User-Agent"]
+                                }
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.error("[MioAnime] Error parsing sub-playlist: " + e.message);
+                }
+            }
+
+            // Always add master playlist URL as fallback
             streams.push({
-                title: `MioAnime Stream ${idx + 1} (Master HLS)`,
-                streamUrl: streamUrl,
-                url: streamUrl,
+                title: `MioAnime (Master HLS)`,
+                streamUrl: masterUrl,
+                url: masterUrl,
                 headers: {
                     "Referer": "https://www.mioanime.net/",
                     "User-Agent": DEFAULT_HEADERS["User-Agent"]
                 }
             });
-        });
+        }
 
         return JSON.stringify({ streams, subtitle: "" });
     } catch (error) {
