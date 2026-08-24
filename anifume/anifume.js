@@ -1,39 +1,30 @@
 /**
- * Anifume Extension Module for Sora / Luna / Dartotsu / Mojuru / Anymex
+ * Anifume Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://anifume.com/
- * Specification: https://soradocs.readthedocs.io/en/latest/
+ * Reference Architecture: Luna Sources (AnimePahe / VidEasy)
  */
 
-const DEFAULT_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-    "Referer": "https://anifume.com/",
-    "Origin": "https://anifume.com"
-};
-
-async function httpGet(url, headers = DEFAULT_HEADERS) {
+async function soraFetch(url, options = { headers: {}, method: 'GET', body: null }) {
+    const headers = options.headers || {};
+    if (!headers["User-Agent"]) {
+        headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36";
+    }
+    if (!headers["Referer"]) {
+        headers["Referer"] = "https://anifume.com/";
+    }
     try {
-        let res;
-        if (typeof fetchv2 !== "undefined") {
-            res = await fetchv2(url, headers);
-        } else if (typeof fetch !== "undefined") {
-            res = await fetch(url, { headers: headers });
+        return await fetchv2(url, headers, options.method || 'GET', options.body || null);
+    } catch (e) {
+        try {
+            return await fetch(url, options);
+        } catch (error) {
+            return null;
         }
-        if (!res) return null;
-
-        if (typeof res.text === "function") {
-            return await res.text();
-        } else if (typeof res === "string") {
-            return res;
-        }
-        return null;
-    } catch (err) {
-        console.error("[Anifume] httpGet error for " + url + ": " + err.message);
-        return null;
     }
 }
 
-// ─── Search Results (SoraDocs Spec) ───
+// ─── Search Results ───
 async function searchResults(keyword) {
     try {
         const query = keyword ? keyword.trim() : "";
@@ -44,7 +35,9 @@ async function searchResults(keyword) {
             targetUrl = `https://anifume.com/search/${encodeURIComponent(formattedQuery)}`;
         }
 
-        const html = await httpGet(targetUrl);
+        const response = await soraFetch(targetUrl);
+        if (!response) return JSON.stringify([]);
+        const html = await response.text();
         if (!html) return JSON.stringify([]);
 
         const results = [];
@@ -83,11 +76,15 @@ async function searchResults(keyword) {
     }
 }
 
-// ─── Extract Details (SoraDocs Spec) ───
+// ─── Extract Details ───
 async function extractDetails(url) {
     try {
         const targetUrl = url.split("?")[0];
-        const html = await httpGet(targetUrl);
+        const response = await soraFetch(targetUrl);
+        if (!response) {
+            return JSON.stringify([{ description: "No details available.", aliases: "Anifume", airdate: "N/A" }]);
+        }
+        const html = await response.text();
         if (!html) {
             return JSON.stringify([{ description: "No details available.", aliases: "Anifume", airdate: "N/A" }]);
         }
@@ -110,12 +107,17 @@ async function extractDetails(url) {
     }
 }
 
-// ─── Extract Episodes (SoraDocs Spec: { href, number }) ───
+// ─── Extract Episodes ───
 async function extractEpisodes(url) {
     try {
         const baseUrl = url.split("?")[0];
-        const html = await httpGet(baseUrl);
-        if (!html) return JSON.stringify([{ href: baseUrl, number: "1" }]);
+        const response = await soraFetch(baseUrl);
+        if (!response) return JSON.stringify([{ href: baseUrl, number: 1 }]);
+        const html = await response.text();
+        if (!html) return JSON.stringify([{ href: baseUrl, number: 1 }]);
+
+        const postIdMatch = baseUrl.match(/\/(\d+)\/?/);
+        const postId = postIdMatch ? postIdMatch[1] : "";
 
         const episodes = [];
         const seenHrefs = new Set();
@@ -125,34 +127,42 @@ async function extractEpisodes(url) {
         while ((match = epRegex.exec(html)) !== null) {
             let epHref = match[1];
             if (!epHref.startsWith('http')) epHref = 'https://anifume.com' + epHref;
+            if (postId && !epHref.includes(`/${postId}/`)) continue;
             if (seenHrefs.has(epHref)) continue;
             seenHrefs.add(epHref);
 
             episodes.push({
                 href: epHref,
-                number: (episodes.length + 1).toString()
+                number: episodes.length + 1
             });
         }
 
         if (episodes.length === 0) {
-            episodes.push({ href: baseUrl, number: "1" });
+            episodes.push({ href: baseUrl, number: 1 });
         }
 
         return JSON.stringify(episodes);
     } catch (error) {
         console.error("[Anifume] extractEpisodes error: " + error.message);
-        return JSON.stringify([{ href: url, number: "1" }]);
+        return JSON.stringify([{ href: url, number: 1 }]);
     }
 }
 
-// ─── Extract Stream URL (SoraDocs Spec) ───
+// ─── Extract Stream URL ───
 async function extractStreamUrl(url) {
     try {
-        const epHtml = await httpGet(url, DEFAULT_HEADERS);
-        if (!epHtml) return "";
+        const response = await soraFetch(url, {
+            headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+                "Referer": "https://anifume.com/"
+            }
+        });
+        if (!response) return JSON.stringify({ streams: [], subtitle: "" });
+        const epHtml = await response.text();
+        if (!epHtml) return JSON.stringify({ streams: [], subtitle: "" });
 
         const ajaxMatches = [...epHtml.matchAll(/url:\s*["']([^"']+)["']/gi)].map(m => m[1]);
-        if (ajaxMatches.length === 0) return "";
+        if (ajaxMatches.length === 0) return JSON.stringify({ streams: [], subtitle: "" });
 
         const streams = [];
 
@@ -161,21 +171,31 @@ async function extractStreamUrl(url) {
             const serverName = `Server ${sIdx + 1}`;
             const ajaxUrl = ajaxRel.startsWith('http') ? ajaxRel : ('https://anifume.com' + ajaxRel);
 
-            const ajaxHtml = await httpGet(ajaxUrl, {
-                "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                "Referer": url,
-                "Origin": "https://anifume.com",
-                "X-Requested-With": "XMLHttpRequest"
+            const ajaxRes = await soraFetch(ajaxUrl, {
+                headers: {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+                    "Referer": url,
+                    "X-Requested-With": "XMLHttpRequest"
+                }
             });
 
+            if (!ajaxRes) continue;
+            const ajaxHtml = await ajaxRes.text();
             if (!ajaxHtml) continue;
 
             const iframeMatch = ajaxHtml.match(/<iframe[^>]+src=["']([^"']+)["']/i);
             if (!iframeMatch) continue;
 
             const playerUrl = iframeMatch[1].startsWith('http') ? iframeMatch[1] : ('https://anifume.com' + iframeMatch[1]);
-            const playerHtml = await httpGet(playerUrl, DEFAULT_HEADERS);
+            const playerRes = await soraFetch(playerUrl, {
+                headers: {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+                    "Referer": "https://anifume.com/"
+                }
+            });
 
+            if (!playerRes) continue;
+            const playerHtml = await playerRes.text();
             if (!playerHtml) continue;
 
             const sourcesMatch = playerHtml.match(/"sources"\s*:\s*(\[[\s\S]*?\])/i);
@@ -189,15 +209,11 @@ async function extractStreamUrl(url) {
                             parsedAny = true;
                             const label = src.label || "720p";
                             streams.push({
-                                title: `Anifume (${serverName} ${label})`,
+                                title: `[${serverName}] ${label}`,
                                 streamUrl: src.file,
-                                url: src.file,
-                                link: src.file,
-                                quality: label,
                                 headers: {
-                                    "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                                    "Referer": "https://anifume.com/",
-                                    "Origin": "https://anifume.com"
+                                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+                                    "Referer": "https://anifume.com/"
                                 }
                             });
                         }
@@ -212,31 +228,23 @@ async function extractStreamUrl(url) {
                 mp4Matches.forEach((mp4Url, idx) => {
                     const label = (idx === 0) ? "720p" : "360p";
                     streams.push({
-                        title: `Anifume (${serverName} ${label})`,
+                        title: `[${serverName}] ${label}`,
                         streamUrl: mp4Url,
-                        url: mp4Url,
-                        link: mp4Url,
-                        quality: label,
                         headers: {
-                            "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                            "Referer": "https://anifume.com/",
-                            "Origin": "https://anifume.com"
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+                            "Referer": "https://anifume.com/"
                         }
                     });
                 });
             }
         }
 
-        if (streams.length === 0) return "";
-
-        // Return JSON string containing streams array for Luna / Sora StreamAsync mode
         return JSON.stringify({
             streams: streams,
-            url: streams[0].streamUrl,
             subtitle: ""
         });
     } catch (error) {
         console.error("[Anifume] extractStreamUrl error: " + error.message);
-        return "";
+        return JSON.stringify({ streams: [], subtitle: "" });
     }
 }

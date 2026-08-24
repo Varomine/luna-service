@@ -5,7 +5,7 @@
         "name": "Varomine",
         "icon": "https://avatars.githubusercontent.com/Varomine"
     },
-    "version": "1.0.2",
+    "version": "1.0.3",
     "language": "Thai",
     "languageType": [
         "Dubbed",
@@ -14,11 +14,10 @@
     "streamType": "MP4",
     "quality": "720p",
     "baseUrl": "https://anifume.com/",
-    "searchBaseUrl": "https://anifume.com/search/%s",
+    "searchBaseUrl": "https://anifume.com/",
     "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/anifume/anifume.js",
     "type": "anime",
     "asyncJS": true,
-    "streamAsyncJS": true,
     "softsub": true,
     "downloadSupport": true,
     "supportsSora": true,
