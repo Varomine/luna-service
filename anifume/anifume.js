@@ -2,8 +2,10 @@
  * Anifume Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://anifume.com/
- * Specification: https://soradocs.readthedocs.io/en/latest/files/asnycjsmode.html
+ * Stream Proxy: User's Stream Relay Worker (https://streamrelay.sapis.workers.dev/proxy?url=)
  */
+
+const STREAM_RELAY_BASE = "https://streamrelay.sapis.workers.dev/proxy?url=";
 
 async function soraFetch(url, options = { headers: {}, method: 'GET', body: null }) {
     const headers = options.headers || {};
@@ -148,7 +150,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL ───
+// ─── Extract Stream URL (User Stream Relay Proxy Worker Integration) ───
 async function extractStreamUrl(url) {
     try {
         const response = await soraFetch(url, {
@@ -208,12 +210,13 @@ async function extractStreamUrl(url) {
                         if (src.file) {
                             parsedAny = true;
                             const label = src.label || "720p";
+                            const proxiedUrl = `${STREAM_RELAY_BASE}${encodeURIComponent(src.file)}`;
                             streams.push({
                                 title: `[${serverName}] ${label}`,
-                                streamUrl: src.file,
-                                url: src.file,
-                                file: src.file,
-                                link: src.file,
+                                streamUrl: proxiedUrl,
+                                url: proxiedUrl,
+                                file: proxiedUrl,
+                                link: proxiedUrl,
                                 headers: {
                                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
                                     "Referer": "https://anifume.com/"
@@ -230,12 +233,13 @@ async function extractStreamUrl(url) {
                 const mp4Matches = [...playerHtml.matchAll(/https?:\/\/[^\s'"<>]+\.mp4[^\s'"<>]*/gi)].map(m => m[0]);
                 mp4Matches.forEach((mp4Url, idx) => {
                     const label = (idx === 0) ? "720p" : "360p";
+                    const proxiedUrl = `${STREAM_RELAY_BASE}${encodeURIComponent(mp4Url)}`;
                     streams.push({
                         title: `[${serverName}] ${label}`,
-                        streamUrl: mp4Url,
-                        url: mp4Url,
-                        file: mp4Url,
-                        link: mp4Url,
+                        streamUrl: proxiedUrl,
+                        url: proxiedUrl,
+                        file: proxiedUrl,
+                        link: proxiedUrl,
                         headers: {
                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
                             "Referer": "https://anifume.com/"
