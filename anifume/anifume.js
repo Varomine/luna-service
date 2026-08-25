@@ -2,7 +2,7 @@
  * Anifume Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://anifume.com/
- * Single Stream Output (Server 1 - Highest Quality Only)
+ * Single Server Stream Output (Highest Quality)
  */
 
 const DEFAULT_HEADERS = {
@@ -147,7 +147,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (Single Server 1 - Highest Quality Selected) ───
+// ─── Extract Stream URL (Single Best Server 1 Only) ───
 async function extractStreamUrl(url) {
     try {
         let epUrl = url ? url.trim() : "";
@@ -165,7 +165,7 @@ async function extractStreamUrl(url) {
         const ajaxMatches = [...epHtml.matchAll(/url:\s*["']([^"']+)["']/gi)].map(m => m[1]);
         if (ajaxMatches.length === 0) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
 
-        // Use only Server 1 (first source)
+        // Use only Server 1
         const ajaxRel = ajaxMatches[0];
         let ajaxUrl = ajaxRel.startsWith('http') ? ajaxRel : ('https://anifume.com' + (ajaxRel.startsWith('/') ? '' : '/') + ajaxRel);
         ajaxUrl = ajaxUrl.replace(/&amp;/g, '&');
@@ -198,7 +198,6 @@ async function extractStreamUrl(url) {
         if (!playerHtml) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
 
         let streamUrl = "";
-        let qualityLabel = "1080p";
 
         const sourcesMatch = playerHtml.match(/"sources"\s*:\s*(\[[\s\S]*?\])/i);
         if (sourcesMatch) {
@@ -207,7 +206,6 @@ async function extractStreamUrl(url) {
                 const best = sourcesArr.find(s => s.label === "1080p") || sourcesArr.find(s => s.label === "720p") || sourcesArr[0];
                 if (best && best.file) {
                     streamUrl = best.file.replace(/\\/g, '').replace(/&amp;/g, '&');
-                    qualityLabel = best.label || "720p";
                 }
             } catch (e) {
                 console.error("[Anifume] Error parsing sources: " + e.message);
@@ -225,13 +223,13 @@ async function extractStreamUrl(url) {
 
         const streams = [
             {
-                title: qualityLabel,
+                title: "1080p",
                 streamUrl: streamUrl,
                 url: streamUrl,
                 file: streamUrl,
                 link: streamUrl,
                 headers: {
-                    "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
                     "Referer": "https://anifume.com/"
                 }
             }
