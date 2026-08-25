@@ -25,7 +25,7 @@
             box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.2);
         }
         .glass-modal {
-            background: rgba(15, 23, 42, 0.96);
+            background: rgba(15, 23, 42, 0.98);
             backdrop-filter: blur(20px);
         }
         select option {
@@ -51,6 +51,13 @@
         }
         .accordion-item.open .accordion-chevron {
             transform: rotate(180deg);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
@@ -266,13 +273,13 @@
                     <div>
                         <div class="flex items-start justify-between mb-4">
                             <div class="flex items-center space-x-3">
-                                <img src="https://animeruka.com/wp-content/uploads/2024/01/logo.png" alt="AnimeRuka Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700" onerror="this.src='https://animeruka.com/favicon.ico'">
+                                <img src="https://animeruka.com/wp-content/uploads/2024/07/apple-touch-icon.png" alt="AnimeRuka Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700" onerror="this.src='https://animeruka.com/favicon.ico'">
                                 <div>
                                     <h3 class="text-lg font-bold text-white leading-snug">AnimeRuka</h3>
                                     <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
                                 </div>
                             </div>
-                            <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.0.0</span>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.0.1</span>
                         </div>
                         <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="rukaDesc">
                             โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ animeruka.com ดึงสตรีมมัลติเซิร์ฟเวอร์ (AnimeMami & Abyss Player)
@@ -355,11 +362,11 @@
                 </div>
             </div>
 
-            <!-- Problem Accordion List -->
+            <!-- Problem Accordion List (Closed by default) -->
             <div class="space-y-5">
 
                 <!-- Problem 1: ISP Blocking / Black Screen with Slashed Play Icon -->
-                <div class="glass-card rounded-3xl p-6 md:p-8 accordion-item open" id="problem1">
+                <div class="glass-card rounded-3xl p-6 md:p-8 accordion-item" id="problem1">
                     <button type="button" onclick="toggleAccordion('problem1')" class="w-full flex items-center justify-between text-left focus:outline-none cursor-pointer">
                         <div class="flex items-center space-x-3.5">
                             <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-lg flex-shrink-0">
@@ -478,7 +485,7 @@
                 </div>
 
                 <!-- Problem 3: Playback Failed Error (MPV Player Issue) -->
-                <div class="glass-card rounded-3xl p-6 md:p-8 accordion-item open" id="problem3">
+                <div class="glass-card rounded-3xl p-6 md:p-8 accordion-item" id="problem3">
                     <button type="button" onclick="toggleAccordion('problem3')" class="w-full flex items-center justify-between text-left focus:outline-none cursor-pointer">
                         <div class="flex items-center space-x-3.5">
                             <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-lg flex-shrink-0">
@@ -514,10 +521,10 @@
                                 <p class="text-xs text-slate-400 mb-3" data-i18n="p3SolDesc">
                                     เปิดแอป Luna แล้วสลับ Player เป็น Native / Normal (Apple) Player ตามขั้นตอนดังนี้:
                                 </p>
-                                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-emerald-300 font-mono space-y-1">
-                                    <div>1. เปิดแอป Luna &gt; ไปที่แท็บ <strong>Settings (ตั้งค่า)</strong></div>
-                                    <div>2. เลือกเมนู <strong>Player (เครื่องเล่นวิดีโอ)</strong></div>
-                                    <div>3. สลับจาก MPV เป็น <strong>Native Player (Apple)</strong> หรือ <strong>Normal</strong></div>
+                                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-emerald-300 font-mono space-y-1.5">
+                                    <div data-i18n="p3Step1">1. เปิดแอป Luna &gt; ไปที่แท็บ Settings (ตั้งค่า)</div>
+                                    <div data-i18n="p3Step2">2. เลือกเมนู Player (เครื่องเล่นวิดีโอ)</div>
+                                    <div data-i18n="p3Step3">3. สลับจาก MPV เป็น Native Player (Apple) หรือ Normal</div>
                                 </div>
                             </div>
                         </div>
@@ -530,40 +537,40 @@
     </main>
 
     <!-- ==================== REPORT ISSUE POPUP MODAL ==================== -->
-    <div id="reportModal" onclick="handleReportBackdropClick(event)" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div id="reportModalCard" class="glass-modal bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative transform scale-95 transition-all duration-300 max-h-[90vh] overflow-y-auto">
+    <div id="reportModal" onclick="handleReportBackdropClick(event)" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div id="reportModalCard" class="glass-modal bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative transform scale-95 transition-all duration-300 max-h-[95vh] overflow-y-auto no-scrollbar">
             <!-- Close Button -->
-            <button onclick="closeReportModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white transition w-8 h-8 rounded-full flex items-center justify-center bg-slate-800/50 hover:bg-slate-800">
-                <i class="fa-solid fa-xmark text-sm"></i>
+            <button onclick="closeReportModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition w-7 h-7 rounded-full flex items-center justify-center bg-slate-800/50 hover:bg-slate-800">
+                <i class="fa-solid fa-xmark text-xs"></i>
             </button>
 
             <!-- Modal Header -->
-            <div class="flex items-center space-x-3 mb-4">
-                <div class="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-lg">
+            <div class="flex items-center space-x-3 mb-3.5">
+                <div class="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-base">
                     <i class="fa-solid fa-triangle-exclamation"></i>
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-white" data-i18n="reportModalTitle">แจ้งปัญหาโมดูล</h3>
-                    <p class="text-xs text-slate-400" data-i18n="reportModalSub">ส่งรายงานปัญหาเพื่อให้ผู้พัฒนาตรวจสอบและแก้ไข</p>
+                    <h3 class="text-lg font-bold text-white leading-tight" data-i18n="reportModalTitle">แจ้งปัญหาโมดูล</h3>
+                    <p class="text-[11px] text-slate-400" data-i18n="reportModalSub">ส่งรายงานปัญหาเพื่อให้ผู้พัฒนาตรวจสอบและแก้ไข</p>
                 </div>
             </div>
 
             <!-- Troubleshooting Warning Notice in Modal -->
-            <div class="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-3.5 mb-5 text-xs text-amber-200 flex items-start gap-2.5">
-                <i class="fa-solid fa-circle-info text-amber-400 text-sm mt-0.5 flex-shrink-0"></i>
-                <div>
+            <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 mb-3.5 text-xs text-amber-200 flex items-start gap-2">
+                <i class="fa-solid fa-circle-info text-amber-400 text-xs mt-0.5 flex-shrink-0"></i>
+                <div class="text-[11px] leading-relaxed">
                     <span data-i18n="reportNoticeText"><strong>ข้อแนะนำ:</strong> หากเป็นปัญหาจอดำ/เล่นไม่ได้ กรุณาตรวจสอบว่าลองเปลี่ยน DNS หรือใช้ WARP 1.1.1.1 แล้วหรือไม่</span>
                     <button type="button" onclick="closeReportModal(); switchTab('troubleshoot');" class="text-indigo-400 underline font-semibold ml-1 hover:text-indigo-300" data-i18n="viewGuideBtn">ดูวิธีแก้ไข</button>
                 </div>
             </div>
 
-            <form id="reportForm" onsubmit="submitReport(event)" class="space-y-4">
+            <form id="reportForm" onsubmit="submitReport(event)" class="space-y-3">
                 <!-- Module Selection Field -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">
                         <span data-i18n="labelRepModule">โมดูลที่มีปัญหา</span> <span class="text-rose-400">*</span>
                     </label>
-                    <select id="repModule" required class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+                    <select id="repModule" required class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 transition">
                         <option value="Anifume">Anifume</option>
                         <option value="MioAnime">MioAnime</option>
                         <option value="Alpha-Hen">Alpha-Hen</option>
@@ -575,10 +582,10 @@
 
                 <!-- Issue Type Field -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">
                         <span data-i18n="labelRepType">ประเภทปัญหา</span> <span class="text-rose-400">*</span>
                     </label>
-                    <select id="repType" required class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+                    <select id="repType" required class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 transition">
                         <option value="Playback Failed" data-i18n="optPlaybackFailed">Playback Failed (เล่นวิดีโอไม่ได้ / จอดำ)</option>
                         <option value="Search Not Working" data-i18n="optSearchNotWorking">Search Not Working (ค้นหาไม่พบ)</option>
                         <option value="Episodes Not Loading" data-i18n="optEpisodesNotLoading">Episodes Not Loading (ตอนไม่โหลด)</option>
@@ -589,36 +596,36 @@
 
                 <!-- Device & Player Info -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">
                         <span data-i18n="labelRepDevice">อุปกรณ์ & Player ที่ใช้</span>
                     </label>
-                    <input type="text" id="repDevice" data-i18n-placeholder="devicePlaceholder" placeholder="เช่น iPhone 15 Pro (Native Player), iPad Air (MPV)" class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
+                    <input type="text" id="repDevice" data-i18n-placeholder="devicePlaceholder" placeholder="เช่น iPhone 15 Pro (Native Player), iPad Air (MPV)" class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
                 </div>
 
                 <!-- Screenshot Proof URL (Required) -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">
+                    <label class="block text-xs font-semibold text-slate-300 mb-0.5">
                         <span data-i18n="labelRepImage">ลิงก์รูปภาพหลักฐาน (Screenshot Proof URL)</span> <span class="text-rose-400">*</span>
                     </label>
-                    <p class="text-[11px] text-slate-400 mb-2 leading-relaxed" data-i18n="imgHostHelp">
+                    <p class="text-[10px] text-slate-400 mb-1.5 leading-tight" data-i18n="imgHostHelp">
                         อัปโหลดรูปภาพฟรีได้ที่: <a href="https://imgbb.com/" target="_blank" rel="noopener noreferrer" class="text-indigo-400 underline font-semibold hover:text-indigo-300">ImgBB</a> | <a href="https://catbox.moe/" target="_blank" rel="noopener noreferrer" class="text-indigo-400 underline font-semibold hover:text-indigo-300">Catbox</a> | <a href="https://imgur.com/upload" target="_blank" rel="noopener noreferrer" class="text-indigo-400 underline font-semibold hover:text-indigo-300">Imgur</a> แล้วนำลิงก์รูปมาวาง
                     </p>
-                    <input type="url" id="repImage" required placeholder="https://i.ibb.co/..." class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
+                    <input type="url" id="repImage" required placeholder="https://i.ibb.co/..." class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
                 </div>
 
                 <!-- Description / Details -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">
                         <span data-i18n="labelRepDetails">รายละเอียดเพิ่มเติม</span> <span class="text-rose-400">*</span>
                     </label>
-                    <textarea id="repDetails" required rows="3" data-i18n-placeholder="detailsPlaceholder" placeholder="ระบุชื่อเรื่องหรือตอนที่พบปัญหา..." class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition resize-none"></textarea>
+                    <textarea id="repDetails" required rows="2" data-i18n-placeholder="detailsPlaceholder" placeholder="ระบุชื่อเรื่องหรือตอนที่พบปัญหา..." class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition resize-none"></textarea>
                 </div>
 
                 <!-- Submit & Cancel Buttons -->
-                <div class="pt-2 flex items-center justify-end space-x-3">
-                    <button type="button" onclick="closeReportModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition" data-i18n="cancelBtn">ยกเลิก</button>
-                    <button type="submit" id="submitRepBtn" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition flex items-center gap-2 shadow-lg shadow-rose-600/20">
-                        <i class="fa-solid fa-paper-plane"></i>
+                <div class="pt-1.5 flex items-center justify-end space-x-2.5">
+                    <button type="button" onclick="closeReportModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition" data-i18n="cancelBtn">ยกเลิก</button>
+                    <button type="submit" id="submitRepBtn" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-lg shadow-rose-600/20">
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
                         <span data-i18n="submitRepBtn">ส่งรายงานปัญหา</span>
                     </button>
                 </div>
@@ -627,45 +634,45 @@
     </div>
 
     <!-- ==================== REQUEST MODULE POPUP MODAL ==================== -->
-    <div id="requestModal" onclick="handleBackdropClick(event)" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div id="modalCard" class="glass-modal bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative transform scale-95 transition-all duration-300">
+    <div id="requestModal" onclick="handleBackdropClick(event)" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div id="modalCard" class="glass-modal bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl relative transform scale-95 transition-all duration-300 max-h-[95vh] overflow-y-auto no-scrollbar">
             <!-- Close Button -->
-            <button onclick="closeRequestModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white transition w-8 h-8 rounded-full flex items-center justify-center bg-slate-800/50 hover:bg-slate-800">
-                <i class="fa-solid fa-xmark text-sm"></i>
+            <button onclick="closeRequestModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition w-7 h-7 rounded-full flex items-center justify-center bg-slate-800/50 hover:bg-slate-800">
+                <i class="fa-solid fa-xmark text-xs"></i>
             </button>
 
-            <div class="flex items-center space-x-3 mb-4">
-                <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg">
+            <div class="flex items-center space-x-3 mb-3.5">
+                <div class="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-base">
                     <i class="fa-solid fa-paper-plane"></i>
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-white" data-i18n="modalTitle">ขอรีเควสส่วนขยายใหม่</h3>
-                    <p class="text-xs text-slate-400" data-i18n="modalSub">ระบุเว็บไซต์และเหตุผลเพื่อขอสร้างโมดูลส่วนขยาย</p>
+                    <h3 class="text-lg font-bold text-white leading-tight" data-i18n="modalTitle">ขอรีเควสส่วนขยายใหม่</h3>
+                    <p class="text-[11px] text-slate-400" data-i18n="modalSub">ระบุเว็บไซต์และเหตุผลเพื่อขอสร้างโมดูลส่วนขยาย</p>
                 </div>
             </div>
 
-            <form id="requestForm" onsubmit="submitRequest(event)" class="space-y-4">
+            <form id="requestForm" onsubmit="submitRequest(event)" class="space-y-3">
                 <!-- Site Field -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">
                         <span data-i18n="labelSite">เว็บไซต์ / URL ที่ต้องการ</span> <span class="text-rose-400">*</span>
                     </label>
-                    <input type="url" id="reqSite" required placeholder="https://example.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
+                    <input type="url" id="reqSite" required placeholder="https://example.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
                 </div>
 
                 <!-- Reason Field -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">
                         <span data-i18n="labelReason">เหตุผล / รายละเอียดการรีเควส</span> <span class="text-rose-400">*</span>
                     </label>
-                    <textarea id="reqReason" required rows="4" data-i18n-placeholder="reasonPlaceholder" placeholder="ระบุเหตุผลหรือรายละเอียดที่ต้องการให้ออกแบบโมดูล..." class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition resize-none"></textarea>
+                    <textarea id="reqReason" required rows="3" data-i18n-placeholder="reasonPlaceholder" placeholder="ระบุเหตุผลหรือรายละเอียดที่ต้องการให้ออกแบบโมดูล..." class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition resize-none"></textarea>
                 </div>
 
                 <!-- Submit & Cancel Buttons -->
-                <div class="pt-2 flex items-center justify-end space-x-3">
-                    <button type="button" onclick="closeRequestModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition" data-i18n="cancelBtn">ยกเลิก</button>
-                    <button type="submit" id="submitReqBtn" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition flex items-center gap-2 shadow-lg shadow-indigo-600/20">
-                        <i class="fa-solid fa-paper-plane"></i>
+                <div class="pt-1.5 flex items-center justify-end space-x-2.5">
+                    <button type="button" onclick="closeRequestModal()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition" data-i18n="cancelBtn">ยกเลิก</button>
+                    <button type="submit" id="submitReqBtn" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-lg shadow-indigo-600/20">
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
                         <span data-i18n="submitBtn">ส่งคำขอรีเควส</span>
                     </button>
                 </div>
@@ -777,7 +784,10 @@
                 p3Desc1: "อาการที่พบ: เมื่อกดเลือกตอนเพื่อรับชม แอปแสดงข้อความแจ้งเตือนป๊อปอัปว่า \"Playback failed\" ทันที",
                 p3Desc2: "สาเหตุหลัก: คุณเปิดใช้งาน MPV Player บน iPad หรือ iPhone ซึ่งตัวประมวลผล MPV ในบางเวอร์ชันไม่ส่ง Headers ยืนยันตัวตนไปยังเซิร์ฟเวอร์วิดีโอ ทำให้การเชื่อมต่อล้มเหลว",
                 p3SolHeading: "วิธีแก้ไข: สลับ Player ในแอป Luna เป็น Native Player",
-                p3SolDesc: "เปิดแอป Luna แล้วสลับ Player เป็น Native / Normal (Apple) Player ตามขั้นตอนดังนี้:"
+                p3SolDesc: "เปิดแอป Luna แล้วสลับ Player เป็น Native / Normal (Apple) Player ตามขั้นตอนดังนี้:",
+                p3Step1: "1. เปิดแอป Luna > ไปที่แท็บ Settings (ตั้งค่า)",
+                p3Step2: "2. เลือกเมนู Player (เครื่องเล่นวิดีโอ)",
+                p3Step3: "3. สลับจาก MPV เป็น Native Player (Apple) หรือ Normal"
             },
             en: {
                 testflightBtn: "Luna TestFlight",
@@ -863,7 +873,10 @@
                 p3Desc1: "Symptom: Tapping an episode immediately triggers a popup error stating \"Playback failed\".",
                 p3Desc2: "Root Cause: MPV Player is active on iOS/iPadOS, which does not forward authentication stream headers to CDN servers.",
                 p3SolHeading: "Solution: Switch Luna Player to Native (Apple) Player",
-                p3SolDesc: "Open Luna settings and switch Player to Native / Normal (Apple) Player:"
+                p3SolDesc: "Open Luna settings and switch Player to Native / Normal (Apple) Player:",
+                p3Step1: "1. Open Luna app > Go to Settings tab",
+                p3Step2: "2. Select Player menu",
+                p3Step3: "3. Switch from MPV to Native Player (Apple) or Normal"
             }
         };
 
