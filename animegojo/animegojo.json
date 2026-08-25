@@ -5,7 +5,7 @@
         "name": "Varomine",
         "icon": "https://avatars.githubusercontent.com/Varomine"
     },
-    "version": "1.0.0",
+    "version": "1.0.1",
     "language": "Thai",
     "languageType": [
         "Dubbed",
@@ -14,7 +14,7 @@
     "streamType": "HLS",
     "quality": "1080p",
     "baseUrl": "https://animegojoo.com/",
-    "searchBaseUrl": "https://animegojoo.com/search/%s/",
+    "searchBaseUrl": "https://animegojoo.com/",
     "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/animegojo/animegojo.js",
     "type": "anime",
     "asyncJS": true,

@@ -7,122 +7,206 @@
 
 const DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-    "Accept-Language": "th-TH,th;q=0.9,en-US;q=0.8,en;q=0.7",
     "Referer": "https://animegojoo.com/"
 };
 
-// ─── Search ───
-async function search(query) {
+async function httpGet(url, headers = DEFAULT_HEADERS) {
     try {
-        const cleanQuery = (query || "").trim();
-        const searchUrl = `https://animegojoo.com/search/${encodeURIComponent(cleanQuery)}/`;
-        console.log("[AnimeGoJo] Searching:", searchUrl);
+        let res;
+        if (typeof fetchv2 !== "undefined") {
+            res = await fetchv2(url, headers);
+        } else if (typeof fetch !== "undefined") {
+            res = await fetch(url, { headers: headers });
+        }
+        if (!res) return null;
 
-        const res = await fetch(searchUrl, { headers: DEFAULT_HEADERS });
-        if (!res.ok) return JSON.stringify([]);
+        if (typeof res.text === "function") {
+            return await res.text();
+        } else if (typeof res === "string") {
+            return res;
+        }
+        return null;
+    } catch (err) {
+        console.error("[AnimeGoJo] httpGet error for " + url + ": " + err.message);
+        return null;
+    }
+}
 
-        const html = await res.text();
+// ─── Search Results ───
+async function searchResults(keyword) {
+    try {
+        const query = keyword ? keyword.trim() : "";
+        let targetUrl = "https://animegojoo.com/";
+
+        if (query !== "") {
+            targetUrl = `https://animegojoo.com/search/${encodeURIComponent(query)}/`;
+        }
+
+        const html = await httpGet(targetUrl);
+        if (!html || html === "undefined") {
+            return JSON.stringify([]);
+        }
+
         const results = [];
-        const cardRegex = /<a\s+class="anime-card"\s+href="([^"]+)"[\s\S]*?<\/a>/gi;
-        const matches = [...html.matchAll(cardRegex)];
+        const seenHrefs = new Set();
+        const cardRegex = /<a[^>]+href=["'](\/(?:list|ep)\/\d+\/?)["'][^>]*>([\s\S]*?)<\/a>/gi;
+        let match;
 
-        for (const match of matches) {
+        while ((match = cardRegex.exec(html)) !== null) {
             const cardHtml = match[0];
-            const relHref = match[1];
-            const fullUrl = relHref.startsWith("http") ? relHref : `https://animegojoo.com${relHref.startsWith("/") ? "" : "/"}${relHref}`;
+            let relHref = match[1];
+            let href = relHref.startsWith("http") ? relHref : `https://animegojoo.com${relHref.startsWith("/") ? "" : "/"}${relHref}`;
+            const inner = match[2];
+
+            if (seenHrefs.has(href)) continue;
 
             // Title
-            const titleMatch = cardHtml.match(/<div class="card-info">\s*<h3>([\s\S]*?)<\/h3>/i) || cardHtml.match(/title="([^"]+)"/i);
-            const title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, "").trim() : "Unknown";
+            const titleMatch = cardHtml.match(/title=["']([^"']+)["']/i) ||
+                               inner.match(/<div class="card-info">\s*<h3>([\s\S]*?)<\/h3>/i) ||
+                               inner.match(/<h3[^>]*>([\s\S]*?)<\/h3>/i);
+            let title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, "").trim() : "";
+            if (!title) continue;
 
             // Image
-            const imgMatch = cardHtml.match(/style=["'][^"']*url\(([^)]+)\)["']/i) || cardHtml.match(/data-bg=["']([^"']+)["']/i) || cardHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
+            const imgMatch = inner.match(/data-bg=["']([^"']+)["']/i) ||
+                             inner.match(/style=["'][^"']*url\(([^)]+)\)["']/i) ||
+                             inner.match(/<img[^>]+src=["']([^"']+)["']/i);
             let image = "";
             if (imgMatch) {
                 const imgPath = imgMatch[1].replace(/['"]/g, "").trim();
                 image = imgPath.startsWith("http") ? imgPath : `https://animegojoo.com${imgPath.startsWith("/") ? "" : "/"}${imgPath}`;
             }
 
-            // Extract ID
-            const idMatch = relHref.match(/\/(?:list|ep)\/(\d+)\/?/i);
-            const id = idMatch ? idMatch[1] : fullUrl;
-
-            results.push({
-                id: id,
-                title: title,
-                image: image,
-                url: fullUrl
-            });
+            if (image) {
+                seenHrefs.add(href);
+                results.push({
+                    title: title,
+                    image: image,
+                    href: href
+                });
+            }
         }
 
         return JSON.stringify(results);
-    } catch (e) {
-        console.error("[AnimeGoJo] Search error: " + e.message);
+    } catch (error) {
+        console.error("[AnimeGoJo] searchResults error: " + error.message);
         return JSON.stringify([]);
+    }
+}
+
+// ─── Extract Details ───
+async function extractDetails(url) {
+    try {
+        const baseUrl = url.split("?")[0];
+        const html = await httpGet(baseUrl);
+        if (!html || html === "undefined") {
+            return JSON.stringify([{
+                description: "No details available.",
+                aliases: "AnimeGoJo",
+                airdate: "N/A"
+            }]);
+        }
+
+        const titleMatch = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i) || html.match(/<title>([^<]+)<\/title>/i);
+        const title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, "").trim() : "AnimeGoJo";
+
+        const descMatch = html.match(/<div class="anime-synopsis"[^>]*>([\s\S]*?)<\/div>/i) ||
+                          html.match(/<div class="card-info">\s*<p[^>]*>([\s\S]*?)<\/p>/i) ||
+                          html.match(/<p class="desc[^"]*"[^>]*>([\s\S]*?)<\/p>/i);
+        const description = descMatch ? descMatch[1].replace(/<[^>]+>/g, "").trim() : "รับชมอนิเมะออนไลน์ฟรี ซับไทย พากย์ไทย ที่ AnimeGoJo";
+
+        const yearMatch = html.match(/\b(202\d|201\d)\b/);
+        const airdate = yearMatch ? yearMatch[1] : "N/A";
+
+        return JSON.stringify([{
+            description: description,
+            aliases: title,
+            airdate: airdate
+        }]);
+    } catch (error) {
+        console.error("[AnimeGoJo] extractDetails error: " + error.message);
+        return JSON.stringify([{
+            description: "Error loading details",
+            aliases: "AnimeGoJo",
+            airdate: "N/A"
+        }]);
     }
 }
 
 // ─── Extract Episodes ───
 async function extractEpisodes(url) {
     try {
-        let animeUrl = (url || "").trim();
-        if (!animeUrl.startsWith("http")) {
-            animeUrl = `https://animegojoo.com/list/${animeUrl}/`;
+        let baseUrl = url.split("?")[0];
+        let html = await httpGet(baseUrl);
+        if (!html || html === "undefined") {
+            return JSON.stringify([{
+                href: baseUrl,
+                number: 1
+            }]);
         }
 
-        console.log("[AnimeGoJo] Extracting episodes for:", animeUrl);
-        const res = await fetch(animeUrl, { headers: DEFAULT_HEADERS });
-        if (!res.ok) return JSON.stringify([]);
+        // If this is an episode page (/ep/...), check if there is a series link (/list/...)
+        if (baseUrl.includes("/ep/")) {
+            const listLinkMatch = html.match(/href=["'](\/list\/\d+\/?)["']/i);
+            if (listLinkMatch) {
+                const listUrl = `https://animegojoo.com${listLinkMatch[1]}`;
+                const listHtml = await httpGet(listUrl);
+                if (listHtml && listHtml !== "undefined") {
+                    html = listHtml;
+                    baseUrl = listUrl;
+                }
+            }
+        }
 
-        const html = await res.text();
         const episodes = [];
+        const seenHrefs = new Set();
         const epRegex = /<a\s+class="ep-item"\s+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-        const matches = [...html.matchAll(epRegex)];
+        let match;
 
-        for (let i = 0; i < matches.length; i++) {
-            const relHref = matches[i][1];
-            const epText = matches[i][2].replace(/<[^>]+>/g, "").trim();
-            const fullUrl = relHref.startsWith("http") ? relHref : `https://animegojoo.com${relHref.startsWith("/") ? "" : "/"}${relHref}`;
+        while ((match = epRegex.exec(html)) !== null) {
+            const relHref = match[1];
+            const epText = match[2].replace(/<[^>]+>/g, "").trim();
+            const href = relHref.startsWith("http") ? relHref : `https://animegojoo.com${relHref.startsWith("/") ? "" : "/"}${relHref}`;
 
-            // Extract numeric episode number
+            if (seenHrefs.has(href)) continue;
+            seenHrefs.add(href);
+
             const numMatch = epText.match(/ตอนที่\s*([0-9.]+)/i) || epText.match(/EP\s*([0-9.]+)/i) || epText.match(/([0-9.]+)/);
-            const epNum = numMatch ? parseFloat(numMatch[1]) : (i + 1);
-
-            const idMatch = relHref.match(/\/ep\/(\d+)\/?/i);
-            const id = idMatch ? idMatch[1] : fullUrl;
+            const number = numMatch ? parseFloat(numMatch[1]) : (episodes.length + 1);
 
             episodes.push({
-                id: id,
-                title: epText || `ตอนที่ ${i + 1}`,
-                episodeNumber: epNum,
-                number: epNum,
-                url: fullUrl
+                href: href,
+                number: number
+            });
+        }
+
+        if (episodes.length === 0) {
+            episodes.push({
+                href: baseUrl,
+                number: 1
             });
         }
 
         // Sort ascending by episode number
-        episodes.sort((a, b) => a.episodeNumber - b.episodeNumber);
+        episodes.sort((a, b) => a.number - b.number);
         return JSON.stringify(episodes);
-    } catch (e) {
-        console.error("[AnimeGoJo] Extract episodes error: " + e.message);
-        return JSON.stringify([]);
+    } catch (error) {
+        console.error("[AnimeGoJo] extractEpisodes error: " + error.message);
+        return JSON.stringify([{
+            href: url,
+            number: 1
+        }]);
     }
 }
 
 // ─── Extract Stream URL ───
 async function extractStreamUrl(url) {
     try {
-        let epUrl = (url || "").trim();
-        if (!epUrl.startsWith("http")) {
-            epUrl = `https://animegojoo.com/ep/${epUrl}/`;
+        const baseUrl = url.split("?")[0];
+        const html = await httpGet(baseUrl);
+        if (!html || html === "undefined") {
+            return JSON.stringify({ streams: [], subtitle: "" });
         }
-
-        console.log("[AnimeGoJo] Extracting stream for:", epUrl);
-        const res = await fetch(epUrl, { headers: DEFAULT_HEADERS });
-        if (!res.ok) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
-
-        const html = await res.text();
 
         let link1 = "";
         let link2 = "";
@@ -164,17 +248,14 @@ async function extractStreamUrl(url) {
         }
 
         if (!streamUrl) {
-            return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
+            return JSON.stringify({ streams: [], subtitle: "" });
         }
 
         const streams = [
             {
-                title: "1080p",
-                quality: "1080p",
+                title: "AnimeGoJo • 1080p HD (HLS)",
                 streamUrl: streamUrl,
                 url: streamUrl,
-                file: streamUrl,
-                link: streamUrl,
                 headers: {
                     "User-Agent": DEFAULT_HEADERS["User-Agent"],
                     "Referer": "https://anccplayer.cyou/"
@@ -189,8 +270,8 @@ async function extractStreamUrl(url) {
             subtitle: ""
         });
 
-    } catch (e) {
-        console.error("[AnimeGoJo] Extract stream error: " + e.message);
-        return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
+    } catch (error) {
+        console.error("[AnimeGoJo] extractStreamUrl error: " + error.message);
+        return JSON.stringify({ streams: [], subtitle: "" });
     }
 }
