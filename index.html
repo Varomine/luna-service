@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luna Service - Modules Repository</title>
+    <title>Luna Service - Modules Repository & Support</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Plus Jakarta Sans', 'Kanit', sans-serif;
@@ -25,12 +25,18 @@
             box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.2);
         }
         .glass-modal {
-            background: rgba(15, 23, 42, 0.95);
+            background: rgba(15, 23, 42, 0.96);
             backdrop-filter: blur(20px);
         }
         select option {
             background-color: #111827;
             color: #f3f4f6;
+        }
+        .tab-btn.active {
+            background-color: #4f46e5;
+            color: #ffffff;
+            border-color: #6366f1;
+            box-shadow: 0 4px 15px -3px rgba(79, 70, 229, 0.4);
         }
     </style>
 </head>
@@ -40,10 +46,22 @@
     <nav class="border-b border-slate-800 bg-slate-950/90 backdrop-blur-md px-4 py-3 sticky top-0 z-50">
         <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
             <!-- Brand -->
-            <a href="https://varomine.github.io/luna-service/" class="flex items-center space-x-2 text-white font-bold text-lg tracking-tight">
-                <i class="fa-solid fa-moon text-indigo-400"></i>
+            <a href="https://varomine.github.io/luna-service/" class="flex items-center space-x-2.5 text-white font-bold text-lg tracking-tight">
+                <div class="w-8 h-8 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                    <i class="fa-solid fa-moon"></i>
+                </div>
                 <span>Luna Service</span>
             </a>
+
+            <!-- Navigation Links -->
+            <div class="flex items-center gap-2">
+                <button onclick="switchTab('modules')" id="navTabModules" class="px-3 py-1.5 rounded-xl text-xs font-semibold transition text-indigo-400 bg-indigo-500/10 border border-indigo-500/20">
+                    <i class="fa-solid fa-cubes mr-1.5"></i><span data-i18n="navModules">โมดูลทั้งหมด</span>
+                </button>
+                <button onclick="switchTab('troubleshoot')" id="navTabTroubleshoot" class="px-3 py-1.5 rounded-xl text-xs font-semibold transition text-slate-300 hover:text-white hover:bg-slate-800 border border-transparent">
+                    <i class="fa-solid fa-wrench mr-1.5"></i><span data-i18n="navTroubleshoot">วิธีแก้ไขปัญหา</span>
+                </button>
+            </div>
 
             <!-- Action Controls -->
             <div class="flex flex-wrap items-center gap-2.5">
@@ -54,7 +72,7 @@
                 </a>
 
                 <!-- GitHub Profile Button -->
-                <a href="https://github.com/Varomine" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 text-xs font-medium flex items-center gap-2 transition hover:border-indigo-500/50">
+                <a href="https://github.com/Varomine/luna-service" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 text-xs font-medium flex items-center gap-2 transition hover:border-indigo-500/50">
                     <i class="fa-brands fa-github text-sm text-slate-300"></i>
                     <span>GitHub</span>
                 </a>
@@ -71,26 +89,38 @@
     </nav>
 
     <!-- Header / Banner -->
-    <header class="relative bg-slate-950/40 py-12 px-4 border-b border-slate-800/60">
+    <header class="relative bg-slate-950/40 py-10 px-4 border-b border-slate-800/60">
         <div class="max-w-5xl mx-auto text-center">
             <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-4">
                 <i class="fa-solid fa-cube"></i>
-                <span data-i18n="heroBadge">Luna Provider Modules</span>
+                <span data-i18n="heroBadge">Luna Provider Modules & Support Hub</span>
             </div>
             <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-3" data-i18n="heroTitle">
                 Luna Extension Service
             </h1>
-            <p class="text-slate-400 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed" data-i18n="heroDesc">
-                คอลเลกชันโมดูลส่วนขยายสำหรับ Luna, Sora และแอปสตรีมมิงอนิเมะที่รองรับ (พัฒนาสำหรับชุมชนอนิเมะไทย)
+            <p class="text-slate-400 text-base md:text-lg max-w-2xl mx-auto mb-6 leading-relaxed" data-i18n="heroDesc">
+                คอลเลกชันโมดูลส่วนขยายสำหรับ Luna, Sora และแอปสตรีมมิงอนิเมะ พร้อมระบบแจ้งปัญหาและแนวทางแก้ไข
             </p>
 
-            <!-- Search Bar + Request Module Button -->
-            <div class="max-w-3xl mx-auto flex flex-col sm:flex-row items-center gap-3">
+            <!-- Navigation Tab Switcher Pills -->
+            <div class="flex items-center justify-center gap-3 mb-6">
+                <button onclick="switchTab('modules')" id="pillTabModules" class="tab-btn active px-5 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 border border-indigo-500/40">
+                    <i class="fa-solid fa-cubes"></i>
+                    <span data-i18n="tabModules">📦 โมดูลทั้งหมด</span>
+                </button>
+                <button onclick="switchTab('troubleshoot')" id="pillTabTroubleshoot" class="tab-btn px-5 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
+                    <span data-i18n="tabTroubleshoot">🛠️ วิธีแก้ไขปัญหา (อ่านก่อนแจ้ง)</span>
+                </button>
+            </div>
+
+            <!-- Search Bar + Action Buttons (Visible on Modules Tab) -->
+            <div id="moduleControls" class="max-w-3xl mx-auto flex flex-col sm:flex-row items-center gap-3">
                 <div class="relative w-full flex-grow">
                     <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="searchInput" onkeyup="filterModules()" placeholder="ค้นหาโมดูลตามชื่อ, ภาษา, ประเภท..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-3.5 pl-11 pr-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner">
+                    <input type="text" id="searchInput" onkeyup="filterModules()" placeholder="ค้นหาโมดูลตามชื่อ, ภาษา, ประเภท..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner text-sm">
                 </div>
-                <button onclick="openRequestModal()" class="w-full sm:w-auto px-5 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-2xl transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 whitespace-nowrap">
+                <button onclick="openRequestModal()" class="w-full sm:w-auto px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-2xl transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 whitespace-nowrap">
                     <i class="fa-solid fa-paper-plane"></i>
                     <span data-i18n="requestBtn">ขอรีเควสส่วนขยาย</span>
                 </button>
@@ -98,184 +128,451 @@
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="max-w-6xl mx-auto px-4 py-10 flex-grow w-full">
-        <!-- Section Header -->
-        <div class="flex items-center justify-between mb-8 border-b border-slate-800 pb-4">
-            <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-cubes text-indigo-400"></i>
-                <span data-i18n="availableModules">โมดูลที่พร้อมใช้งาน</span>
-                <span id="moduleCount" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">5</span>
-            </h2>
-        </div>
+    <!-- Main Content Area -->
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
 
-        <!-- Modules Container -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="modulesGrid">
+        <!-- ==================== SECTION 1: MODULES GRID ==================== -->
+        <section id="modulesSection">
+            <!-- Section Header -->
+            <div class="flex items-center justify-between mb-6 border-b border-slate-800 pb-4">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-cubes text-indigo-400"></i>
+                    <span data-i18n="availableModules">โมดูลที่พร้อมใช้งาน</span>
+                    <span id="moduleCount" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">5</span>
+                </h2>
+                <button onclick="switchTab('troubleshoot')" class="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1.5 font-medium transition">
+                    <i class="fa-solid fa-circle-question"></i>
+                    <span data-i18n="havingIssuesLink">เล่นไม่ได้? ดูวิธีแก้ปัญหา</span>
+                </button>
+            </div>
 
-            <!-- Anifume Module Card -->
-            <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="anifume thai anime dub sub mp4 720p multi-server">
-                <div>
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-center space-x-3">
-                            <img src="https://raw.githubusercontent.com/Varomine/luna-service/main/anifume/icon.png" alt="Anifume Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700" onerror="this.src='https://anifume.com/favicon.ico'">
-                            <div>
-                                <h3 class="text-lg font-bold text-white leading-snug">Anifume</h3>
-                                <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
+            <!-- Modules Container -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="modulesGrid">
+
+                <!-- Anifume Module Card -->
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="anifume thai anime dub sub mp4 720p 1080p">
+                    <div>
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <img src="https://raw.githubusercontent.com/Varomine/luna-service/main/anifume/icon.png" alt="Anifume Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700" onerror="this.src='https://anifume.com/favicon.ico'">
+                                <div>
+                                    <h3 class="text-lg font-bold text-white leading-snug">Anifume</h3>
+                                    <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
+                                </div>
                             </div>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.0.3</span>
                         </div>
-                        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.0.0</span>
+                        <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="anifumeDesc">
+                            โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ anifume.com ดึงสตรีมตรง MP4 คมชัดสูง
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-1.5 mb-6">
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">MP4 Direct</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Thai (TH)</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Anime</span>
+                        </div>
                     </div>
-                    <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="anifumeDesc">
-                        โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ anifume.com ดึงสตรีมมัลติเซิร์ฟเวอร์ MP4 720p/360p
-                    </p>
-                    
-                    <div class="flex flex-wrap gap-1.5 mb-6">
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Multi-Server</span>
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">MP4 720p</span>
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Thai (TH)</span>
+
+                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2">
+                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/anifume/anifume.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-xs shadow-lg shadow-indigo-600/20">
+                            <i class="fa-regular fa-copy"></i>
+                            <span data-i18n="copyBtn">คัดลอก Manifest</span>
+                        </button>
+                        <button onclick="openReportModal('Anifume')" class="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5" title="แจ้งปัญหาโมดูลนี้">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
+                            <span data-i18n="reportBtn">แจ้งปัญหา</span>
+                        </button>
                     </div>
                 </div>
 
-                <div class="pt-4 border-t border-slate-800/80">
-                    <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/anifume/anifume.json', this)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/20">
-                        <i class="fa-regular fa-copy"></i>
-                        <span data-i18n="copyBtn">คัดลอก Manifest URL</span>
-                    </button>
+                <!-- MioAnime Module Card -->
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="mioanime thai anime dub sub hls 1080p">
+                    <div>
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <img src="https://www.mioanime.net/icon/favicon.png" alt="MioAnime Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700">
+                                <div>
+                                    <h3 class="text-lg font-bold text-white leading-snug">MioAnime</h3>
+                                    <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.0.0</span>
+                        </div>
+                        <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="mioDesc">
+                            โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ mioanime.com ดึงสตรีม Master HLS 1080p คุณภาพสูง
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-1.5 mb-6">
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">HLS 1080p</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Thai (TH)</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Anime</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2">
+                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/mioanime/mioanime.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-xs shadow-lg shadow-indigo-600/20">
+                            <i class="fa-regular fa-copy"></i>
+                            <span data-i18n="copyBtn">คัดลอก Manifest</span>
+                        </button>
+                        <button onclick="openReportModal('MioAnime')" class="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5" title="แจ้งปัญหาโมดูลนี้">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
+                            <span data-i18n="reportBtn">แจ้งปัญหา</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Alpha-Hen Module Card -->
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="alpha-hen hentai subthai uncensored hls 1080p thai">
+                    <div>
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <img src="https://www.alpha-hen.com/wp-content/uploads/2022/04/cropped-icon-192x192.png" alt="Alpha-Hen Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700" onerror="this.src='https://www.alpha-hen.com/wp-content/uploads/2018/05/ahlogo-font-NEW-1.png'">
+                                <div>
+                                    <h3 class="text-lg font-bold text-white leading-snug">Alpha-Hen</h3>
+                                    <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">v1.0.0</span>
+                        </div>
+                        <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="alphaDesc">
+                            โมดูล Hentai Uncensored ซับไทย สำหรับ alpha-hen.com พร้อมระบบดึงสตรีม HLS คุณภาพสูง
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-1.5 mb-6">
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">HLS 1080p</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Thai (TH)</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Uncensored</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2">
+                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/alpha-hen/alpha-hen.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-xs shadow-lg shadow-indigo-600/20">
+                            <i class="fa-regular fa-copy"></i>
+                            <span data-i18n="copyBtn">คัดลอก Manifest</span>
+                        </button>
+                        <button onclick="openReportModal('Alpha-Hen')" class="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5" title="แจ้งปัญหาโมดูลนี้">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
+                            <span data-i18n="reportBtn">แจ้งปัญหา</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- AnimeRuka Module Card -->
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="animeruka thai anime dub sub dooplayer abyss animemami">
+                    <div>
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <img src="https://animeruka.com/wp-content/uploads/2024/01/logo.png" alt="AnimeRuka Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700" onerror="this.src='https://animeruka.com/favicon.ico'">
+                                <div>
+                                    <h3 class="text-lg font-bold text-white leading-snug">AnimeRuka</h3>
+                                    <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.0.0</span>
+                        </div>
+                        <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="rukaDesc">
+                            โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ animeruka.com ดึงสตรีมมัลติเซิร์ฟเวอร์ (AnimeMami & Abyss Player)
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-1.5 mb-6">
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Multi-Server</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Thai (TH)</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Anime</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2">
+                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/animeruka/animeruka.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-xs shadow-lg shadow-indigo-600/20">
+                            <i class="fa-regular fa-copy"></i>
+                            <span data-i18n="copyBtn">คัดลอก Manifest</span>
+                        </button>
+                        <button onclick="openReportModal('AnimeRuka')" class="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5" title="แจ้งปัญหาโมดูลนี้">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
+                            <span data-i18n="reportBtn">แจ้งปัญหา</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hanime Module Card -->
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="hanime anime hls 1080p english">
+                    <div>
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <img src="https://github.com/Varomine/luna-service/blob/main/hanime/st_small_507x507-pad_600x600_f8f8f8-removebg-preview.png?raw=true" alt="Hanime Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700">
+                                <div>
+                                    <h3 class="text-lg font-bold text-white leading-snug">Hanime</h3>
+                                    <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.1.0</span>
+                        </div>
+                        <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="hanimeDesc">
+                            โมดูลสแกนและดึงสตรีม HLS 1080p คุณภาพสูง สำหรับ Hanime
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-1.5 mb-6">
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">HLS Stream</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">1080p</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Anime</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2">
+                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-xs shadow-lg shadow-indigo-600/20">
+                            <i class="fa-regular fa-copy"></i>
+                            <span data-i18n="copyBtn">คัดลอก Manifest</span>
+                        </button>
+                        <button onclick="openReportModal('Hanime')" class="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5" title="แจ้งปัญหาโมดูลนี้">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
+                            <span data-i18n="reportBtn">แจ้งปัญหา</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==================== SECTION 2: TROUBLESHOOTING & FAQ ==================== -->
+        <section id="troubleshootSection" class="hidden">
+            <!-- Alert Notice Banner -->
+            <div class="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-6 md:p-8 mb-8 text-amber-200">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl flex-shrink-0">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg md:text-xl font-bold text-white mb-2" data-i18n="tbNoticeTitle">
+                            📌 โปรดอ่านหน้านี้ก่อนส่งรายงานแจ้งปัญหา!
+                        </h3>
+                        <p class="text-sm text-amber-200/90 leading-relaxed" data-i18n="tbNoticeDesc">
+                            ปัญหาเล่นวิดีโอไม่ได้ (Playback Failed) หรือจอดำ ส่วนใหญ่เกิดจากการที่ <strong>ผู้ให้บริการอินเทอร์เน็ต (ISP)</strong> บล็อกการเข้าถึงเซิร์ฟเวอร์สตรีมมิ่ง หรือเกิดจากการเลือก Player ในแอป Luna ซึ่งสามารถแก้ไขได้ทันทีด้วยวิธีด้านล่างนี้
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            <!-- MioAnime Module Card -->
-            <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="mioanime thai anime dub sub hls 1080p">
-                <div>
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-center space-x-3">
-                            <img src="https://www.mioanime.net/icon/favicon.png" alt="MioAnime Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700">
-                            <div>
-                                <h3 class="text-lg font-bold text-white leading-snug">MioAnime</h3>
-                                <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
-                            </div>
-                        </div>
-                        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.0.0</span>
+            <!-- Problem 1: ISP Blocking / Playback Failed -->
+            <div class="glass-card rounded-3xl p-6 md:p-8 mb-8">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-ban"></i>
                     </div>
-                    <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="mioDesc">
-                        โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ mioanime.com ดึงสตรีม Master HLS 1080p คุณภาพสูง
-                    </p>
-                    
-                    <div class="flex flex-wrap gap-1.5 mb-6">
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">HLS 1080p</span>
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Thai (TH)</span>
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Anime</span>
+                    <div>
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">ปัญหาที่พบบ่อย #1</span>
+                        <h3 class="text-xl font-bold text-white" data-i18n="p1Title">
+                            จอดำ / ขึ้นเครื่องหมาย Play ขีดฆ่า (Playback Failed)
+                        </h3>
                     </div>
                 </div>
 
-                <div class="pt-4 border-t border-slate-800/80">
-                    <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/mioanime/mioanime.json', this)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/20">
-                        <i class="fa-regular fa-copy"></i>
-                        <span data-i18n="copyBtn">คัดลอก Manifest URL</span>
-                    </button>
+                <!-- Problem Illustration & Screenshot Mockup -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 items-center">
+                    <div class="lg:col-span-6 space-y-3 text-slate-300 text-sm leading-relaxed">
+                        <p data-i18n="p1Desc1">
+                            <strong>อาการที่พบ:</strong> เมื่อกดเล่นตอนอนิเมะ หน้าจอขึ้นเป็นสีดำและมีไอคอนปุ่ม Play มีเส้นขีดฆ่าตรงกลาง ไม่สามารถโหลดวิดีโอได้
+                        </p>
+                        <p data-i18n="p1Desc2">
+                            <strong>สาเหตุหลัก:</strong> ผู้ให้บริการเครือข่ายอินเทอร์เน็ตหรือ Wi-Fi (เช่น True, AIS, 3BB, NT) ทำการบล็อกการเชื่อมต่อ (DNS Block / Domain Block) ไปยังเซิร์ฟเวอร์จัดเก็บไฟล์วิดีโอต้นทาง
+                        </p>
+                    </div>
+                    <div class="lg:col-span-6">
+                        <div class="bg-slate-950 rounded-2xl p-2 border border-slate-800 shadow-2xl overflow-hidden text-center">
+                            <img src="assets/playback-failed-example.png" alt="Playback Failed Example" class="rounded-xl w-full max-h-60 object-contain mx-auto bg-black">
+                            <p class="text-xs text-slate-400 mt-2" data-i18n="p1ImgCaption">ตัวอย่างภาพหน้าจอเมื่อถูกเครือข่ายอินเทอร์เน็ตบล็อกการสตรีม</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solutions Grid -->
+                <h4 class="text-base font-bold text-indigo-400 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                    <span data-i18n="solutionsHeading">วิธีแก้ไขที่แนะนำ (เลือกวิธีใดวิธีหนึ่ง):</span>
+                </h4>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Solution 1: Cloudflare WARP App -->
+                    <div class="bg-slate-900/90 border border-slate-800 hover:border-indigo-500/40 rounded-2xl p-5 flex flex-col justify-between transition">
+                        <div>
+                            <div class="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center mb-3">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </div>
+                            <h5 class="text-sm font-bold text-white mb-1.5" data-i18n="sol1Title">วิธีที่ 1: ใช้แอป 1.1.1.1 (WARP)</h5>
+                            <p class="text-xs text-slate-400 leading-relaxed mb-4" data-i18n="sol1Desc">
+                                ติดตั้งแอป <strong>1.1.1.1: Faster & Safer Internet (WARP)</strong> ของ Cloudflare แล้วเปิดใช้งานเพื่อทะลุการบล็อกของค่ายเน็ตได้ทันที 100%
+                            </p>
+                        </div>
+                        <div class="pt-3 border-t border-slate-800/80 flex flex-col gap-2">
+                            <a href="https://apps.apple.com/app/1-1-1-1-faster-internet/id1423538627" target="_blank" rel="noopener noreferrer" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 px-3 rounded-xl transition flex items-center justify-center gap-2">
+                                <i class="fa-brands fa-apple text-indigo-400"></i>
+                                <span>App Store (iOS / iPad)</span>
+                            </a>
+                            <a href="https://play.google.com/store/apps/details?id=com.cloudflare.onedotonedotonedotone" target="_blank" rel="noopener noreferrer" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 px-3 rounded-xl transition flex items-center justify-center gap-2">
+                                <i class="fa-brands fa-google-play text-emerald-400"></i>
+                                <span>Google Play (Android)</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Solution 2: Change Wi-Fi DNS -->
+                    <div class="bg-slate-900/90 border border-slate-800 hover:border-indigo-500/40 rounded-2xl p-5 flex flex-col justify-between transition">
+                        <div>
+                            <div class="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-3">
+                                <i class="fa-solid fa-network-wired"></i>
+                            </div>
+                            <h5 class="text-sm font-bold text-white mb-1.5" data-i18n="sol2Title">วิธีที่ 2: เปลี่ยน DNS ในเครื่อง</h5>
+                            <p class="text-xs text-slate-400 leading-relaxed mb-4" data-i18n="sol2Desc">
+                                เปลี่ยนการตั้งค่า DNS ของ Wi-Fi บน iPhone, iPad หรือ Android เป็น:
+                            </p>
+                            <div class="space-y-1.5 mb-4 text-xs font-mono">
+                                <div class="bg-slate-950 px-3 py-1.5 rounded-lg text-emerald-400 border border-slate-800">DNS 1: 1.1.1.1</div>
+                                <div class="bg-slate-950 px-3 py-1.5 rounded-lg text-emerald-400 border border-slate-800">DNS 2: 1.0.0.1 (หรือ 8.8.8.8)</div>
+                            </div>
+                        </div>
+                        <div class="pt-3 border-t border-slate-800/80 text-xs text-slate-500" data-i18n="sol2Note">
+                            ไปที่การตั้งค่า Wi-Fi $\rightarrow$ กำหนดค่า DNS $\rightarrow$ กำหนดเอง (Manual)
+                        </div>
+                    </div>
+
+                    <!-- Solution 3: Change Luna Player to Native -->
+                    <div class="bg-slate-900/90 border border-slate-800 hover:border-indigo-500/40 rounded-2xl p-5 flex flex-col justify-between transition">
+                        <div>
+                            <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center mb-3">
+                                <i class="fa-solid fa-play"></i>
+                            </div>
+                            <h5 class="text-sm font-bold text-white mb-1.5" data-i18n="sol3Title">วิธีที่ 3: สลับ Player ในแอป Luna</h5>
+                            <p class="text-xs text-slate-400 leading-relaxed mb-4" data-i18n="sol3Desc">
+                                หากใช้ iPad หรือ iPhone แล้วเปิด MPV Player อยู่ ให้สลับไปใช้ <strong>Native / Normal (Apple) Player</strong> ในการตั้งค่าของแอป Luna
+                            </p>
+                            <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-slate-300 font-mono mb-2">
+                                Settings &gt; Player &gt; Native Player (Apple)
+                            </div>
+                        </div>
+                        <div class="pt-3 border-t border-slate-800/80 text-xs text-slate-500" data-i18n="sol3Note">
+                            Native Player รองรับ Stream Headers ผ่าน AVPlayer ได้สมบูรณ์ที่สุด
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Alpha-Hen Module Card -->
-            <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="alpha-hen hentai subthai uncensored hls 1080p thai">
-                <div>
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-center space-x-3">
-                            <img src="https://www.alpha-hen.com/wp-content/uploads/2022/04/cropped-icon-192x192.png" alt="Alpha-Hen Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700" onerror="this.src='https://www.alpha-hen.com/wp-content/uploads/2018/05/ahlogo-font-NEW-1.png'">
-                            <div>
-                                <h3 class="text-lg font-bold text-white leading-snug">Alpha-Hen</h3>
-                                <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
-                            </div>
-                        </div>
-                        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">v1.0.0</span>
+            <!-- Problem 2: Updating Module Manifest -->
+            <div class="glass-card rounded-3xl p-6 md:p-8">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-rotate"></i>
                     </div>
-                    <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="alphaDesc">
-                        โมดูล Hentai Uncensored ซับไทย สำหรับ alpha-hen.com พร้อมระบบดึงสตรีม HLS คุณภาพสูง
-                    </p>
-                    
-                    <div class="flex flex-wrap gap-1.5 mb-6">
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">HLS 1080p</span>
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Thai (TH)</span>
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Uncensored</span>
+                    <div>
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">ปัญหาที่พบบ่อย #2</span>
+                        <h3 class="text-xl font-bold text-white" data-i18n="p2Title">
+                            วิธีอัปเดตโมดูลเมื่อระบบมีการแก้ไข
+                        </h3>
                     </div>
                 </div>
-
-                <div class="pt-4 border-t border-slate-800/80">
-                    <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/alpha-hen/alpha-hen.json', this)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/20">
-                        <i class="fa-regular fa-copy"></i>
-                        <span data-i18n="copyBtn">คัดลอก Manifest URL</span>
-                    </button>
-                </div>
+                <p class="text-sm text-slate-300 leading-relaxed mb-4" data-i18n="p2Desc">
+                    หากผู้พัฒนาทำการอัปเดตแก้ไขโมดูล ให้ไปที่แอป <strong>Luna</strong> $\rightarrow$ เมนู <strong>Settings (ตั้งค่า)</strong> $\rightarrow$ <strong>Modules (โมดูล)</strong> $\rightarrow$ กดลบโมดูลเดิมแล้วกด <strong>Import (นำเข้า)</strong> Manifest URL ใหม่อีกครั้ง เพื่อให้แอปโหลด JavaScript เวอร์ชันล่าสุด
+                </p>
             </div>
+        </section>
 
-            <!-- AnimeRuka Module Card -->
-            <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="animeruka thai anime dub sub dooplayer abyss animemami">
-                <div>
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-center space-x-3">
-                            <img src="https://animeruka.com/wp-content/uploads/2024/01/logo.png" alt="AnimeRuka Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700" onerror="this.src='https://animeruka.com/favicon.ico'">
-                            <div>
-                                <h3 class="text-lg font-bold text-white leading-snug">AnimeRuka</h3>
-                                <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
-                            </div>
-                        </div>
-                        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.0.0</span>
-                    </div>
-                    <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="rukaDesc">
-                        โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ animeruka.com ดึงสตรีมมัลติเซิร์ฟเวอร์ (AnimeMami & Abyss Player)
-                    </p>
-                    
-                    <div class="flex flex-wrap gap-1.5 mb-6">
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Multi-Server</span>
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Thai (TH)</span>
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Anime</span>
-                    </div>
-                </div>
-
-                <div class="pt-4 border-t border-slate-800/80">
-                    <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/animeruka/animeruka.json', this)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/20">
-                        <i class="fa-regular fa-copy"></i>
-                        <span data-i18n="copyBtn">คัดลอก Manifest URL</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Hanime Module Card -->
-            <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 module-card" data-name="hanime anime hls 1080p english">
-                <div>
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-center space-x-3">
-                            <img src="https://github.com/Varomine/luna-service/blob/main/hanime/st_small_507x507-pad_600x600_f8f8f8-removebg-preview.png?raw=true" alt="Hanime Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700">
-                            <div>
-                                <h3 class="text-lg font-bold text-white leading-snug">Hanime</h3>
-                                <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
-                            </div>
-                        </div>
-                        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.1.0</span>
-                    </div>
-                    <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="hanimeDesc">
-                        โมดูลสแกนและดึงสตรีม HLS 1080p คุณภาพสูง สำหรับ Hanime
-                    </p>
-                    
-                    <div class="flex flex-wrap gap-1.5 mb-6">
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">HLS Stream</span>
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">1080p</span>
-                        <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Anime</span>
-                    </div>
-                </div>
-
-                <div class="pt-4 border-t border-slate-800/80">
-                    <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json', this)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/20">
-                        <i class="fa-regular fa-copy"></i>
-                        <span data-i18n="copyBtn">คัดลอก Manifest URL</span>
-                    </button>
-                </div>
-            </div>
-
-        </div>
     </main>
 
-    <!-- Request Module Popup Modal -->
+    <!-- ==================== REPORT ISSUE POPUP MODAL ==================== -->
+    <div id="reportModal" onclick="handleReportBackdropClick(event)" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div id="reportModalCard" class="glass-modal bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative transform scale-95 transition-all duration-300 max-h-[90vh] overflow-y-auto">
+            <!-- Close Button -->
+            <button onclick="closeReportModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white transition w-8 h-8 rounded-full flex items-center justify-center bg-slate-800/50 hover:bg-slate-800">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+
+            <!-- Modal Header -->
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-white" data-i18n="reportModalTitle">แจ้งปัญหาโมดูล</h3>
+                    <p class="text-xs text-slate-400" data-i18n="reportModalSub">ส่งรายงานปัญหาเพื่อให้ผู้พัฒนาตรวจสอบและแก้ไข</p>
+                </div>
+            </div>
+
+            <!-- Troubleshooting Warning Notice in Modal -->
+            <div class="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-3.5 mb-5 text-xs text-amber-200 flex items-start gap-2.5">
+                <i class="fa-solid fa-circle-info text-amber-400 text-sm mt-0.5 flex-shrink-0"></i>
+                <div>
+                    <span data-i18n="reportNoticeText"><strong>ข้อแนะนำ:</strong> หากเป็นปัญหาจอดำ/เล่นไม่ได้ กรุณาตรวจสอบว่าลองเปลี่ยน DNS หรือใช้ WARP 1.1.1.1 แล้วหรือไม่</span>
+                    <button type="button" onclick="closeReportModal(); switchTab('troubleshoot');" class="text-indigo-400 underline font-semibold ml-1 hover:text-indigo-300" data-i18n="viewGuideBtn">ดูวิธีแก้ไข</button>
+                </div>
+            </div>
+
+            <form id="reportForm" onsubmit="submitReport(event)" class="space-y-4">
+                <!-- Module Selection Field -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                        <span data-i18n="labelRepModule">โมดูลที่มีปัญหา</span> <span class="text-rose-400">*</span>
+                    </label>
+                    <select id="repModule" required class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+                        <option value="Anifume">Anifume</option>
+                        <option value="MioAnime">MioAnime</option>
+                        <option value="Alpha-Hen">Alpha-Hen</option>
+                        <option value="AnimeRuka">AnimeRuka</option>
+                        <option value="Hanime">Hanime</option>
+                        <option value="Other">Other / อื่นๆ</option>
+                    </select>
+                </div>
+
+                <!-- Issue Type Field -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                        <span data-i18n="labelRepType">ประเภทปัญหา</span> <span class="text-rose-400">*</span>
+                    </label>
+                    <select id="repType" required class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+                        <option value="Playback Failed (เล่นวิดีโอไม่ได้ / จอดำ)">Playback Failed (เล่นวิดีโอไม่ได้ / จอดำ)</option>
+                        <option value="Search Not Working (ค้นหาไม่พบ)">Search Not Working (ค้นหาไม่พบ)</option>
+                        <option value="Episodes Not Loading (ตอนไม่โหลด)">Episodes Not Loading (ตอนไม่โหลด)</option>
+                        <option value="Stream Buffering / Lag (วิดีโอค้าง/กระตุก)">Stream Buffering / Lag (วิดีโอค้าง/กระตุก)</option>
+                        <option value="Other (อื่นๆ)">Other (อื่นๆ)</option>
+                    </select>
+                </div>
+
+                <!-- Device & Player Info -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                        <span data-i18n="labelRepDevice">อุปกรณ์ & Player ที่ใช้</span>
+                    </label>
+                    <input type="text" id="repDevice" placeholder="เช่น iPhone 15 Pro (Native Player), iPad Air (MPV)" class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
+                </div>
+
+                <!-- Screenshot Proof URL (Required) -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">
+                        <span data-i18n="labelRepImage">ลิงก์รูปภาพหลักฐาน (Screenshot Proof URL)</span> <span class="text-rose-400">*</span>
+                    </label>
+                    <p class="text-[11px] text-slate-400 mb-2 leading-relaxed" data-i18n="imgHostHelp">
+                        อัปโหลดรูปภาพฟรีได้ที่: <a href="https://imgbb.com/" target="_blank" rel="noopener noreferrer" class="text-indigo-400 underline font-semibold hover:text-indigo-300">ImgBB</a> | <a href="https://catbox.moe/" target="_blank" rel="noopener noreferrer" class="text-indigo-400 underline font-semibold hover:text-indigo-300">Catbox</a> | <a href="https://imgur.com/upload" target="_blank" rel="noopener noreferrer" class="text-indigo-400 underline font-semibold hover:text-indigo-300">Imgur</a> แล้วนำลิงก์รูปมาวาง
+                    </p>
+                    <input type="url" id="repImage" required placeholder="https://i.ibb.co/..." class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
+                </div>
+
+                <!-- Description / Details -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                        <span data-i18n="labelRepDetails">รายละเอียดเพิ่มเติม</span> <span class="text-rose-400">*</span>
+                    </label>
+                    <textarea id="repDetails" required rows="3" placeholder="ระบุชื่อเรื่องหรือตอนที่พบปัญหา..." class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition resize-none"></textarea>
+                </div>
+
+                <!-- Submit & Cancel Buttons -->
+                <div class="pt-2 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeReportModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition" data-i18n="cancelBtn">ยกเลิก</button>
+                    <button type="submit" id="submitRepBtn" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition flex items-center gap-2 shadow-lg shadow-rose-600/20">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span data-i18n="submitRepBtn">ส่งรายงานปัญหา</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== REQUEST MODULE POPUP MODAL ==================== -->
     <div id="requestModal" onclick="handleBackdropClick(event)" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
         <div id="modalCard" class="glass-modal bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative transform scale-95 transition-all duration-300">
             <!-- Close Button -->
@@ -343,20 +640,26 @@
 
         const i18n = {
             th: {
+                navModules: "โมดูลทั้งหมด",
+                navTroubleshoot: "วิธีแก้ไขปัญหา",
                 testflightBtn: "ดาวน์โหลด Luna (TestFlight)",
-                heroBadge: "Luna Provider Modules",
+                heroBadge: "Luna Provider Modules & Support Hub",
                 heroTitle: "Luna Extension Service",
-                heroDesc: "คอลเลกชันโมดูลส่วนขยายสำหรับ Luna, Sora และแอปสตรีมมิงอนิเมะที่รองรับ (พัฒนาสำหรับชุมชนอนิเมะไทย)",
+                heroDesc: "คอลเลกชันโมดูลส่วนขยายสำหรับ Luna, Sora และแอปสตรีมมิงอนิเมะ พร้อมระบบแจ้งปัญหาและแนวทางแก้ไข",
+                tabModules: "📦 โมดูลทั้งหมด",
+                tabTroubleshoot: "🛠️ วิธีแก้ไขปัญหา (อ่านก่อนแจ้ง)",
                 searchPlaceholder: "ค้นหาโมดูลตามชื่อ, ภาษา, ประเภท...",
                 requestBtn: "ขอรีเควสส่วนขยาย",
                 availableModules: "โมดูลที่พร้อมใช้งาน",
-                anifumeDesc: "โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ anifume.com ดึงสตรีมมัลติเซิร์ฟเวอร์ MP4 720p/360p",
+                havingIssuesLink: "เล่นไม่ได้? ดูวิธีแก้ปัญหา",
+                anifumeDesc: "โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ anifume.com ดึงสตรีมตรง MP4 คมชัดสูง",
                 mioDesc: "โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ mioanime.com ดึงสตรีม Master HLS 1080p คุณภาพสูง",
                 alphaDesc: "โมดูล Hentai Uncensored ซับไทย สำหรับ alpha-hen.com พร้อมระบบดึงสตรีม HLS คุณภาพสูง",
                 rukaDesc: "โมดูลอนิเมะซับไทย/พากย์ไทย สำหรับ animeruka.com ดึงสตรีมมัลติเซิร์ฟเวอร์ (AnimeMami & Abyss Player)",
                 hanimeDesc: "โมดูลสแกนและดึงสตรีม HLS 1080p คุณภาพสูง สำหรับ Hanime",
-                copyBtn: "คัดลอก Manifest URL",
+                copyBtn: "คัดลอก Manifest",
                 copiedBtn: "คัดลอกสำเร็จ!",
+                reportBtn: "แจ้งปัญหา",
                 toastTitle: "คัดลอกลงคลิปบอร์ดแล้ว!",
                 toastSub: "นำ URL นี้ไปวางในเมนูตั้งค่าโมดูลของแอป Luna",
                 modalTitle: "ขอรีเควสส่วนขยายใหม่",
@@ -369,23 +672,63 @@
                 submitBtn: "ส่งคำขอรีเควส",
                 submittingBtn: "กำลังส่ง...",
                 toastReqSuccessTitle: "ส่งคำขอรีเควสสำเร็จ!",
-                toastReqSuccessSub: "เราได้รับคำขอรีเควสส่วนขยายของคุณเรียบร้อยแล้ว"
+                toastReqSuccessSub: "เราได้รับคำขอรีเควสส่วนขยายของคุณเรียบร้อยแล้ว",
+                
+                // Report Modal
+                reportModalTitle: "แจ้งปัญหาโมดูล",
+                reportModalSub: "ส่งรายงานปัญหาเพื่อให้ผู้พัฒนาตรวจสอบและแก้ไข",
+                reportNoticeText: "ข้อแนะนำ: หากเป็นปัญหาจอดำ/เล่นไม่ได้ กรุณาตรวจสอบว่าลองเปลี่ยน DNS หรือใช้ WARP 1.1.1.1 แล้วหรือไม่",
+                viewGuideBtn: "ดูวิธีแก้ไข",
+                labelRepModule: "โมดูลที่มีปัญหา",
+                labelRepType: "ประเภทปัญหา",
+                labelRepDevice: "อุปกรณ์ & Player ที่ใช้",
+                labelRepImage: "ลิงก์รูปภาพหลักฐาน (Screenshot Proof URL)",
+                imgHostHelp: "อัปโหลดรูปภาพฟรีได้ที่: ImgBB | Catbox | Imgur แล้วนำลิงก์รูปมาวาง",
+                labelRepDetails: "รายละเอียดเพิ่มเติม",
+                submitRepBtn: "ส่งรายงานปัญหา",
+                toastRepSuccessTitle: "ส่งรายงานปัญหาสำเร็จ!",
+                toastRepSuccessSub: "ทีมงานได้รับรายงานข้อผิดพลาดเรียบร้อยแล้ว",
+
+                // Troubleshooting Section
+                tbNoticeTitle: "📌 โปรดอ่านหน้านี้ก่อนส่งรายงานแจ้งปัญหา!",
+                tbNoticeDesc: "ปัญหาเล่นวิดีโอไม่ได้ (Playback Failed) หรือจอดำ ส่วนใหญ่เกิดจากการที่ ผู้ให้บริการอินเทอร์เน็ต (ISP) บล็อกการเข้าถึงเซิร์ฟเวอร์สตรีมมิ่ง หรือเกิดจากการเลือก Player ในแอป Luna ซึ่งสามารถแก้ไขได้ทันทีด้วยวิธีด้านล่างนี้",
+                p1Title: "จอดำ / ขึ้นเครื่องหมาย Play ขีดฆ่า (Playback Failed)",
+                p1Desc1: "อาการที่พบ: เมื่อกดเล่นตอนอนิเมะ หน้าจอขึ้นเป็นสีดำและมีไอคอนปุ่ม Play มีเส้นขีดฆ่าตรงกลาง ไม่สามารถโหลดวิดีโอได้",
+                p1Desc2: "สาเหตุหลัก: ผู้ให้บริการเครือข่ายอินเทอร์เน็ตหรือ Wi-Fi (เช่น True, AIS, 3BB, NT) ทำการบล็อกการเชื่อมต่อ (DNS Block / Domain Block) ไปยังเซิร์ฟเวอร์จัดเก็บไฟล์วิดีโอต้นทาง",
+                p1ImgCaption: "ตัวอย่างภาพหน้าจอเมื่อถูกเครือข่ายอินเทอร์เน็ตบล็อกการสตรีม",
+                solutionsHeading: "วิธีแก้ไขที่แนะนำ (เลือกวิธีใดวิธีหนึ่ง):",
+                sol1Title: "วิธีที่ 1: ใช้แอป 1.1.1.1 (WARP)",
+                sol1Desc: "ติดตั้งแอป 1.1.1.1: Faster & Safer Internet (WARP) ของ Cloudflare แล้วเปิดใช้งานเพื่อทะลุการบล็อกของค่ายเน็ตได้ทันที 100%",
+                sol2Title: "วิธีที่ 2: เปลี่ยน DNS ในเครื่อง",
+                sol2Desc: "เปลี่ยนการตั้งค่า DNS ของ Wi-Fi บน iPhone, iPad หรือ Android เป็น 1.1.1.1 / 1.0.0.1",
+                sol2Note: "ไปที่การตั้งค่า Wi-Fi > กำหนดค่า DNS > กำหนดเอง (Manual)",
+                sol3Title: "วิธีที่ 3: สลับ Player ในแอป Luna",
+                sol3Desc: "หากใช้ iPad หรือ iPhone แล้วเปิด MPV Player อยู่ ให้สลับไปใช้ Native / Normal (Apple) Player ในการตั้งค่าของแอป Luna",
+                sol3Note: "Native Player รองรับ Stream Headers ผ่าน AVPlayer ได้สมบูรณ์ที่สุด",
+                p2Title: "วิธีอัปเดตโมดูลเมื่อระบบมีการแก้ไข",
+                p2Desc: "หากผู้พัฒนาทำการอัปเดตแก้ไขโมดูล ให้ไปที่แอป Luna > เมนู Settings (ตั้งค่า) > Modules (โมดูล) > กดลบโมดูลเดิมแล้วกด Import (นำเข้า) Manifest URL ใหม่อีกครั้ง เพื่อให้แอปโหลด JavaScript เวอร์ชันล่าสุด"
             },
             en: {
+                navModules: "Modules",
+                navTroubleshoot: "Troubleshooting",
                 testflightBtn: "Luna TestFlight",
-                heroBadge: "Luna Provider Modules",
+                heroBadge: "Luna Provider Modules & Support Hub",
                 heroTitle: "Luna Extension Service",
                 heroDesc: "Collection of high-performance provider extension modules for Luna, Sora, and compatible anime streaming apps.",
+                tabModules: "📦 All Modules",
+                tabTroubleshoot: "🛠️ Troubleshooting (Read First)",
                 searchPlaceholder: "Search modules by name, language, type, or tag...",
                 requestBtn: "Request Module",
                 availableModules: "Available Modules",
-                anifumeDesc: "Thai anime provider for anifume.com featuring multi-server direct 720p/360p MP4 stream extraction.",
+                havingIssuesLink: "Playback issues? View Fix Guide",
+                anifumeDesc: "Thai anime provider for anifume.com featuring direct MP4 video stream extraction.",
                 mioDesc: "Thai anime provider for mioanime.com featuring direct 1080p Master HLS stream extraction.",
                 alphaDesc: "Uncensored Hentai Subthai provider for alpha-hen.com with direct HLS stream extraction.",
                 rukaDesc: "Thai anime provider for animeruka.com featuring multi-server DooPlayer stream extraction.",
                 hanimeDesc: "High-performance scraper for Hanime with 1080p HLS stream extraction.",
-                copyBtn: "Copy Manifest URL",
+                copyBtn: "Copy Manifest",
                 copiedBtn: "Copied!",
+                reportBtn: "Report Issue",
                 toastTitle: "Copied to Clipboard!",
                 toastSub: "Paste this URL into Luna app settings.",
                 modalTitle: "Request New Extension Module",
@@ -398,7 +741,41 @@
                 submitBtn: "Submit Request",
                 submittingBtn: "Submitting...",
                 toastReqSuccessTitle: "Request Submitted!",
-                toastReqSuccessSub: "We have received your extension module request."
+                toastReqSuccessSub: "We have received your extension module request.",
+                
+                // Report Modal
+                reportModalTitle: "Report Module Issue",
+                reportModalSub: "Submit issue details and screenshot for developer review.",
+                reportNoticeText: "Note: For black screen / playback failed issues, please check if you changed DNS or used WARP 1.1.1.1 first.",
+                viewGuideBtn: "View Fix Guide",
+                labelRepModule: "Target Module",
+                labelRepType: "Issue Category",
+                labelRepDevice: "Device & Player Used",
+                labelRepImage: "Screenshot Proof URL",
+                imgHostHelp: "Upload screenshot to: ImgBB | Catbox | Imgur and paste image link here.",
+                labelRepDetails: "Additional Details",
+                submitRepBtn: "Submit Report",
+                toastRepSuccessTitle: "Report Submitted!",
+                toastRepSuccessSub: "Thank you! We have received your issue report.",
+
+                // Troubleshooting Section
+                tbNoticeTitle: "📌 Please read this guide before reporting issues!",
+                tbNoticeDesc: "Most 'Playback Failed' or black screen errors are caused by ISP blocking CDN streaming domains, or player engine selection in Luna, which can be resolved immediately with the solutions below.",
+                p1Title: "Black Screen / Slashed Play Icon (Playback Failed)",
+                p1Desc1: "Symptom: When playing an episode, a black screen with a slashed play icon appears and the video cannot load.",
+                p1Desc2: "Root Cause: Your ISP or Wi-Fi provider (True, AIS, 3BB, NT, etc.) blocks access to the video CDN domain via DNS blocking.",
+                p1ImgCaption: "Screenshot example of ISP video streaming block",
+                solutionsHeading: "Recommended Solutions (Choose Any):",
+                sol1Title: "Solution 1: Use 1.1.1.1 (WARP) App",
+                sol1Desc: "Install Cloudflare's 1.1.1.1: Faster & Safer Internet (WARP) app to bypass ISP streaming blocks 100%.",
+                sol2Title: "Solution 2: Change Wi-Fi DNS",
+                sol2Desc: "Change your device Wi-Fi DNS settings to Cloudflare DNS (1.1.1.1 / 1.0.0.1) or Google DNS (8.8.8.8).",
+                sol2Note: "Go to Wi-Fi Settings > Configure DNS > Manual",
+                sol3Title: "Solution 3: Switch Luna Player to Native",
+                sol3Desc: "If using iPad or iPhone with MPV Player, switch to Native / Normal (Apple) Player in Luna settings.",
+                sol3Note: "Native Player forwards AVPlayer stream authentication headers seamlessly.",
+                p2Title: "How to Update Modules in Luna",
+                p2Desc: "When a module is updated, go to Luna > Settings > Modules > Delete the module and Import the Manifest URL again to fetch the latest JS code."
             }
         };
 
@@ -425,6 +802,45 @@
 
             document.getElementById('toastTitle').textContent = dict.toastTitle;
             document.getElementById('toastSub').textContent = dict.toastSub;
+        }
+
+        function switchTab(tab) {
+            const modulesSec = document.getElementById('modulesSection');
+            const troublesSec = document.getElementById('troubleshootSection');
+            const moduleControls = document.getElementById('moduleControls');
+            
+            const pillModules = document.getElementById('pillTabModules');
+            const pillTroubleshoot = document.getElementById('pillTabTroubleshoot');
+            const navModules = document.getElementById('navTabModules');
+            const navTroubleshoot = document.getElementById('navTabTroubleshoot');
+
+            if (tab === 'modules') {
+                modulesSec.classList.remove('hidden');
+                troublesSec.classList.add('hidden');
+                moduleControls.classList.remove('hidden');
+
+                pillModules.classList.add('active', 'bg-indigo-600', 'text-white', 'border-indigo-500/40');
+                pillModules.classList.remove('bg-slate-900', 'text-slate-300', 'border-slate-800');
+                pillTroubleshoot.classList.remove('active', 'bg-indigo-600', 'text-white', 'border-indigo-500/40');
+                pillTroubleshoot.classList.add('bg-slate-900', 'text-slate-300', 'border-slate-800');
+
+                navModules.className = "px-3 py-1.5 rounded-xl text-xs font-semibold transition text-indigo-400 bg-indigo-500/10 border border-indigo-500/20";
+                navTroubleshoot.className = "px-3 py-1.5 rounded-xl text-xs font-semibold transition text-slate-300 hover:text-white hover:bg-slate-800 border border-transparent";
+            } else {
+                modulesSec.classList.add('hidden');
+                troublesSec.classList.remove('hidden');
+                moduleControls.classList.add('hidden');
+
+                pillTroubleshoot.classList.add('active', 'bg-indigo-600', 'text-white', 'border-indigo-500/40');
+                pillTroubleshoot.classList.remove('bg-slate-900', 'text-slate-300', 'border-slate-800');
+                pillModules.classList.remove('active', 'bg-indigo-600', 'text-white', 'border-indigo-500/40');
+                pillModules.classList.add('bg-slate-900', 'text-slate-300', 'border-slate-800');
+
+                navTroubleshoot.className = "px-3 py-1.5 rounded-xl text-xs font-semibold transition text-indigo-400 bg-indigo-500/10 border border-indigo-500/20";
+                navModules.className = "px-3 py-1.5 rounded-xl text-xs font-semibold transition text-slate-300 hover:text-white hover:bg-slate-800 border border-transparent";
+                
+                window.scrollTo({ top: 380, behavior: 'smooth' });
+            }
         }
 
         function filterModules() {
@@ -468,7 +884,7 @@
             });
         }
 
-        // --- Modal Popup Handlers ---
+        // --- Request Modal Handlers ---
         function openRequestModal() {
             const modal = document.getElementById('requestModal');
             const card = document.getElementById('modalCard');
@@ -552,6 +968,111 @@
             } catch (err) {
                 console.error("Webhook submit error:", err);
                 alert("Error sending request: " + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHTML;
+            }
+        }
+
+        // --- Report Modal Handlers ---
+        function openReportModal(moduleName) {
+            const modal = document.getElementById('reportModal');
+            const card = document.getElementById('reportModalCard');
+            const selectEl = document.getElementById('repModule');
+
+            if (moduleName && selectEl) {
+                selectEl.value = moduleName;
+            }
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.classList.add('opacity-100');
+            card.classList.remove('scale-95');
+            card.classList.add('scale-100');
+        }
+
+        function closeReportModal() {
+            const modal = document.getElementById('reportModal');
+            const card = document.getElementById('reportModalCard');
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-95');
+        }
+
+        function handleReportBackdropClick(event) {
+            if (event.target.id === 'reportModal') {
+                closeReportModal();
+            }
+        }
+
+        async function submitReport(event) {
+            event.preventDefault();
+            const dict = i18n[currentLang] || i18n.th;
+
+            const module = document.getElementById('repModule').value;
+            const issueType = document.getElementById('repType').value;
+            const device = document.getElementById('repDevice').value.trim() || "Not specified";
+            const imageUrl = document.getElementById('repImage').value.trim();
+            const details = document.getElementById('repDetails').value.trim();
+
+            if (!module || !issueType || !imageUrl || !details) return;
+
+            const submitBtn = document.getElementById('submitRepBtn');
+            const originalBtnHTML = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>${dict.submittingBtn}</span>`;
+
+            const embedPayload = {
+                embeds: [
+                    {
+                        title: `🚨 Module Issue Report: ${module}`,
+                        description: `**Category:** ${issueType}\n**Details:** ${details}`,
+                        color: 15158332,
+                        fields: [
+                            { name: "📦 Module", value: module, inline: true },
+                            { name: "📱 Device / Player", value: device, inline: true },
+                            { name: "📸 Screenshot URL", value: `[View Image Proof](${imageUrl})\n\`${imageUrl}\``, inline: false }
+                        ],
+                        image: {
+                            url: imageUrl
+                        },
+                        footer: { text: "Luna Extension Service • Issue Tracking System" },
+                        timestamp: new Date().toISOString()
+                    }
+                ]
+            };
+
+            try {
+                const res = await fetch(DISCORD_WEBHOOK_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(embedPayload)
+                });
+
+                if (res.ok || res.status === 204) {
+                    closeReportModal();
+                    document.getElementById('reportForm').reset();
+
+                    // Show Success Toast
+                    document.getElementById('toastTitle').textContent = dict.toastRepSuccessTitle;
+                    document.getElementById('toastSub').textContent = dict.toastRepSuccessSub;
+
+                    const toast = document.getElementById('toast');
+                    toast.classList.remove('opacity-0', 'pointer-events-none');
+                    toast.classList.add('opacity-100');
+
+                    setTimeout(() => {
+                        toast.classList.remove('opacity-100');
+                        toast.classList.add('opacity-0', 'pointer-events-none');
+                        document.getElementById('toastTitle').textContent = dict.toastTitle;
+                        document.getElementById('toastSub').textContent = dict.toastSub;
+                    }, 3500);
+                } else {
+                    alert("Failed to send report. Please try again.");
+                }
+            } catch (err) {
+                console.error("Webhook submit error:", err);
+                alert("Error sending report: " + err.message);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnHTML;
