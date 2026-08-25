@@ -149,7 +149,7 @@
                 <h2 class="text-lg font-bold text-white flex items-center gap-2">
                     <i class="fa-solid fa-cubes text-indigo-400"></i>
                     <span data-i18n="availableServices">Services ที่พร้อมใช้งาน</span>
-                    <span id="serviceCount" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">5</span>
+                    <span id="serviceCount" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">6</span>
                 </h2>
                 <button onclick="switchTab('troubleshoot')" class="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1.5 font-medium transition">
                     <i class="fa-solid fa-circle-question"></i>
@@ -159,6 +159,42 @@
 
             <!-- Services Container -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="servicesGrid">
+
+                <!-- AnimeGoJo Service Card -->
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 service-card border-indigo-500/30" data-name="animegojo animegojoo thai anime dub sub hls 1080p">
+                    <div>
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <img src="https://raw.githubusercontent.com/Varomine/luna-service/main/animegojo/icon.png" alt="AnimeGoJo Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700" onerror="this.src='https://animegojoo.com/icon.png'">
+                                <div>
+                                    <h3 class="text-lg font-bold text-white leading-snug">AnimeGoJo</h3>
+                                    <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">v1.0.0</span>
+                        </div>
+                        <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="animegojoDesc">
+                            บริการอนิเมะซับไทย/พากย์ไทย สำหรับ animegojoo.com ดึงสตรีม Master HLS 1080p คมชัดสูง
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-1.5 mb-6">
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">HLS 1080p</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Thai (TH)</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Anime</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2">
+                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/animegojo/animegojo.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-xs shadow-lg shadow-indigo-600/20">
+                            <i class="fa-regular fa-copy"></i>
+                            <span data-i18n="copyBtn">คัดลอก Manifest</span>
+                        </button>
+                        <button onclick="openReportModal('AnimeGoJo')" class="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5" title="แจ้งปัญหา Service นี้">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
+                            <span data-i18n="reportBtn">แจ้งปัญหา</span>
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Anifume Service Card -->
                 <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 service-card" data-name="anifume thai anime dub sub mp4 720p 1080p">
@@ -587,6 +623,7 @@
                         <span data-i18n="labelRepService">Service ที่มีปัญหา</span> <span class="text-rose-400">*</span>
                     </label>
                     <select id="repService" required class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+                        <option value="AnimeGoJo">AnimeGoJo</option>
                         <option value="Anifume">Anifume</option>
                         <option value="MioAnime">MioAnime</option>
                         <option value="Alpha-Hen">Alpha-Hen</option>
@@ -727,6 +764,7 @@
                 requestBtn: "ขอรีเควส Service",
                 availableServices: "Services ที่พร้อมใช้งาน",
                 havingIssuesLink: "เล่นไม่ได้? ดูวิธีแก้ปัญหา",
+                animegojoDesc: "บริการอนิเมะซับไทย/พากย์ไทย สำหรับ animegojoo.com ดึงสตรีม Master HLS 1080p คมชัดสูง",
                 anifumeDesc: "บริการอนิเมะซับไทย/พากย์ไทย สำหรับ anifume.com ดึงสตรีมตรง MP4 คมชัดสูง",
                 mioDesc: "บริการอนิเมะซับไทย/พากย์ไทย สำหรับ mioanime.com ดึงสตรีม Master HLS 1080p คุณภาพสูง",
                 alphaDesc: "บริการ Hentai Uncensored ซับไทย สำหรับ alpha-hen.com พร้อมระบบดึงสตรีม HLS คุณภาพสูง",
@@ -821,6 +859,7 @@
                 requestBtn: "Request Service",
                 availableServices: "Available Services",
                 havingIssuesLink: "Playback issues? View Fix Guide",
+                animegojoDesc: "Thai anime service for animegojoo.com featuring direct 1080p Master HLS stream extraction.",
                 anifumeDesc: "Thai anime service for anifume.com featuring direct MP4 video stream extraction.",
                 mioDesc: "Thai anime service for mioanime.com featuring direct 1080p Master HLS stream extraction.",
                 alphaDesc: "Uncensored Hentai Subthai service for alpha-hen.com with direct HLS stream extraction.",

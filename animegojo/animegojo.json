@@ -1,0 +1,32 @@
+{
+    "sourceName": "AnimeGoJo",
+    "iconUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/animegojo/icon.png",
+    "author": {
+        "name": "Varomine",
+        "icon": "https://avatars.githubusercontent.com/Varomine"
+    },
+    "version": "1.0.0",
+    "language": "Thai",
+    "languageType": [
+        "Dubbed",
+        "Subbed"
+    ],
+    "streamType": "HLS",
+    "quality": "1080p",
+    "baseUrl": "https://animegojoo.com/",
+    "searchBaseUrl": "https://animegojoo.com/search/%s/",
+    "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/animegojo/animegojo.js",
+    "type": "anime",
+    "asyncJS": true,
+    "softsub": true,
+    "downloadSupport": true,
+    "supportsSora": true,
+    "supportsLuna": true,
+    "supportsMojuru": true,
+    "supportsDartotsu": true,
+    "supportsAnymex": true,
+    "supportsTsumi": true,
+    "supportsHiyoku": true,
+    "supportsShirox": true,
+    "supportsEclipse": true
+}
