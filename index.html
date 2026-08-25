@@ -71,34 +71,36 @@
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
 
-    <!-- Top Navigation Bar -->
-    <nav class="border-b border-slate-800 bg-slate-950/90 backdrop-blur-md px-4 py-3 sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+    <!-- Top Navigation Bar (Mobile-Optimized) -->
+    <nav class="border-b border-slate-800 bg-slate-950/90 backdrop-blur-md px-3 sm:px-4 py-2.5 sm:py-3 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex items-center justify-between gap-2">
             <!-- Brand -->
-            <a href="https://varomine.github.io/luna-service/" class="flex items-center space-x-2.5 text-white font-bold text-lg tracking-tight">
-                <div class="w-8 h-8 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-                    <i class="fa-solid fa-moon"></i>
+            <a href="https://varomine.github.io/luna-service/" class="flex items-center space-x-2 text-white font-bold text-base sm:text-lg tracking-tight flex-shrink-0">
+                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 flex-shrink-0">
+                    <i class="fa-solid fa-moon text-sm"></i>
                 </div>
-                <span>Luna Service</span>
+                <span class="hidden min-[420px]:inline">Luna Service</span>
+                <span class="min-[420px]:hidden">Luna</span>
             </a>
 
             <!-- Action Controls -->
-            <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-1.5 sm:gap-2.5">
                 <!-- TestFlight Download Button -->
-                <a href="https://testflight.apple.com/join/8kfpEPD5" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 text-xs font-medium flex items-center gap-2 transition hover:border-indigo-500/50">
+                <a href="https://testflight.apple.com/join/8kfpEPD5" target="_blank" rel="noopener noreferrer" class="px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 text-xs font-medium flex items-center gap-1.5 sm:gap-2 transition hover:border-indigo-500/50 whitespace-nowrap" title="Luna TestFlight">
                     <i class="fa-brands fa-apple text-sm text-indigo-400"></i>
-                    <span data-i18n="testflightBtn">Luna TestFlight</span>
+                    <span class="hidden sm:inline" data-i18n="testflightBtn">Luna TestFlight</span>
+                    <span class="sm:hidden font-semibold">TestFlight</span>
                 </a>
 
                 <!-- GitHub Profile Button -->
-                <a href="https://github.com/Varomine/luna-service" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 text-xs font-medium flex items-center gap-2 transition hover:border-indigo-500/50">
+                <a href="https://github.com/Varomine/luna-service" target="_blank" rel="noopener noreferrer" class="px-2 sm:px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 text-xs font-medium flex items-center gap-1.5 transition hover:border-indigo-500/50 whitespace-nowrap" title="GitHub Repository">
                     <i class="fa-brands fa-github text-sm text-slate-300"></i>
-                    <span>GitHub</span>
+                    <span class="hidden md:inline">GitHub</span>
                 </a>
 
                 <!-- Language Selector Dropdown (TH / EN) -->
-                <div class="relative">
-                    <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-slate-900 border border-slate-700/80 text-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-indigo-500 cursor-pointer">
+                <div class="relative flex-shrink-0">
+                    <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-slate-900 border border-slate-700/80 text-slate-200 rounded-xl px-2 sm:px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-indigo-500 cursor-pointer">
                         <option value="th" selected>TH</option>
                         <option value="en">EN</option>
                     </select>
@@ -108,26 +110,26 @@
     </nav>
 
     <!-- Header / Banner -->
-    <header class="relative bg-slate-950/40 py-10 px-4 border-b border-slate-800/60">
+    <header class="relative bg-slate-950/40 py-8 sm:py-10 px-4 border-b border-slate-800/60">
         <div class="max-w-5xl mx-auto text-center">
             <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-4">
                 <i class="fa-solid fa-cube"></i>
                 <span data-i18n="heroBadge">Luna Provider Services & Support Hub</span>
             </div>
-            <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-3" data-i18n="heroTitle">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-3" data-i18n="heroTitle">
                 Luna Extension Service
             </h1>
-            <p class="text-slate-400 text-base md:text-lg max-w-2xl mx-auto mb-6 leading-relaxed" data-i18n="heroDesc">
+            <p class="text-slate-400 text-sm sm:text-base md:text-lg max-w-2xl mx-auto mb-6 leading-relaxed" data-i18n="heroDesc">
                 คอลเลกชันบริการส่วนขยายสำหรับ Luna, Sora และแอปสตรีมมิงอนิเมะ พร้อมระบบแจ้งปัญหาและแนวทางแก้ไข
             </p>
 
             <!-- Navigation Tab Switcher Pills -->
-            <div class="flex items-center justify-center gap-3 mb-6">
-                <button onclick="switchTab('services')" id="pillTabServices" class="tab-btn active px-5 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 border border-indigo-500/40">
+            <div class="flex items-center justify-center gap-2.5 sm:gap-3 mb-6">
+                <button onclick="switchTab('services')" id="pillTabServices" class="tab-btn active px-4 sm:px-5 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 sm:gap-2 border border-indigo-500/40">
                     <i class="fa-solid fa-cubes"></i>
                     <span data-i18n="tabServices">📦 Services ทั้งหมด</span>
                 </button>
-                <button onclick="switchTab('troubleshoot')" id="pillTabTroubleshoot" class="tab-btn px-5 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700">
+                <button onclick="switchTab('troubleshoot')" id="pillTabTroubleshoot" class="tab-btn px-4 sm:px-5 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 sm:gap-2 bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700">
                     <i class="fa-solid fa-wrench text-amber-400"></i>
                     <span data-i18n="tabTroubleshoot">🛠️ วิธีแก้ไขปัญหา</span>
                 </button>
@@ -152,15 +154,15 @@
 
         <!-- ==================== SECTION 1: SERVICES GRID ==================== -->
         <section id="servicesSection">
-            <!-- Section Header -->
-            <div class="flex items-center justify-between mb-6 border-b border-slate-800 pb-4">
-                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <!-- Section Header (Mobile Responsive) -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-6 border-b border-slate-800 pb-4">
+                <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                     <i class="fa-solid fa-cubes text-indigo-400"></i>
                     <span data-i18n="availableServices">Services ที่พร้อมใช้งาน</span>
                     <span id="serviceCount" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">6</span>
                 </h2>
-                <button onclick="switchTab('troubleshoot')" class="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1.5 font-medium transition">
-                    <i class="fa-solid fa-circle-question"></i>
+                <button onclick="switchTab('troubleshoot')" class="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1.5 font-medium transition self-start sm:self-auto">
+                    <i class="fa-solid fa-circle-question text-xs flex-shrink-0"></i>
                     <span data-i18n="havingIssuesLink">เล่นไม่ได้? ดูวิธีแก้ปัญหา</span>
                 </button>
             </div>
@@ -197,16 +199,16 @@
                         </div>
                     </div>
 
-                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2">
-                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/animegojo/animegojo.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-xs shadow-lg shadow-indigo-600/20">
+                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-1.5 sm:gap-2">
+                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/animegojo/animegojo.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-2.5 sm:px-3 rounded-xl transition flex items-center justify-center space-x-1.5 text-xs shadow-lg shadow-indigo-600/20 whitespace-nowrap">
                             <i class="fa-regular fa-copy"></i>
                             <span data-i18n="copyBtn">คัดลอก Manifest</span>
                         </button>
-                        <button onclick="openReportModal('AnimeGoJo')" class="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5" title="แจ้งปัญหา Service นี้">
+                        <button onclick="openReportModal('AnimeGoJo')" class="px-2.5 sm:px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5 whitespace-nowrap flex-shrink-0" title="แจ้งปัญหา Service นี้">
                             <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
                             <span data-i18n="reportBtn">แจ้งปัญหา</span>
                         </button>
-                        <a href="https://animegojoo.com/" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 rounded-xl transition text-xs font-medium flex items-center justify-center" title="ไปยังเว็บไซต์ต้นทาง (Visit Website)">
+                        <a href="https://animegojoo.com/" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 rounded-xl transition text-xs font-medium flex items-center justify-center flex-shrink-0" title="ไปยังเว็บไซต์ต้นทาง (Visit Website)">
                             <i class="fa-solid fa-globe text-sm"></i>
                         </a>
                     </div>
@@ -241,16 +243,16 @@
                         </div>
                     </div>
 
-                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2">
-                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-xs shadow-lg shadow-indigo-600/20">
+                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-1.5 sm:gap-2">
+                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-2.5 sm:px-3 rounded-xl transition flex items-center justify-center space-x-1.5 text-xs shadow-lg shadow-indigo-600/20 whitespace-nowrap">
                             <i class="fa-regular fa-copy"></i>
                             <span data-i18n="copyBtn">คัดลอก Manifest</span>
                         </button>
-                        <button onclick="openReportModal('Hanime')" class="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5" title="แจ้งปัญหา Service นี้">
+                        <button onclick="openReportModal('Hanime')" class="px-2.5 sm:px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5 whitespace-nowrap flex-shrink-0" title="แจ้งปัญหา Service นี้">
                             <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
                             <span data-i18n="reportBtn">แจ้งปัญหา</span>
                         </button>
-                        <a href="https://hanime.tv/" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 rounded-xl transition text-xs font-medium flex items-center justify-center" title="ไปยังเว็บไซต์ต้นทาง (Visit Website)">
+                        <a href="https://hanime.tv/" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 rounded-xl transition text-xs font-medium flex items-center justify-center flex-shrink-0" title="ไปยังเว็บไซต์ต้นทาง (Visit Website)">
                             <i class="fa-solid fa-globe text-sm"></i>
                         </a>
                     </div>
@@ -280,16 +282,16 @@
                         </div>
                     </div>
 
-                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2">
-                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/anifume/anifume.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-xs shadow-lg shadow-indigo-600/20">
+                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-1.5 sm:gap-2">
+                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/anifume/anifume.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-2.5 sm:px-3 rounded-xl transition flex items-center justify-center space-x-1.5 text-xs shadow-lg shadow-indigo-600/20 whitespace-nowrap">
                             <i class="fa-regular fa-copy"></i>
                             <span data-i18n="copyBtn">คัดลอก Manifest</span>
                         </button>
-                        <button onclick="openReportModal('Anifume')" class="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5" title="แจ้งปัญหา Service นี้">
+                        <button onclick="openReportModal('Anifume')" class="px-2.5 sm:px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5 whitespace-nowrap flex-shrink-0" title="แจ้งปัญหา Service นี้">
                             <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
                             <span data-i18n="reportBtn">แจ้งปัญหา</span>
                         </button>
-                        <a href="https://anifume.com/" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 rounded-xl transition text-xs font-medium flex items-center justify-center" title="ไปยังเว็บไซต์ต้นทาง (Visit Website)">
+                        <a href="https://anifume.com/" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 rounded-xl transition text-xs font-medium flex items-center justify-center flex-shrink-0" title="ไปยังเว็บไซต์ต้นทาง (Visit Website)">
                             <i class="fa-solid fa-globe text-sm"></i>
                         </a>
                     </div>
@@ -319,16 +321,16 @@
                         </div>
                     </div>
 
-                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2">
-                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/mioanime/mioanime.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-xs shadow-lg shadow-indigo-600/20">
+                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-1.5 sm:gap-2">
+                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/mioanime/mioanime.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-2.5 sm:px-3 rounded-xl transition flex items-center justify-center space-x-1.5 text-xs shadow-lg shadow-indigo-600/20 whitespace-nowrap">
                             <i class="fa-regular fa-copy"></i>
                             <span data-i18n="copyBtn">คัดลอก Manifest</span>
                         </button>
-                        <button onclick="openReportModal('MioAnime')" class="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5" title="แจ้งปัญหา Service นี้">
+                        <button onclick="openReportModal('MioAnime')" class="px-2.5 sm:px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5 whitespace-nowrap flex-shrink-0" title="แจ้งปัญหา Service นี้">
                             <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
                             <span data-i18n="reportBtn">แจ้งปัญหา</span>
                         </button>
-                        <a href="https://www.mioanime.net/" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 rounded-xl transition text-xs font-medium flex items-center justify-center" title="ไปยังเว็บไซต์ต้นทาง (Visit Website)">
+                        <a href="https://www.mioanime.net/" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 rounded-xl transition text-xs font-medium flex items-center justify-center flex-shrink-0" title="ไปยังเว็บไซต์ต้นทาง (Visit Website)">
                             <i class="fa-solid fa-globe text-sm"></i>
                         </a>
                     </div>
@@ -358,16 +360,16 @@
                         </div>
                     </div>
 
-                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2">
-                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/alpha-hen/alpha-hen.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-xs shadow-lg shadow-indigo-600/20">
+                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-1.5 sm:gap-2">
+                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/alpha-hen/alpha-hen.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-2.5 sm:px-3 rounded-xl transition flex items-center justify-center space-x-1.5 text-xs shadow-lg shadow-indigo-600/20 whitespace-nowrap">
                             <i class="fa-regular fa-copy"></i>
                             <span data-i18n="copyBtn">คัดลอก Manifest</span>
                         </button>
-                        <button onclick="openReportModal('Alpha-Hen')" class="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5" title="แจ้งปัญหา Service นี้">
+                        <button onclick="openReportModal('Alpha-Hen')" class="px-2.5 sm:px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5 whitespace-nowrap flex-shrink-0" title="แจ้งปัญหา Service นี้">
                             <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
                             <span data-i18n="reportBtn">แจ้งปัญหา</span>
                         </button>
-                        <a href="https://www.alpha-hen.com/" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 rounded-xl transition text-xs font-medium flex items-center justify-center" title="ไปยังเว็บไซต์ต้นทาง (Visit Website)">
+                        <a href="https://www.alpha-hen.com/" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 rounded-xl transition text-xs font-medium flex items-center justify-center flex-shrink-0" title="ไปยังเว็บไซต์ต้นทาง (Visit Website)">
                             <i class="fa-solid fa-globe text-sm"></i>
                         </a>
                     </div>
@@ -397,16 +399,16 @@
                         </div>
                     </div>
 
-                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2">
-                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/animeruka/animeruka.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-xs shadow-lg shadow-indigo-600/20">
+                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-1.5 sm:gap-2">
+                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/animeruka/animeruka.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-2.5 sm:px-3 rounded-xl transition flex items-center justify-center space-x-1.5 text-xs shadow-lg shadow-indigo-600/20 whitespace-nowrap">
                             <i class="fa-regular fa-copy"></i>
                             <span data-i18n="copyBtn">คัดลอก Manifest</span>
                         </button>
-                        <button onclick="openReportModal('AnimeRuka')" class="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5" title="แจ้งปัญหา Service นี้">
+                        <button onclick="openReportModal('AnimeRuka')" class="px-2.5 sm:px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5 whitespace-nowrap flex-shrink-0" title="แจ้งปัญหา Service นี้">
                             <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
                             <span data-i18n="reportBtn">แจ้งปัญหา</span>
                         </button>
-                        <a href="https://animeruka.com/" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 rounded-xl transition text-xs font-medium flex items-center justify-center" title="ไปยังเว็บไซต์ต้นทาง (Visit Website)">
+                        <a href="https://animeruka.com/" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 rounded-xl transition text-xs font-medium flex items-center justify-center flex-shrink-0" title="ไปยังเว็บไซต์ต้นทาง (Visit Website)">
                             <i class="fa-solid fa-globe text-sm"></i>
                         </a>
                     </div>
