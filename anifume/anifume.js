@@ -2,6 +2,7 @@
  * Anifume Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://anifume.com/
+ * Single Server Stream Output (Highest Quality)
  */
 
 const DEFAULT_HEADERS = {
@@ -146,7 +147,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL ───
+// ─── Extract Stream URL (Single Best Server 1 Only) ───
 async function extractStreamUrl(url) {
     try {
         let epUrl = url ? url.trim() : "";
@@ -154,106 +155,90 @@ async function extractStreamUrl(url) {
             epUrl = 'https://anifume.com' + (epUrl.startsWith('/') ? '' : '/') + epUrl;
         }
 
-        const response = await soraFetch(epUrl, {
+        const epResponse = await soraFetch(epUrl, {
             headers: { "Referer": "https://anifume.com/" }
         });
-        if (!response) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
-        const epHtml = await response.text();
+        if (!epResponse) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
+        const epHtml = await epResponse.text();
         if (!epHtml) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
 
         const ajaxMatches = [...epHtml.matchAll(/url:\s*["']([^"']+)["']/gi)].map(m => m[1]);
         if (ajaxMatches.length === 0) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
 
-        const streams = [];
+        // Use only Server 1
+        const ajaxRel = ajaxMatches[0];
+        let ajaxUrl = ajaxRel.startsWith('http') ? ajaxRel : ('https://anifume.com' + (ajaxRel.startsWith('/') ? '' : '/') + ajaxRel);
+        ajaxUrl = ajaxUrl.replace(/&amp;/g, '&');
 
-        for (let sIdx = 0; sIdx < ajaxMatches.length; sIdx++) {
-            const ajaxRel = ajaxMatches[sIdx];
-            const serverName = `Server ${sIdx + 1}`;
-            let ajaxUrl = ajaxRel.startsWith('http') ? ajaxRel : ('https://anifume.com' + (ajaxRel.startsWith('/') ? '' : '/') + ajaxRel);
-            ajaxUrl = ajaxUrl.replace(/&amp;/g, '&');
-
-            const ajaxRes = await soraFetch(ajaxUrl, {
-                headers: {
-                    "Referer": epUrl,
-                    "X-Requested-With": "XMLHttpRequest"
-                }
-            });
-
-            if (!ajaxRes) continue;
-            const ajaxHtml = await ajaxRes.text();
-            if (!ajaxHtml) continue;
-
-            const iframeMatch = ajaxHtml.match(/<iframe[^>]+src=["']([^"']+)["']/i);
-            if (!iframeMatch) continue;
-
-            let playerUrl = iframeMatch[1].replace(/&amp;/g, '&');
-            if (!playerUrl.startsWith('http')) {
-                playerUrl = 'https://anifume.com' + (playerUrl.startsWith('/') ? '' : '/') + playerUrl;
+        const ajaxRes = await soraFetch(ajaxUrl, {
+            headers: {
+                "Referer": epUrl,
+                "X-Requested-With": "XMLHttpRequest"
             }
+        });
 
-            const playerRes = await soraFetch(playerUrl, {
-                headers: { "Referer": "https://anifume.com/" }
-            });
+        if (!ajaxRes) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
+        const ajaxHtml = await ajaxRes.text();
+        if (!ajaxHtml) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
 
-            if (!playerRes) continue;
-            const playerHtml = await playerRes.text();
-            if (!playerHtml) continue;
+        const iframeMatch = ajaxHtml.match(/<iframe[^>]+src=["']([^"']+)["']/i);
+        if (!iframeMatch) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
 
-            const sourcesMatch = playerHtml.match(/"sources"\s*:\s*(\[[\s\S]*?\])/i);
-            let parsedAny = false;
+        let playerUrl = iframeMatch[1].replace(/&amp;/g, '&');
+        if (!playerUrl.startsWith('http')) {
+            playerUrl = 'https://anifume.com' + (playerUrl.startsWith('/') ? '' : '/') + playerUrl;
+        }
 
-            if (sourcesMatch) {
-                try {
-                    const sourcesArr = JSON.parse(sourcesMatch[1]);
-                    sourcesArr.forEach(src => {
-                        if (src.file) {
-                            parsedAny = true;
-                            const label = src.label || "720p";
-                            const cleanUrl = src.file.replace(/\\/g, '').replace(/&amp;/g, '&');
-                            streams.push({
-                                title: `[${serverName}] ${label}`,
-                                streamUrl: cleanUrl,
-                                url: cleanUrl,
-                                file: cleanUrl,
-                                link: cleanUrl,
-                                headers: {
-                                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-                                    "Referer": "https://anifume.com/"
-                                }
-                            });
-                        }
-                    });
-                } catch (e) {
-                    console.error("[Anifume] Error parsing sources JSON: " + e.message);
+        const playerRes = await soraFetch(playerUrl, {
+            headers: { "Referer": "https://anifume.com/" }
+        });
+
+        if (!playerRes) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
+        const playerHtml = await playerRes.text();
+        if (!playerHtml) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
+
+        let streamUrl = "";
+
+        const sourcesMatch = playerHtml.match(/"sources"\s*:\s*(\[[\s\S]*?\])/i);
+        if (sourcesMatch) {
+            try {
+                const sourcesArr = JSON.parse(sourcesMatch[1]);
+                const best = sourcesArr.find(s => s.label === "1080p") || sourcesArr.find(s => s.label === "720p") || sourcesArr[0];
+                if (best && best.file) {
+                    streamUrl = best.file.replace(/\\/g, '').replace(/&amp;/g, '&');
                 }
-            }
-
-            if (!parsedAny) {
-                const mp4Matches = [...playerHtml.matchAll(/https?:\/\/[^\s'"<>]+\.mp4[^\s'"<>]*/gi)].map(m => m[0]);
-                mp4Matches.forEach((mp4Url, idx) => {
-                    const label = (idx === 0) ? "720p" : "360p";
-                    const cleanUrl = mp4Url.replace(/\\/g, '').replace(/&amp;/g, '&');
-                    streams.push({
-                        title: `[${serverName}] ${label}`,
-                        streamUrl: cleanUrl,
-                        url: cleanUrl,
-                        file: cleanUrl,
-                        link: cleanUrl,
-                        headers: {
-                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-                            "Referer": "https://anifume.com/"
-                        }
-                    });
-                });
+            } catch (e) {
+                console.error("[Anifume] Error parsing sources: " + e.message);
             }
         }
 
-        const primaryUrl = streams.length > 0 ? streams[0].streamUrl : "";
+        if (!streamUrl) {
+            const mp4Matches = [...playerHtml.matchAll(/https?:\/\/[^\s'"<>]+\.mp4[^\s'"<>]*/gi)].map(m => m[0]);
+            if (mp4Matches.length > 0) {
+                streamUrl = mp4Matches[0].replace(/\\/g, '').replace(/&amp;/g, '&');
+            }
+        }
+
+        if (!streamUrl) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
+
+        const streams = [
+            {
+                title: "1080p",
+                streamUrl: streamUrl,
+                url: streamUrl,
+                file: streamUrl,
+                link: streamUrl,
+                headers: {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+                    "Referer": "https://anifume.com/"
+                }
+            }
+        ];
 
         return JSON.stringify({
             streams: streams,
-            url: primaryUrl,
-            streamUrl: primaryUrl,
+            url: streamUrl,
+            streamUrl: streamUrl,
             subtitle: ""
         });
     } catch (error) {
