@@ -38,13 +38,27 @@
             border-color: #6366f1;
             box-shadow: 0 4px 15px -3px rgba(79, 70, 229, 0.4);
         }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease-out, opacity 0.25s ease-out, margin 0.3s ease-out;
+            opacity: 0;
+        }
+        .accordion-item.open .accordion-content {
+            max-height: 2000px;
+            opacity: 1;
+            margin-top: 1.5rem;
+        }
+        .accordion-item.open .accordion-chevron {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
 
     <!-- Top Navigation Bar -->
     <nav class="border-b border-slate-800 bg-slate-950/90 backdrop-blur-md px-4 py-3 sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+        <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
             <!-- Brand -->
             <a href="https://varomine.github.io/luna-service/" class="flex items-center space-x-2.5 text-white font-bold text-lg tracking-tight">
                 <div class="w-8 h-8 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
@@ -53,18 +67,8 @@
                 <span>Luna Service</span>
             </a>
 
-            <!-- Navigation Links -->
-            <div class="flex items-center gap-2">
-                <button onclick="switchTab('modules')" id="navTabModules" class="px-3 py-1.5 rounded-xl text-xs font-semibold transition text-indigo-400 bg-indigo-500/10 border border-indigo-500/20">
-                    <i class="fa-solid fa-cubes mr-1.5"></i><span data-i18n="navModules">โมดูลทั้งหมด</span>
-                </button>
-                <button onclick="switchTab('troubleshoot')" id="navTabTroubleshoot" class="px-3 py-1.5 rounded-xl text-xs font-semibold transition text-slate-300 hover:text-white hover:bg-slate-800 border border-transparent">
-                    <i class="fa-solid fa-wrench mr-1.5"></i><span data-i18n="navTroubleshoot">วิธีแก้ไขปัญหา</span>
-                </button>
-            </div>
-
             <!-- Action Controls -->
-            <div class="flex flex-wrap items-center gap-2.5">
+            <div class="flex items-center gap-2.5">
                 <!-- TestFlight Download Button -->
                 <a href="https://testflight.apple.com/join/8kfpEPD5" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 text-xs font-medium flex items-center gap-2 transition hover:border-indigo-500/50">
                     <i class="fa-brands fa-apple text-sm text-indigo-400"></i>
@@ -109,8 +113,8 @@
                     <span data-i18n="tabModules">📦 โมดูลทั้งหมด</span>
                 </button>
                 <button onclick="switchTab('troubleshoot')" id="pillTabTroubleshoot" class="tab-btn px-5 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700">
-                    <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
-                    <span data-i18n="tabTroubleshoot">🛠️ วิธีแก้ไขปัญหา (อ่านก่อนแจ้ง)</span>
+                    <i class="fa-solid fa-wrench text-amber-400"></i>
+                    <span data-i18n="tabTroubleshoot">🛠️ วิธีแก้ไขปัญหา</span>
                 </button>
             </div>
 
@@ -118,7 +122,7 @@
             <div id="moduleControls" class="max-w-3xl mx-auto flex flex-col sm:flex-row items-center gap-3">
                 <div class="relative w-full flex-grow">
                     <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="searchInput" onkeyup="filterModules()" placeholder="ค้นหาโมดูลตามชื่อ, ภาษา, ประเภท..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner text-sm">
+                    <input type="text" id="searchInput" onkeyup="filterModules()" data-i18n-placeholder="searchPlaceholder" placeholder="ค้นหาโมดูลตามชื่อ, ภาษา, ประเภท..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition shadow-inner text-sm">
                 </div>
                 <button onclick="openRequestModal()" class="w-full sm:w-auto px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-2xl transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 whitespace-nowrap">
                     <i class="fa-solid fa-paper-plane"></i>
@@ -351,125 +355,175 @@
                 </div>
             </div>
 
-            <!-- Problem 1: ISP Blocking / Playback Failed -->
-            <div class="glass-card rounded-3xl p-6 md:p-8 mb-8">
-                <div class="flex items-center space-x-3 mb-6">
-                    <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-lg">
-                        <i class="fa-solid fa-ban"></i>
-                    </div>
-                    <div>
-                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">ปัญหาที่พบบ่อย #1</span>
-                        <h3 class="text-xl font-bold text-white" data-i18n="p1Title">
-                            จอดำ / ขึ้นเครื่องหมาย Play ขีดฆ่า (Playback Failed)
-                        </h3>
+            <!-- Problem Accordion List -->
+            <div class="space-y-5">
+
+                <!-- Problem 1: ISP Blocking / Black Screen with Slashed Play Icon -->
+                <div class="glass-card rounded-3xl p-6 md:p-8 accordion-item open" id="problem1">
+                    <button type="button" onclick="toggleAccordion('problem1')" class="w-full flex items-center justify-between text-left focus:outline-none cursor-pointer">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-lg flex-shrink-0">
+                                <i class="fa-solid fa-ban"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30" data-i18n="p1Badge">ปัญหา #1</span>
+                                <h3 class="text-lg md:text-xl font-bold text-white mt-1" data-i18n="p1Title">
+                                    จอดำ / ขึ้นเครื่องหมาย Play ขีดฆ่า (เกิดจากเน็ตบล็อก)
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center accordion-chevron transition-transform duration-300 flex-shrink-0 ml-3">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </div>
+                    </button>
+
+                    <!-- Collapsible Content -->
+                    <div class="accordion-content">
+                        <!-- Problem Illustration & Screenshot Mockup -->
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 items-center pt-2">
+                            <div class="lg:col-span-6 space-y-3 text-slate-300 text-sm leading-relaxed">
+                                <p data-i18n="p1Desc1">
+                                    <strong>อาการที่พบ:</strong> เมื่อกดเล่นตอนอนิเมะ หน้าจอขึ้นเป็นสีดำและมีไอคอนปุ่ม Play มีเส้นขีดฆ่าตรงกลาง ไม่สามารถโหลดวิดีโอได้
+                                </p>
+                                <p data-i18n="p1Desc2">
+                                    <strong>สาเหตุหลัก:</strong> ผู้ให้บริการเครือข่ายอินเทอร์เน็ตหรือ Wi-Fi (เช่น True, AIS, 3BB, NT) ทำการบล็อกการเชื่อมต่อ (DNS Block / Domain Block) ไปยังเซิร์ฟเวอร์จัดเก็บไฟล์วิดีโอต้นทาง
+                                </p>
+                            </div>
+                            <div class="lg:col-span-6">
+                                <div class="bg-slate-950 rounded-2xl p-2 border border-slate-800 shadow-2xl overflow-hidden text-center">
+                                    <img src="assets/playback-failed-example.png" alt="Playback Failed Example" class="rounded-xl w-full max-h-60 object-contain mx-auto bg-black">
+                                    <p class="text-xs text-slate-400 mt-2" data-i18n="p1ImgCaption">ตัวอย่างภาพหน้าจอเมื่อถูกเครือข่ายอินเทอร์เน็ตบล็อกการสตรีม</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Solutions Grid -->
+                        <h4 class="text-base font-bold text-indigo-400 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                            <span data-i18n="solutionsHeading">วิธีแก้ไขที่แนะนำ (เลือกวิธีใดวิธีหนึ่ง):</span>
+                        </h4>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Solution 1: Cloudflare WARP App -->
+                            <div class="bg-slate-900/90 border border-slate-800 hover:border-indigo-500/40 rounded-2xl p-5 flex flex-col justify-between transition">
+                                <div>
+                                    <div class="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center mb-3">
+                                        <i class="fa-solid fa-shield-halved"></i>
+                                    </div>
+                                    <h5 class="text-sm font-bold text-white mb-1.5" data-i18n="sol1Title">วิธีที่ 1: ใช้แอป 1.1.1.1 (WARP)</h5>
+                                    <p class="text-xs text-slate-400 leading-relaxed mb-4" data-i18n="sol1Desc">
+                                        ติดตั้งแอป <strong>1.1.1.1: Faster & Safer Internet (WARP)</strong> ของ Cloudflare แล้วเปิดใช้งานเพื่อทะลุการบล็อกของค่ายเน็ตได้ทันที 100%
+                                    </p>
+                                </div>
+                                <div class="pt-3 border-t border-slate-800/80 flex flex-col gap-2">
+                                    <a href="https://apps.apple.com/app/1-1-1-1-faster-internet/id1423538627" target="_blank" rel="noopener noreferrer" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 px-3 rounded-xl transition flex items-center justify-center gap-2">
+                                        <i class="fa-brands fa-apple text-indigo-400"></i>
+                                        <span>App Store (iOS / iPad)</span>
+                                    </a>
+                                    <a href="https://play.google.com/store/apps/details?id=com.cloudflare.onedotonedotonedotone" target="_blank" rel="noopener noreferrer" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 px-3 rounded-xl transition flex items-center justify-center gap-2">
+                                        <i class="fa-brands fa-google-play text-emerald-400"></i>
+                                        <span>Google Play (Android)</span>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Solution 2: Change Wi-Fi DNS -->
+                            <div class="bg-slate-900/90 border border-slate-800 hover:border-indigo-500/40 rounded-2xl p-5 flex flex-col justify-between transition">
+                                <div>
+                                    <div class="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-3">
+                                        <i class="fa-solid fa-network-wired"></i>
+                                    </div>
+                                    <h5 class="text-sm font-bold text-white mb-1.5" data-i18n="sol2Title">วิธีที่ 2: เปลี่ยน DNS ในเครื่อง</h5>
+                                    <p class="text-xs text-slate-400 leading-relaxed mb-4" data-i18n="sol2Desc">
+                                        เปลี่ยนการตั้งค่า DNS ของ Wi-Fi บน iPhone, iPad หรือ Android เป็น:
+                                    </p>
+                                    <div class="space-y-1.5 mb-4 text-xs font-mono">
+                                        <div class="bg-slate-950 px-3 py-1.5 rounded-lg text-emerald-400 border border-slate-800">DNS 1: 1.1.1.1</div>
+                                        <div class="bg-slate-950 px-3 py-1.5 rounded-lg text-emerald-400 border border-slate-800">DNS 2: 1.0.0.1 (หรือ 8.8.8.8)</div>
+                                    </div>
+                                </div>
+                                <div class="pt-3 border-t border-slate-800/80 text-xs text-slate-500" data-i18n="sol2Note">
+                                    ไปที่การตั้งค่า Wi-Fi $\rightarrow$ กำหนดค่า DNS $\rightarrow$ กำหนดเอง (Manual)
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Problem Illustration & Screenshot Mockup -->
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 items-center">
-                    <div class="lg:col-span-6 space-y-3 text-slate-300 text-sm leading-relaxed">
-                        <p data-i18n="p1Desc1">
-                            <strong>อาการที่พบ:</strong> เมื่อกดเล่นตอนอนิเมะ หน้าจอขึ้นเป็นสีดำและมีไอคอนปุ่ม Play มีเส้นขีดฆ่าตรงกลาง ไม่สามารถโหลดวิดีโอได้
-                        </p>
-                        <p data-i18n="p1Desc2">
-                            <strong>สาเหตุหลัก:</strong> ผู้ให้บริการเครือข่ายอินเทอร์เน็ตหรือ Wi-Fi (เช่น True, AIS, 3BB, NT) ทำการบล็อกการเชื่อมต่อ (DNS Block / Domain Block) ไปยังเซิร์ฟเวอร์จัดเก็บไฟล์วิดีโอต้นทาง
-                        </p>
-                    </div>
-                    <div class="lg:col-span-6">
-                        <div class="bg-slate-950 rounded-2xl p-2 border border-slate-800 shadow-2xl overflow-hidden text-center">
-                            <img src="assets/playback-failed-example.png" alt="Playback Failed Example" class="rounded-xl w-full max-h-60 object-contain mx-auto bg-black">
-                            <p class="text-xs text-slate-400 mt-2" data-i18n="p1ImgCaption">ตัวอย่างภาพหน้าจอเมื่อถูกเครือข่ายอินเทอร์เน็ตบล็อกการสตรีม</p>
+                <!-- Problem 2: Updating Module Manifest -->
+                <div class="glass-card rounded-3xl p-6 md:p-8 accordion-item" id="problem2">
+                    <button type="button" onclick="toggleAccordion('problem2')" class="w-full flex items-center justify-between text-left focus:outline-none cursor-pointer">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg flex-shrink-0">
+                                <i class="fa-solid fa-rotate"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30" data-i18n="p2Badge">ปัญหา #2</span>
+                                <h3 class="text-lg md:text-xl font-bold text-white mt-1" data-i18n="p2Title">
+                                    วิธีอัปเดตโมดูลเมื่อระบบมีการแก้ไข
+                                </h3>
+                            </div>
                         </div>
+                        <div class="w-8 h-8 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center accordion-chevron transition-transform duration-300 flex-shrink-0 ml-3">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </div>
+                    </button>
+
+                    <!-- Collapsible Content -->
+                    <div class="accordion-content">
+                        <p class="text-sm text-slate-300 leading-relaxed mb-4 pt-2" data-i18n="p2Desc">
+                            หากผู้พัฒนาทำการอัปเดตแก้ไขโมดูล ให้ไปที่แอป <strong>Luna</strong> $\rightarrow$ เมนู <strong>Settings (ตั้งค่า)</strong> $\rightarrow$ <strong>Modules (โมดูล)</strong> $\rightarrow$ กดลบโมดูลเดิมแล้วกด <strong>Import (นำเข้า)</strong> Manifest URL ใหม่อีกครั้ง เพื่อให้แอปโหลด JavaScript เวอร์ชันล่าสุด
+                        </p>
                     </div>
                 </div>
 
-                <!-- Solutions Grid -->
-                <h4 class="text-base font-bold text-indigo-400 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
-                    <span data-i18n="solutionsHeading">วิธีแก้ไขที่แนะนำ (เลือกวิธีใดวิธีหนึ่ง):</span>
-                </h4>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Solution 1: Cloudflare WARP App -->
-                    <div class="bg-slate-900/90 border border-slate-800 hover:border-indigo-500/40 rounded-2xl p-5 flex flex-col justify-between transition">
-                        <div>
-                            <div class="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center mb-3">
-                                <i class="fa-solid fa-shield-halved"></i>
-                            </div>
-                            <h5 class="text-sm font-bold text-white mb-1.5" data-i18n="sol1Title">วิธีที่ 1: ใช้แอป 1.1.1.1 (WARP)</h5>
-                            <p class="text-xs text-slate-400 leading-relaxed mb-4" data-i18n="sol1Desc">
-                                ติดตั้งแอป <strong>1.1.1.1: Faster & Safer Internet (WARP)</strong> ของ Cloudflare แล้วเปิดใช้งานเพื่อทะลุการบล็อกของค่ายเน็ตได้ทันที 100%
-                            </p>
-                        </div>
-                        <div class="pt-3 border-t border-slate-800/80 flex flex-col gap-2">
-                            <a href="https://apps.apple.com/app/1-1-1-1-faster-internet/id1423538627" target="_blank" rel="noopener noreferrer" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 px-3 rounded-xl transition flex items-center justify-center gap-2">
-                                <i class="fa-brands fa-apple text-indigo-400"></i>
-                                <span>App Store (iOS / iPad)</span>
-                            </a>
-                            <a href="https://play.google.com/store/apps/details?id=com.cloudflare.onedotonedotonedotone" target="_blank" rel="noopener noreferrer" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 px-3 rounded-xl transition flex items-center justify-center gap-2">
-                                <i class="fa-brands fa-google-play text-emerald-400"></i>
-                                <span>Google Play (Android)</span>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Solution 2: Change Wi-Fi DNS -->
-                    <div class="bg-slate-900/90 border border-slate-800 hover:border-indigo-500/40 rounded-2xl p-5 flex flex-col justify-between transition">
-                        <div>
-                            <div class="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-3">
-                                <i class="fa-solid fa-network-wired"></i>
-                            </div>
-                            <h5 class="text-sm font-bold text-white mb-1.5" data-i18n="sol2Title">วิธีที่ 2: เปลี่ยน DNS ในเครื่อง</h5>
-                            <p class="text-xs text-slate-400 leading-relaxed mb-4" data-i18n="sol2Desc">
-                                เปลี่ยนการตั้งค่า DNS ของ Wi-Fi บน iPhone, iPad หรือ Android เป็น:
-                            </p>
-                            <div class="space-y-1.5 mb-4 text-xs font-mono">
-                                <div class="bg-slate-950 px-3 py-1.5 rounded-lg text-emerald-400 border border-slate-800">DNS 1: 1.1.1.1</div>
-                                <div class="bg-slate-950 px-3 py-1.5 rounded-lg text-emerald-400 border border-slate-800">DNS 2: 1.0.0.1 (หรือ 8.8.8.8)</div>
-                            </div>
-                        </div>
-                        <div class="pt-3 border-t border-slate-800/80 text-xs text-slate-500" data-i18n="sol2Note">
-                            ไปที่การตั้งค่า Wi-Fi $\rightarrow$ กำหนดค่า DNS $\rightarrow$ กำหนดเอง (Manual)
-                        </div>
-                    </div>
-
-                    <!-- Solution 3: Change Luna Player to Native -->
-                    <div class="bg-slate-900/90 border border-slate-800 hover:border-indigo-500/40 rounded-2xl p-5 flex flex-col justify-between transition">
-                        <div>
-                            <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center mb-3">
+                <!-- Problem 3: Playback Failed Error (MPV Player Issue) -->
+                <div class="glass-card rounded-3xl p-6 md:p-8 accordion-item open" id="problem3">
+                    <button type="button" onclick="toggleAccordion('problem3')" class="w-full flex items-center justify-between text-left focus:outline-none cursor-pointer">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-lg flex-shrink-0">
                                 <i class="fa-solid fa-play"></i>
                             </div>
-                            <h5 class="text-sm font-bold text-white mb-1.5" data-i18n="sol3Title">วิธีที่ 3: สลับ Player ในแอป Luna</h5>
-                            <p class="text-xs text-slate-400 leading-relaxed mb-4" data-i18n="sol3Desc">
-                                หากใช้ iPad หรือ iPhone แล้วเปิด MPV Player อยู่ ให้สลับไปใช้ <strong>Native / Normal (Apple) Player</strong> ในการตั้งค่าของแอป Luna
-                            </p>
-                            <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-slate-300 font-mono mb-2">
-                                Settings &gt; Player &gt; Native Player (Apple)
+                            <div>
+                                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30" data-i18n="p3Badge">ปัญหา #3</span>
+                                <h3 class="text-lg md:text-xl font-bold text-white mt-1" data-i18n="p3Title">
+                                    ขึ้นข้อความแจ้งเตือน "Playback failed" (ปัญหาจาก MPV Player)
+                                </h3>
                             </div>
                         </div>
-                        <div class="pt-3 border-t border-slate-800/80 text-xs text-slate-500" data-i18n="sol3Note">
-                            Native Player รองรับ Stream Headers ผ่าน AVPlayer ได้สมบูรณ์ที่สุด
+                        <div class="w-8 h-8 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center accordion-chevron transition-transform duration-300 flex-shrink-0 ml-3">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </div>
+                    </button>
+
+                    <!-- Collapsible Content -->
+                    <div class="accordion-content">
+                        <div class="space-y-4 pt-2 text-sm text-slate-300 leading-relaxed">
+                            <p data-i18n="p3Desc1">
+                                <strong>อาการที่พบ:</strong> เมื่อกดเลือกตอนเพื่อรับชม แอปแสดงข้อความแจ้งเตือนป๊อปอัปว่า <strong>"Playback failed"</strong> ทันที
+                            </p>
+                            <p data-i18n="p3Desc2">
+                                <strong>สาเหตุหลัก:</strong> คุณเปิดใช้งาน <strong>MPV Player</strong> บน iPad หรือ iPhone ซึ่งตัวประมวลผล MPV ในบางเวอร์ชันไม่ส่ง Headers ยืนยันตัวตนไปยังเซิร์ฟเวอร์วิดีโอ ทำให้การเชื่อมต่อล้มเหลว
+                            </p>
+
+                            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 mt-4">
+                                <h4 class="text-sm font-bold text-indigo-400 mb-2 flex items-center gap-2">
+                                    <i class="fa-solid fa-wrench text-emerald-400"></i>
+                                    <span data-i18n="p3SolHeading">วิธีแก้ไข: สลับ Player ในแอป Luna เป็น Native Player</span>
+                                </h4>
+                                <p class="text-xs text-slate-400 mb-3" data-i18n="p3SolDesc">
+                                    เปิดแอป Luna แล้วสลับ Player เป็น Native / Normal (Apple) Player ตามขั้นตอนดังนี้:
+                                </p>
+                                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-emerald-300 font-mono space-y-1">
+                                    <div>1. เปิดแอป Luna &gt; ไปที่แท็บ <strong>Settings (ตั้งค่า)</strong></div>
+                                    <div>2. เลือกเมนู <strong>Player (เครื่องเล่นวิดีโอ)</strong></div>
+                                    <div>3. สลับจาก MPV เป็น <strong>Native Player (Apple)</strong> หรือ <strong>Normal</strong></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Problem 2: Updating Module Manifest -->
-            <div class="glass-card rounded-3xl p-6 md:p-8">
-                <div class="flex items-center space-x-3 mb-4">
-                    <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg">
-                        <i class="fa-solid fa-rotate"></i>
-                    </div>
-                    <div>
-                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">ปัญหาที่พบบ่อย #2</span>
-                        <h3 class="text-xl font-bold text-white" data-i18n="p2Title">
-                            วิธีอัปเดตโมดูลเมื่อระบบมีการแก้ไข
-                        </h3>
-                    </div>
-                </div>
-                <p class="text-sm text-slate-300 leading-relaxed mb-4" data-i18n="p2Desc">
-                    หากผู้พัฒนาทำการอัปเดตแก้ไขโมดูล ให้ไปที่แอป <strong>Luna</strong> $\rightarrow$ เมนู <strong>Settings (ตั้งค่า)</strong> $\rightarrow$ <strong>Modules (โมดูล)</strong> $\rightarrow$ กดลบโมดูลเดิมแล้วกด <strong>Import (นำเข้า)</strong> Manifest URL ใหม่อีกครั้ง เพื่อให้แอปโหลด JavaScript เวอร์ชันล่าสุด
-                </p>
             </div>
         </section>
 
@@ -515,7 +569,7 @@
                         <option value="Alpha-Hen">Alpha-Hen</option>
                         <option value="AnimeRuka">AnimeRuka</option>
                         <option value="Hanime">Hanime</option>
-                        <option value="Other">Other / อื่นๆ</option>
+                        <option value="Other" data-i18n="optOther">Other / อื่นๆ</option>
                     </select>
                 </div>
 
@@ -525,11 +579,11 @@
                         <span data-i18n="labelRepType">ประเภทปัญหา</span> <span class="text-rose-400">*</span>
                     </label>
                     <select id="repType" required class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition">
-                        <option value="Playback Failed (เล่นวิดีโอไม่ได้ / จอดำ)">Playback Failed (เล่นวิดีโอไม่ได้ / จอดำ)</option>
-                        <option value="Search Not Working (ค้นหาไม่พบ)">Search Not Working (ค้นหาไม่พบ)</option>
-                        <option value="Episodes Not Loading (ตอนไม่โหลด)">Episodes Not Loading (ตอนไม่โหลด)</option>
-                        <option value="Stream Buffering / Lag (วิดีโอค้าง/กระตุก)">Stream Buffering / Lag (วิดีโอค้าง/กระตุก)</option>
-                        <option value="Other (อื่นๆ)">Other (อื่นๆ)</option>
+                        <option value="Playback Failed" data-i18n="optPlaybackFailed">Playback Failed (เล่นวิดีโอไม่ได้ / จอดำ)</option>
+                        <option value="Search Not Working" data-i18n="optSearchNotWorking">Search Not Working (ค้นหาไม่พบ)</option>
+                        <option value="Episodes Not Loading" data-i18n="optEpisodesNotLoading">Episodes Not Loading (ตอนไม่โหลด)</option>
+                        <option value="Stream Buffering / Lag" data-i18n="optBuffering">Stream Buffering / Lag (วิดีโอค้าง/กระตุก)</option>
+                        <option value="Other" data-i18n="optIssueOther">Other (อื่นๆ)</option>
                     </select>
                 </div>
 
@@ -538,7 +592,7 @@
                     <label class="block text-xs font-semibold text-slate-300 mb-1.5">
                         <span data-i18n="labelRepDevice">อุปกรณ์ & Player ที่ใช้</span>
                     </label>
-                    <input type="text" id="repDevice" placeholder="เช่น iPhone 15 Pro (Native Player), iPad Air (MPV)" class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
+                    <input type="text" id="repDevice" data-i18n-placeholder="devicePlaceholder" placeholder="เช่น iPhone 15 Pro (Native Player), iPad Air (MPV)" class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
                 </div>
 
                 <!-- Screenshot Proof URL (Required) -->
@@ -557,7 +611,7 @@
                     <label class="block text-xs font-semibold text-slate-300 mb-1.5">
                         <span data-i18n="labelRepDetails">รายละเอียดเพิ่มเติม</span> <span class="text-rose-400">*</span>
                     </label>
-                    <textarea id="repDetails" required rows="3" placeholder="ระบุชื่อเรื่องหรือตอนที่พบปัญหา..." class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition resize-none"></textarea>
+                    <textarea id="repDetails" required rows="3" data-i18n-placeholder="detailsPlaceholder" placeholder="ระบุชื่อเรื่องหรือตอนที่พบปัญหา..." class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition resize-none"></textarea>
                 </div>
 
                 <!-- Submit & Cancel Buttons -->
@@ -604,7 +658,7 @@
                     <label class="block text-xs font-semibold text-slate-300 mb-1.5">
                         <span data-i18n="labelReason">เหตุผล / รายละเอียดการรีเควส</span> <span class="text-rose-400">*</span>
                     </label>
-                    <textarea id="reqReason" required rows="4" placeholder="ระบุเหตุผลหรือรายละเอียดที่ต้องการให้ออกแบบโมดูล..." class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition resize-none"></textarea>
+                    <textarea id="reqReason" required rows="4" data-i18n-placeholder="reasonPlaceholder" placeholder="ระบุเหตุผลหรือรายละเอียดที่ต้องการให้ออกแบบโมดูล..." class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition resize-none"></textarea>
                 </div>
 
                 <!-- Submit & Cancel Buttons -->
@@ -640,14 +694,12 @@
 
         const i18n = {
             th: {
-                navModules: "โมดูลทั้งหมด",
-                navTroubleshoot: "วิธีแก้ไขปัญหา",
-                testflightBtn: "ดาวน์โหลด Luna (TestFlight)",
+                testflightBtn: "Luna TestFlight",
                 heroBadge: "Luna Provider Modules & Support Hub",
                 heroTitle: "Luna Extension Service",
                 heroDesc: "คอลเลกชันโมดูลส่วนขยายสำหรับ Luna, Sora และแอปสตรีมมิงอนิเมะ พร้อมระบบแจ้งปัญหาและแนวทางแก้ไข",
                 tabModules: "📦 โมดูลทั้งหมด",
-                tabTroubleshoot: "🛠️ วิธีแก้ไขปัญหา (อ่านก่อนแจ้ง)",
+                tabTroubleshoot: "🛠️ วิธีแก้ไขปัญหา",
                 searchPlaceholder: "ค้นหาโมดูลตามชื่อ, ภาษา, ประเภท...",
                 requestBtn: "ขอรีเควสส่วนขยาย",
                 availableModules: "โมดูลที่พร้อมใช้งาน",
@@ -680,11 +732,19 @@
                 reportNoticeText: "ข้อแนะนำ: หากเป็นปัญหาจอดำ/เล่นไม่ได้ กรุณาตรวจสอบว่าลองเปลี่ยน DNS หรือใช้ WARP 1.1.1.1 แล้วหรือไม่",
                 viewGuideBtn: "ดูวิธีแก้ไข",
                 labelRepModule: "โมดูลที่มีปัญหา",
+                optOther: "Other / อื่นๆ",
                 labelRepType: "ประเภทปัญหา",
+                optPlaybackFailed: "Playback Failed (เล่นวิดีโอไม่ได้ / จอดำ)",
+                optSearchNotWorking: "Search Not Working (ค้นหาไม่พบ)",
+                optEpisodesNotLoading: "Episodes Not Loading (ตอนไม่โหลด)",
+                optBuffering: "Stream Buffering / Lag (วิดีโอค้าง/กระตุก)",
+                optIssueOther: "Other (อื่นๆ)",
                 labelRepDevice: "อุปกรณ์ & Player ที่ใช้",
+                devicePlaceholder: "เช่น iPhone 15 Pro (Native Player), iPad Air (MPV)",
                 labelRepImage: "ลิงก์รูปภาพหลักฐาน (Screenshot Proof URL)",
                 imgHostHelp: "อัปโหลดรูปภาพฟรีได้ที่: ImgBB | Catbox | Imgur แล้วนำลิงก์รูปมาวาง",
                 labelRepDetails: "รายละเอียดเพิ่มเติม",
+                detailsPlaceholder: "ระบุชื่อเรื่องหรือตอนที่พบปัญหา...",
                 submitRepBtn: "ส่งรายงานปัญหา",
                 toastRepSuccessTitle: "ส่งรายงานปัญหาสำเร็จ!",
                 toastRepSuccessSub: "ทีมงานได้รับรายงานข้อผิดพลาดเรียบร้อยแล้ว",
@@ -692,7 +752,10 @@
                 // Troubleshooting Section
                 tbNoticeTitle: "📌 โปรดอ่านหน้านี้ก่อนส่งรายงานแจ้งปัญหา!",
                 tbNoticeDesc: "ปัญหาเล่นวิดีโอไม่ได้ (Playback Failed) หรือจอดำ ส่วนใหญ่เกิดจากการที่ ผู้ให้บริการอินเทอร์เน็ต (ISP) บล็อกการเข้าถึงเซิร์ฟเวอร์สตรีมมิ่ง หรือเกิดจากการเลือก Player ในแอป Luna ซึ่งสามารถแก้ไขได้ทันทีด้วยวิธีด้านล่างนี้",
-                p1Title: "จอดำ / ขึ้นเครื่องหมาย Play ขีดฆ่า (Playback Failed)",
+                
+                // Problem 1
+                p1Badge: "ปัญหา #1",
+                p1Title: "จอดำ / ขึ้นเครื่องหมาย Play ขีดฆ่า (เกิดจากเน็ตบล็อก)",
                 p1Desc1: "อาการที่พบ: เมื่อกดเล่นตอนอนิเมะ หน้าจอขึ้นเป็นสีดำและมีไอคอนปุ่ม Play มีเส้นขีดฆ่าตรงกลาง ไม่สามารถโหลดวิดีโอได้",
                 p1Desc2: "สาเหตุหลัก: ผู้ให้บริการเครือข่ายอินเทอร์เน็ตหรือ Wi-Fi (เช่น True, AIS, 3BB, NT) ทำการบล็อกการเชื่อมต่อ (DNS Block / Domain Block) ไปยังเซิร์ฟเวอร์จัดเก็บไฟล์วิดีโอต้นทาง",
                 p1ImgCaption: "ตัวอย่างภาพหน้าจอเมื่อถูกเครือข่ายอินเทอร์เน็ตบล็อกการสตรีม",
@@ -700,23 +763,29 @@
                 sol1Title: "วิธีที่ 1: ใช้แอป 1.1.1.1 (WARP)",
                 sol1Desc: "ติดตั้งแอป 1.1.1.1: Faster & Safer Internet (WARP) ของ Cloudflare แล้วเปิดใช้งานเพื่อทะลุการบล็อกของค่ายเน็ตได้ทันที 100%",
                 sol2Title: "วิธีที่ 2: เปลี่ยน DNS ในเครื่อง",
-                sol2Desc: "เปลี่ยนการตั้งค่า DNS ของ Wi-Fi บน iPhone, iPad หรือ Android เป็น 1.1.1.1 / 1.0.0.1",
+                sol2Desc: "เปลี่ยนการตั้งค่า DNS ของ Wi-Fi บน iPhone, iPad หรือ Android เป็น 1.1.1.1 / 1.0.0.1 (หรือ 8.8.8.8)",
                 sol2Note: "ไปที่การตั้งค่า Wi-Fi > กำหนดค่า DNS > กำหนดเอง (Manual)",
-                sol3Title: "วิธีที่ 3: สลับ Player ในแอป Luna",
-                sol3Desc: "หากใช้ iPad หรือ iPhone แล้วเปิด MPV Player อยู่ ให้สลับไปใช้ Native / Normal (Apple) Player ในการตั้งค่าของแอป Luna",
-                sol3Note: "Native Player รองรับ Stream Headers ผ่าน AVPlayer ได้สมบูรณ์ที่สุด",
+                
+                // Problem 2
+                p2Badge: "ปัญหา #2",
                 p2Title: "วิธีอัปเดตโมดูลเมื่อระบบมีการแก้ไข",
-                p2Desc: "หากผู้พัฒนาทำการอัปเดตแก้ไขโมดูล ให้ไปที่แอป Luna > เมนู Settings (ตั้งค่า) > Modules (โมดูล) > กดลบโมดูลเดิมแล้วกด Import (นำเข้า) Manifest URL ใหม่อีกครั้ง เพื่อให้แอปโหลด JavaScript เวอร์ชันล่าสุด"
+                p2Desc: "หากผู้พัฒนาทำการอัปเดตแก้ไขโมดูล ให้ไปที่แอป Luna > เมนู Settings (ตั้งค่า) > Modules (โมดูล) > กดลบโมดูลเดิมแล้วกด Import (นำเข้า) Manifest URL ใหม่อีกครั้ง เพื่อให้แอปโหลด JavaScript เวอร์ชันล่าสุด",
+
+                // Problem 3
+                p3Badge: "ปัญหา #3",
+                p3Title: "ขึ้นข้อความแจ้งเตือน \"Playback failed\" (ปัญหาจาก MPV Player)",
+                p3Desc1: "อาการที่พบ: เมื่อกดเลือกตอนเพื่อรับชม แอปแสดงข้อความแจ้งเตือนป๊อปอัปว่า \"Playback failed\" ทันที",
+                p3Desc2: "สาเหตุหลัก: คุณเปิดใช้งาน MPV Player บน iPad หรือ iPhone ซึ่งตัวประมวลผล MPV ในบางเวอร์ชันไม่ส่ง Headers ยืนยันตัวตนไปยังเซิร์ฟเวอร์วิดีโอ ทำให้การเชื่อมต่อล้มเหลว",
+                p3SolHeading: "วิธีแก้ไข: สลับ Player ในแอป Luna เป็น Native Player",
+                p3SolDesc: "เปิดแอป Luna แล้วสลับ Player เป็น Native / Normal (Apple) Player ตามขั้นตอนดังนี้:"
             },
             en: {
-                navModules: "Modules",
-                navTroubleshoot: "Troubleshooting",
                 testflightBtn: "Luna TestFlight",
                 heroBadge: "Luna Provider Modules & Support Hub",
                 heroTitle: "Luna Extension Service",
                 heroDesc: "Collection of high-performance provider extension modules for Luna, Sora, and compatible anime streaming apps.",
                 tabModules: "📦 All Modules",
-                tabTroubleshoot: "🛠️ Troubleshooting (Read First)",
+                tabTroubleshoot: "🛠️ Troubleshooting",
                 searchPlaceholder: "Search modules by name, language, type, or tag...",
                 requestBtn: "Request Module",
                 availableModules: "Available Modules",
@@ -749,11 +818,19 @@
                 reportNoticeText: "Note: For black screen / playback failed issues, please check if you changed DNS or used WARP 1.1.1.1 first.",
                 viewGuideBtn: "View Fix Guide",
                 labelRepModule: "Target Module",
+                optOther: "Other",
                 labelRepType: "Issue Category",
+                optPlaybackFailed: "Playback Failed (Video won't play / Black screen)",
+                optSearchNotWorking: "Search Not Working (No results found)",
+                optEpisodesNotLoading: "Episodes Not Loading (Empty episode list)",
+                optBuffering: "Stream Buffering / Lag (Stuttering video)",
+                optIssueOther: "Other",
                 labelRepDevice: "Device & Player Used",
+                devicePlaceholder: "e.g., iPhone 15 Pro (Native Player), iPad Air (MPV)",
                 labelRepImage: "Screenshot Proof URL",
                 imgHostHelp: "Upload screenshot to: ImgBB | Catbox | Imgur and paste image link here.",
                 labelRepDetails: "Additional Details",
+                detailsPlaceholder: "Specify the anime title or episode with issue...",
                 submitRepBtn: "Submit Report",
                 toastRepSuccessTitle: "Report Submitted!",
                 toastRepSuccessSub: "Thank you! We have received your issue report.",
@@ -761,7 +838,10 @@
                 // Troubleshooting Section
                 tbNoticeTitle: "📌 Please read this guide before reporting issues!",
                 tbNoticeDesc: "Most 'Playback Failed' or black screen errors are caused by ISP blocking CDN streaming domains, or player engine selection in Luna, which can be resolved immediately with the solutions below.",
-                p1Title: "Black Screen / Slashed Play Icon (Playback Failed)",
+                
+                // Problem 1
+                p1Badge: "Issue #1",
+                p1Title: "Black Screen / Slashed Play Icon (ISP DNS Block)",
                 p1Desc1: "Symptom: When playing an episode, a black screen with a slashed play icon appears and the video cannot load.",
                 p1Desc2: "Root Cause: Your ISP or Wi-Fi provider (True, AIS, 3BB, NT, etc.) blocks access to the video CDN domain via DNS blocking.",
                 p1ImgCaption: "Screenshot example of ISP video streaming block",
@@ -771,11 +851,19 @@
                 sol2Title: "Solution 2: Change Wi-Fi DNS",
                 sol2Desc: "Change your device Wi-Fi DNS settings to Cloudflare DNS (1.1.1.1 / 1.0.0.1) or Google DNS (8.8.8.8).",
                 sol2Note: "Go to Wi-Fi Settings > Configure DNS > Manual",
-                sol3Title: "Solution 3: Switch Luna Player to Native",
-                sol3Desc: "If using iPad or iPhone with MPV Player, switch to Native / Normal (Apple) Player in Luna settings.",
-                sol3Note: "Native Player forwards AVPlayer stream authentication headers seamlessly.",
+
+                // Problem 2
+                p2Badge: "Issue #2",
                 p2Title: "How to Update Modules in Luna",
-                p2Desc: "When a module is updated, go to Luna > Settings > Modules > Delete the module and Import the Manifest URL again to fetch the latest JS code."
+                p2Desc: "When a module is updated, go to Luna > Settings > Modules > Delete the module and Import the Manifest URL again to fetch the latest JS code.",
+
+                // Problem 3
+                p3Badge: "Issue #3",
+                p3Title: "\"Playback failed\" Popup Error (MPV Player Issue)",
+                p3Desc1: "Symptom: Tapping an episode immediately triggers a popup error stating \"Playback failed\".",
+                p3Desc2: "Root Cause: MPV Player is active on iOS/iPadOS, which does not forward authentication stream headers to CDN servers.",
+                p3SolHeading: "Solution: Switch Luna Player to Native (Apple) Player",
+                p3SolDesc: "Open Luna settings and switch Player to Native / Normal (Apple) Player:"
             }
         };
 
@@ -791,14 +879,10 @@
                 if (dict[key]) el.textContent = dict[key];
             });
 
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) searchInput.placeholder = dict.searchPlaceholder;
-
-            const reqSite = document.getElementById('reqSite');
-            if (reqSite) reqSite.placeholder = dict.sitePlaceholder;
-
-            const reqReason = document.getElementById('reqReason');
-            if (reqReason) reqReason.placeholder = dict.reasonPlaceholder;
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (dict[key]) el.placeholder = dict[key];
+            });
 
             document.getElementById('toastTitle').textContent = dict.toastTitle;
             document.getElementById('toastSub').textContent = dict.toastSub;
@@ -811,8 +895,6 @@
             
             const pillModules = document.getElementById('pillTabModules');
             const pillTroubleshoot = document.getElementById('pillTabTroubleshoot');
-            const navModules = document.getElementById('navTabModules');
-            const navTroubleshoot = document.getElementById('navTabTroubleshoot');
 
             if (tab === 'modules') {
                 modulesSec.classList.remove('hidden');
@@ -823,9 +905,6 @@
                 pillModules.classList.remove('bg-slate-900', 'text-slate-300', 'border-slate-800');
                 pillTroubleshoot.classList.remove('active', 'bg-indigo-600', 'text-white', 'border-indigo-500/40');
                 pillTroubleshoot.classList.add('bg-slate-900', 'text-slate-300', 'border-slate-800');
-
-                navModules.className = "px-3 py-1.5 rounded-xl text-xs font-semibold transition text-indigo-400 bg-indigo-500/10 border border-indigo-500/20";
-                navTroubleshoot.className = "px-3 py-1.5 rounded-xl text-xs font-semibold transition text-slate-300 hover:text-white hover:bg-slate-800 border border-transparent";
             } else {
                 modulesSec.classList.add('hidden');
                 troublesSec.classList.remove('hidden');
@@ -835,11 +914,15 @@
                 pillTroubleshoot.classList.remove('bg-slate-900', 'text-slate-300', 'border-slate-800');
                 pillModules.classList.remove('active', 'bg-indigo-600', 'text-white', 'border-indigo-500/40');
                 pillModules.classList.add('bg-slate-900', 'text-slate-300', 'border-slate-800');
-
-                navTroubleshoot.className = "px-3 py-1.5 rounded-xl text-xs font-semibold transition text-indigo-400 bg-indigo-500/10 border border-indigo-500/20";
-                navModules.className = "px-3 py-1.5 rounded-xl text-xs font-semibold transition text-slate-300 hover:text-white hover:bg-slate-800 border border-transparent";
                 
                 window.scrollTo({ top: 380, behavior: 'smooth' });
+            }
+        }
+
+        function toggleAccordion(itemId) {
+            const item = document.getElementById(itemId);
+            if (item) {
+                item.classList.toggle('open');
             }
         }
 
