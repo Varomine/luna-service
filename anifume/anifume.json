@@ -15,7 +15,7 @@
     "quality": "720p",
     "baseUrl": "https://anifume.com/",
     "searchBaseUrl": "https://anifume.com/",
-    "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/refs/heads/main/anifume/anifume.js",
+    "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/anifume/anifume.js",
     "type": "anime",
     "asyncJS": true,
     "softsub": true,
