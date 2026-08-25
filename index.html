@@ -345,20 +345,15 @@
 
         <!-- ==================== SECTION 2: TROUBLESHOOTING & FAQ ==================== -->
         <section id="troubleshootSection" class="hidden">
-            <!-- Alert Notice Banner -->
-            <div class="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-6 md:p-8 mb-8 text-amber-200">
-                <div class="flex items-start gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl flex-shrink-0">
+            <!-- Alert Notice Banner (Clean Single-Line Title) -->
+            <div class="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-5 md:p-6 mb-8 text-amber-200">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg flex-shrink-0">
                         <i class="fa-solid fa-triangle-exclamation"></i>
                     </div>
-                    <div>
-                        <h3 class="text-lg md:text-xl font-bold text-white mb-2" data-i18n="tbNoticeTitle">
-                            📌 โปรดอ่านหน้านี้ก่อนส่งรายงานแจ้งปัญหา!
-                        </h3>
-                        <p class="text-sm text-amber-200/90 leading-relaxed" data-i18n="tbNoticeDesc">
-                            ปัญหาเล่นวิดีโอไม่ได้ (Playback Failed) หรือจอดำ ส่วนใหญ่เกิดจากการที่ <strong>ผู้ให้บริการอินเทอร์เน็ต (ISP)</strong> บล็อกการเข้าถึงเซิร์ฟเวอร์สตรีมมิ่ง หรือเกิดจากการเลือก Player ในแอป Luna ซึ่งสามารถแก้ไขได้ทันทีด้วยวิธีด้านล่างนี้
-                        </p>
-                    </div>
+                    <h3 class="text-base md:text-lg font-bold text-white" data-i18n="tbNoticeTitle">
+                        📌 โปรดอ่านหน้านี้ก่อนส่งรายงานแจ้งปัญหา!
+                    </h3>
                 </div>
             </div>
 
@@ -484,7 +479,7 @@
                     </div>
                 </div>
 
-                <!-- Problem 3: Playback Failed Error -->
+                <!-- Problem 3: Playback Failed Error (MPV player) -->
                 <div class="glass-card rounded-3xl p-6 md:p-8 accordion-item" id="problem3">
                     <button type="button" onclick="toggleAccordion('problem3')" class="w-full flex items-center justify-between text-left focus:outline-none cursor-pointer">
                         <div class="flex items-center space-x-3.5">
@@ -494,7 +489,7 @@
                             <div>
                                 <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30" data-i18n="p3Badge">ปัญหา #3</span>
                                 <h3 class="text-lg md:text-xl font-bold text-white mt-1" data-i18n="p3Title">
-                                    ขึ้นข้อความแจ้งเตือน "Playback failed"
+                                    ขึ้นข้อความแจ้งเตือน "Playback failed" (MPV player)
                                 </h3>
                             </div>
                         </div>
@@ -516,7 +511,7 @@
                             <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 mt-4">
                                 <h4 class="text-sm font-bold text-indigo-400 mb-2 flex items-center gap-2">
                                     <i class="fa-solid fa-wrench text-emerald-400"></i>
-                                    <span data-i18n="p3SolHeading">วิธีแก้ไข: สลับ Player ในแอป Luna เป็น Native Player</span>
+                                    <span data-i18n="p3SolHeading">วิธีแก้ไข: สลับจาก MPV Player เป็น Native (Apple) Player</span>
                                 </h4>
                                 <p class="text-xs text-slate-400 mb-3" data-i18n="p3SolDesc">
                                     เปิดแอป Luna แล้วสลับ Player เป็น Native / Normal (Apple) Player ตามขั้นตอนดังนี้:
@@ -531,6 +526,27 @@
                     </div>
                 </div>
 
+            </div>
+
+            <!-- Still Having Issues Support Notice Card -->
+            <div class="bg-gradient-to-r from-slate-900 to-indigo-950/40 border border-slate-800 rounded-3xl p-6 md:p-8 mt-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-xl flex-shrink-0">
+                        <i class="fa-solid fa-headset"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-base font-bold text-white mb-1" data-i18n="tbFooterTitle">
+                            ยังพบปัญหาหลังจากทำตามวิธีทั้งหมดแล้ว?
+                        </h4>
+                        <p class="text-xs text-slate-400 leading-relaxed" data-i18n="tbFooterDesc">
+                            หากคุณลองเปลี่ยน DNS / ใช้ WARP 1.1.1.1 และเปลี่ยน Player เป็น Native แล้วแต่ยังใช้งานไม่ได้ โปรดกดปุ่มด้านล่างเพื่อแจ้งปัญหาให้เราตรวจสอบ
+                        </p>
+                    </div>
+                </div>
+                <button onclick="openReportModal()" class="w-full md:w-auto px-5 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-rose-600/20 whitespace-nowrap flex-shrink-0">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span data-i18n="tbFooterBtn">แจ้งปัญหา Service ตอนนี้</span>
+                </button>
             </div>
         </section>
 
@@ -758,7 +774,6 @@
 
                 // Troubleshooting Section
                 tbNoticeTitle: "📌 โปรดอ่านหน้านี้ก่อนส่งรายงานแจ้งปัญหา!",
-                tbNoticeDesc: "ปัญหาเล่นวิดีโอไม่ได้ (Playback Failed) หรือจอดำ ส่วนใหญ่เกิดจากการที่ ผู้ให้บริการอินเทอร์เน็ต (ISP) บล็อกการเข้าถึงเซิร์ฟเวอร์สตรีมมิ่ง หรือเกิดจากการเลือก Player ในแอป Luna ซึ่งสามารถแก้ไขได้ทันทีด้วยวิธีด้านล่างนี้",
                 
                 // Problem 1
                 p1Badge: "ปัญหา #1",
@@ -781,14 +796,19 @@
 
                 // Problem 3
                 p3Badge: "ปัญหา #3",
-                p3Title: "ขึ้นข้อความแจ้งเตือน \"Playback failed\"",
+                p3Title: "ขึ้นข้อความแจ้งเตือน \"Playback failed\" (MPV player)",
                 p3Desc1: "อาการที่พบ: เมื่อกดเลือกตอนเพื่อรับชม แอปแสดงข้อความแจ้งเตือนป๊อปอัปว่า \"Playback failed\" ทันที",
                 p3Desc2: "สาเหตุหลัก: คุณเปิดใช้งาน MPV Player บน iPad หรือ iPhone ซึ่งตัวประมวลผล MPV ในบางเวอร์ชันไม่ส่ง Headers ยืนยันตัวตนไปยังเซิร์ฟเวอร์วิดีโอ ทำให้การเชื่อมต่อล้มเหลว",
-                p3SolHeading: "วิธีแก้ไข: สลับ Player ในแอป Luna เป็น Native Player",
+                p3SolHeading: "วิธีแก้ไข: สลับจาก MPV Player เป็น Native (Apple) Player",
                 p3SolDesc: "เปิดแอป Luna แล้วสลับ Player เป็น Native / Normal (Apple) Player ตามขั้นตอนดังนี้:",
                 p3Step1: "1. เปิดแอป Luna > ไปที่แท็บ Settings (ตั้งค่า)",
                 p3Step2: "2. เลือกเมนู Player (เครื่องเล่นวิดีโอ)",
-                p3Step3: "3. สลับจาก MPV เป็น Native Player (Apple) หรือ Normal"
+                p3Step3: "3. สลับจาก MPV เป็น Native Player (Apple) หรือ Normal",
+
+                // Troubleshooting Footer
+                tbFooterTitle: "ยังพบปัญหาหลังจากทำตามวิธีทั้งหมดแล้ว?",
+                tbFooterDesc: "หากคุณลองเปลี่ยน DNS / ใช้ WARP 1.1.1.1 และเปลี่ยน Player เป็น Native แล้วแต่ยังใช้งานไม่ได้ โปรดกดปุ่มด้านล่างเพื่อแจ้งปัญหาให้เราตรวจสอบ",
+                tbFooterBtn: "แจ้งปัญหา Service ตอนนี้"
             },
             en: {
                 testflightBtn: "Luna TestFlight",
@@ -848,7 +868,6 @@
 
                 // Troubleshooting Section
                 tbNoticeTitle: "📌 Please read this guide before reporting issues!",
-                tbNoticeDesc: "Most 'Playback Failed' or black screen errors are caused by ISP blocking CDN streaming domains, or player engine selection in Luna, which can be resolved immediately with the solutions below.",
                 
                 // Problem 1
                 p1Badge: "Issue #1",
@@ -871,14 +890,19 @@
 
                 // Problem 3
                 p3Badge: "Issue #3",
-                p3Title: "\"Playback failed\" Popup Error",
+                p3Title: "\"Playback failed\" Popup Error (MPV player)",
                 p3Desc1: "Symptom: Tapping an episode immediately triggers a popup error stating \"Playback failed\".",
                 p3Desc2: "Root Cause: MPV Player is active on iOS/iPadOS, which does not forward authentication stream headers to CDN servers.",
-                p3SolHeading: "Solution: Switch Luna Player to Native (Apple) Player",
+                p3SolHeading: "Solution: Switch Mpv Player to Native (Apple) Player",
                 p3SolDesc: "Open Luna settings and switch Player to Native / Normal (Apple) Player:",
                 p3Step1: "1. Open Luna app > Go to Settings tab",
                 p3Step2: "2. Select Player menu",
-                p3Step3: "3. Switch from MPV to Native Player (Apple) or Normal"
+                p3Step3: "3. Switch from MPV to Native Player (Apple) or Normal",
+
+                // Troubleshooting Footer
+                tbFooterTitle: "Still having issues after trying all steps?",
+                tbFooterDesc: "If you have tried changing DNS / using 1.1.1.1 WARP and switching Player to Native, but still encounter issues, please submit a report below.",
+                tbFooterBtn: "Report Service Issue Now"
             }
         };
 
