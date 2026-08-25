@@ -24,6 +24,14 @@
             border-color: rgba(99, 102, 241, 0.4);
             box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.2);
         }
+        .glass-card.recommended {
+            border-color: rgba(245, 158, 11, 0.35);
+            background: linear-gradient(180deg, rgba(30, 27, 75, 0.3) 0%, rgba(17, 24, 39, 0.7) 100%);
+        }
+        .glass-card.recommended:hover {
+            border-color: rgba(245, 158, 11, 0.6);
+            box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.25);
+        }
         .glass-modal {
             background: rgba(15, 23, 42, 0.98);
             backdrop-filter: blur(20px);
@@ -160,8 +168,8 @@
             <!-- Services Container -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="servicesGrid">
 
-                <!-- AnimeGoJo Service Card -->
-                <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 service-card border-indigo-500/30" data-name="animegojo animegojoo thai anime dub sub hls 1080p">
+                <!-- AnimeGoJo Service Card (Recommended) -->
+                <div class="glass-card recommended rounded-2xl p-6 flex flex-col justify-between transition duration-300 service-card relative" data-name="animegojo animegojoo thai anime dub sub hls 1080p recommended">
                     <div>
                         <div class="flex items-start justify-between mb-4">
                             <div class="flex items-center space-x-3">
@@ -171,7 +179,13 @@
                                     <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
                                 </div>
                             </div>
-                            <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">v1.0.0</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1 shadow-sm shadow-amber-500/10">
+                                    <i class="fa-solid fa-star text-[10px] text-amber-400"></i>
+                                    <span data-i18n="badgeRecommended">แนะนำ</span>
+                                </span>
+                                <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">v1.0.1</span>
+                            </div>
                         </div>
                         <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="animegojoDesc">
                             บริการอนิเมะซับไทย/พากย์ไทย สำหรับ animegojoo.com ดึงสตรีม Master HLS 1080p คมชัดสูง
@@ -190,6 +204,48 @@
                             <span data-i18n="copyBtn">คัดลอก Manifest</span>
                         </button>
                         <button onclick="openReportModal('AnimeGoJo')" class="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5" title="แจ้งปัญหา Service นี้">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
+                            <span data-i18n="reportBtn">แจ้งปัญหา</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hanime Service Card (Recommended) -->
+                <div class="glass-card recommended rounded-2xl p-6 flex flex-col justify-between transition duration-300 service-card relative" data-name="hanime anime hls 1080p english recommended">
+                    <div>
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <img src="https://github.com/Varomine/luna-service/blob/main/hanime/st_small_507x507-pad_600x600_f8f8f8-removebg-preview.png?raw=true" alt="Hanime Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700">
+                                <div>
+                                    <h3 class="text-lg font-bold text-white leading-snug">Hanime</h3>
+                                    <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1 shadow-sm shadow-amber-500/10">
+                                    <i class="fa-solid fa-star text-[10px] text-amber-400"></i>
+                                    <span data-i18n="badgeRecommended">แนะนำ</span>
+                                </span>
+                                <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.1.0</span>
+                            </div>
+                        </div>
+                        <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="hanimeDesc">
+                            บริการสแกนและดึงสตรีม HLS 1080p คุณภาพสูง สำหรับ Hanime
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-1.5 mb-6">
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">HLS Stream</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">1080p</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Anime</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2">
+                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-xs shadow-lg shadow-indigo-600/20">
+                            <i class="fa-regular fa-copy"></i>
+                            <span data-i18n="copyBtn">คัดลอก Manifest</span>
+                        </button>
+                        <button onclick="openReportModal('Hanime')" class="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5" title="แจ้งปัญหา Service นี้">
                             <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
                             <span data-i18n="reportBtn">แจ้งปัญหา</span>
                         </button>
@@ -334,42 +390,6 @@
                             <span data-i18n="copyBtn">คัดลอก Manifest</span>
                         </button>
                         <button onclick="openReportModal('AnimeRuka')" class="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5" title="แจ้งปัญหา Service นี้">
-                            <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
-                            <span data-i18n="reportBtn">แจ้งปัญหา</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Hanime Service Card -->
-                <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 service-card" data-name="hanime anime hls 1080p english">
-                    <div>
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="flex items-center space-x-3">
-                                <img src="https://github.com/Varomine/luna-service/blob/main/hanime/st_small_507x507-pad_600x600_f8f8f8-removebg-preview.png?raw=true" alt="Hanime Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700">
-                                <div>
-                                    <h3 class="text-lg font-bold text-white leading-snug">Hanime</h3>
-                                    <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
-                                </div>
-                            </div>
-                            <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v1.1.0</span>
-                        </div>
-                        <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="hanimeDesc">
-                            บริการสแกนและดึงสตรีม HLS 1080p คุณภาพสูง สำหรับ Hanime
-                        </p>
-                        
-                        <div class="flex flex-wrap gap-1.5 mb-6">
-                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">HLS Stream</span>
-                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">1080p</span>
-                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Anime</span>
-                        </div>
-                    </div>
-
-                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2">
-                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-2 text-xs shadow-lg shadow-indigo-600/20">
-                            <i class="fa-regular fa-copy"></i>
-                            <span data-i18n="copyBtn">คัดลอก Manifest</span>
-                        </button>
-                        <button onclick="openReportModal('Hanime')" class="px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5" title="แจ้งปัญหา Service นี้">
                             <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
                             <span data-i18n="reportBtn">แจ้งปัญหา</span>
                         </button>
@@ -624,11 +644,11 @@
                     </label>
                     <select id="repService" required class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 transition">
                         <option value="AnimeGoJo">AnimeGoJo</option>
+                        <option value="Hanime">Hanime</option>
                         <option value="Anifume">Anifume</option>
                         <option value="MioAnime">MioAnime</option>
                         <option value="Alpha-Hen">Alpha-Hen</option>
                         <option value="AnimeRuka">AnimeRuka</option>
-                        <option value="Hanime">Hanime</option>
                         <option value="Other" data-i18n="optOther">Other / อื่นๆ</option>
                     </select>
                 </div>
@@ -764,6 +784,7 @@
                 requestBtn: "ขอรีเควส Service",
                 availableServices: "Services ที่พร้อมใช้งาน",
                 havingIssuesLink: "เล่นไม่ได้? ดูวิธีแก้ปัญหา",
+                badgeRecommended: "แนะนำ",
                 animegojoDesc: "บริการอนิเมะซับไทย/พากย์ไทย สำหรับ animegojoo.com ดึงสตรีม Master HLS 1080p คมชัดสูง",
                 anifumeDesc: "บริการอนิเมะซับไทย/พากย์ไทย สำหรับ anifume.com ดึงสตรีมตรง MP4 คมชัดสูง",
                 mioDesc: "บริการอนิเมะซับไทย/พากย์ไทย สำหรับ mioanime.com ดึงสตรีม Master HLS 1080p คุณภาพสูง",
@@ -859,6 +880,7 @@
                 requestBtn: "Request Service",
                 availableServices: "Available Services",
                 havingIssuesLink: "Playback issues? View Fix Guide",
+                badgeRecommended: "Recommended",
                 animegojoDesc: "Thai anime service for animegojoo.com featuring direct 1080p Master HLS stream extraction.",
                 anifumeDesc: "Thai anime service for anifume.com featuring direct MP4 video stream extraction.",
                 mioDesc: "Thai anime service for mioanime.com featuring direct 1080p Master HLS stream extraction.",
