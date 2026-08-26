@@ -3,7 +3,7 @@
  * Author: Varomine
  * Site: https://anime-your.com/
  * Stream Type: Multi-Server Master HLS 1080p (Server 1 & Server 2)
- * Version: 1.0.0
+ * Version: 1.0.1
  */
 
 const DEFAULT_HEADERS = {
@@ -136,7 +136,7 @@ async function extractDetails(url) {
     }
 }
 
-// ─── Extract Episodes ───
+// ─── Extract Episodes (Fixed Container & Slug Support) ───
 async function extractEpisodes(url) {
     try {
         let baseUrl = url.split("?")[0];
@@ -148,23 +148,54 @@ async function extractEpisodes(url) {
             }]);
         }
 
+        // Scope search to main episode section to avoid sidebar/footer trending widgets
+        let searchScope = html;
+        const mainSectionMatch = html.match(/<section[^>]*class=["'][^"']*header-episode[^"']*["'][^>]*>([\s\S]*?)<\/section>/i) ||
+                                 html.match(/<ul[^>]*id=["']MVP["'][^>]*>([\s\S]*?)<\/ul>/i);
+
+        if (mainSectionMatch) {
+            searchScope = mainSectionMatch[0];
+        } else {
+            const cutIndex = html.search(/<aside|class=['"]block_sidebar|id=['"]sidebar|class=['"]sidebar|<div class=['"]yarpp|id=['"]footer/i);
+            if (cutIndex > 0) {
+                searchScope = html.substring(0, cutIndex);
+            }
+        }
+
         const episodes = [];
         const seenHrefs = new Set();
-        const epRegex = /<a[^>]+href=["'](https:\/\/anime-your\.com\/ep\/[0-9]+\/?)["'][^>]*>([\s\S]*?)<\/a>/gi;
+        const epRegex = /<a[^>]+href=["'](https:\/\/anime-your\.com\/ep\/[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
         let match;
 
-        while ((match = epRegex.exec(html)) !== null) {
+        while ((match = epRegex.exec(searchScope)) !== null) {
             const href = match[1];
+            const epHtml = match[0];
             const epText = match[2].replace(/<[^>]+>/g, "").trim();
 
             if (seenHrefs.has(href)) continue;
+
+            // Extract episode number
+            const spanNum = epHtml.match(/<span class=["']ep-num["']>([\s\S]*?)<\/span>/i);
+            let number = null;
+            if (spanNum) {
+                const n = parseFloat(spanNum[1].trim());
+                if (!isNaN(n)) number = n;
+            }
+
+            if (number === null) {
+                const numMatch = epText.match(/ตอนที่\s*([0-9.]+)/i) ||
+                                 epText.match(/EP\.?\s*([0-9.]+)/i) ||
+                                 href.match(/ep-([0-9.]+)/i) ||
+                                 epText.match(/([0-9.]+)/);
+                if (numMatch) {
+                    const n = parseFloat(numMatch[1]);
+                    if (!isNaN(n)) number = n;
+                }
+            }
+
+            if (number === null) number = episodes.length + 1;
+
             seenHrefs.add(href);
-
-            const numMatch = epText.match(/ตอนที่\s*([0-9.]+)/i) ||
-                             epText.match(/EP\.?\s*([0-9.]+)/i) ||
-                             epText.match(/([0-9.]+)/);
-            const number = numMatch ? parseFloat(numMatch[1]) : (episodes.length + 1);
-
             episodes.push({
                 href: href,
                 number: number
@@ -242,7 +273,6 @@ async function extractStreamUrl(url) {
             server2Embed = s2Match[1];
         }
 
-        // Fallback: derive Server 2 embed URL from Server 1 ID if Server 2 link is dynamically set
         if (!server2Embed && server1Embed) {
             const idMatch = server1Embed.match(/\/embed\/([a-zA-Z0-9_-]+)\/?/);
             if (idMatch) {
