@@ -9,11 +9,12 @@ Welcome to the **Luna Extension Service** repository. This repository hosts prov
 | Service Name | Type | Stream Quality | Language | Manifest JSON URL |
 | :--- | :--- | :--- | :--- | :--- |
 | **AnimeGoJo** | Anime | Master HLS 1080p | Thai (Sub/Dub) | `https://raw.githubusercontent.com/Varomine/luna-service/main/animegojo/animegojo.json` |
+| **Hanime** | Anime / Hentai | HLS 1080p | English | `https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json` |
+| **Anime-Hit** | Anime | Master HLS 1080p | Thai (Sub/Dub) | `https://raw.githubusercontent.com/Varomine/luna-service/main/anime-hit/anime-hit.json` |
 | **Anifume** | Anime | Direct MP4 High Quality | Thai (Sub/Dub) | `https://raw.githubusercontent.com/Varomine/luna-service/main/anifume/anifume.json` |
 | **MioAnime** | Anime | Master HLS 1080p | Thai (Sub/Dub) | `https://raw.githubusercontent.com/Varomine/luna-service/main/mioanime/mioanime.json` |
 | **Alpha-Hen** | Hentai (Uncensored) | HLS 1080p | Thai (Sub) | `https://raw.githubusercontent.com/Varomine/luna-service/main/alpha-hen/alpha-hen.json` |
 | **AnimeRuka** | Anime | Multi-Server (Abyss / AnimeMami) | Thai (Sub/Dub) | `https://raw.githubusercontent.com/Varomine/luna-service/main/animeruka/animeruka.json` |
-| **Hanime** | Anime / Hentai | HLS 1080p | English | `https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json` |
 
 ---
 
