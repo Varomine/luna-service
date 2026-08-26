@@ -3,6 +3,7 @@
  * Author: Varomine
  * Site: https://animegojoo.com/
  * Stream Type: Master HLS 1080p
+ * Version: 1.0.2
  */
 
 const DEFAULT_HEADERS = {
@@ -39,10 +40,23 @@ async function searchResults(keyword) {
         let targetUrl = "https://animegojoo.com/";
 
         if (query !== "") {
-            targetUrl = `https://animegojoo.com/search/${encodeURIComponent(query)}/`;
+            // Note: animegojoo.com server WAF rejects '%20' with HTTP 403 in the search path.
+            // Using '+' for spaces ensures HTTP 200 and matches multi-word queries accurately.
+            const formattedQuery = encodeURIComponent(query).replace(/%20/g, "+");
+            targetUrl = `https://animegojoo.com/search/${formattedQuery}/`;
         }
 
-        const html = await httpGet(targetUrl);
+        let html = await httpGet(targetUrl);
+
+        // Fallback: If 403 or empty, try query parameter search `/?s=`
+        if (!html || html === "undefined" || html.includes("<title>403") || html.includes("403 Forbidden")) {
+            const fallbackUrl = `https://animegojoo.com/?s=${encodeURIComponent(query).replace(/%20/g, "+")}`;
+            const fallbackHtml = await httpGet(fallbackUrl);
+            if (fallbackHtml && fallbackHtml !== "undefined") {
+                html = fallbackHtml;
+            }
+        }
+
         if (!html || html === "undefined") {
             return JSON.stringify([]);
         }
