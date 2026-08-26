@@ -1,0 +1,32 @@
+{
+    "sourceName": "Animeyour",
+    "iconUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/animeyour/icon.png",
+    "author": {
+        "name": "Varomine",
+        "icon": "https://avatars.githubusercontent.com/Varomine"
+    },
+    "version": "1.0.0",
+    "language": "Thai",
+    "languageType": [
+        "Dubbed",
+        "Subbed"
+    ],
+    "streamType": "Multi-Server HLS",
+    "quality": "Master HLS 1080p",
+    "baseUrl": "https://anime-your.com/",
+    "searchBaseUrl": "https://anime-your.com/",
+    "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/animeyour/animeyour.js",
+    "type": "anime",
+    "asyncJS": true,
+    "softsub": true,
+    "downloadSupport": true,
+    "supportsSora": true,
+    "supportsLuna": true,
+    "supportsMojuru": true,
+    "supportsDartotsu": true,
+    "supportsAnymex": true,
+    "supportsTsumi": true,
+    "supportsHiyoku": true,
+    "supportsShirox": true,
+    "supportsEclipse": true
+}
