@@ -1,0 +1,32 @@
+{
+    "sourceName": "Anime-Suba",
+    "iconUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/anime-suba/icon.png",
+    "author": {
+        "name": "Varomine",
+        "icon": "https://avatars.githubusercontent.com/Varomine"
+    },
+    "version": "1.0.0",
+    "language": "Thai",
+    "languageType": [
+        "Dubbed",
+        "Subbed"
+    ],
+    "streamType": "MP4 / Direct",
+    "quality": "720p HD",
+    "baseUrl": "https://suba-anime.com/",
+    "searchBaseUrl": "https://suba-anime.com/",
+    "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/anime-suba/anime-suba.js",
+    "type": "anime",
+    "asyncJS": true,
+    "softsub": true,
+    "downloadSupport": true,
+    "supportsSora": true,
+    "supportsLuna": true,
+    "supportsMojuru": true,
+    "supportsDartotsu": true,
+    "supportsAnymex": true,
+    "supportsTsumi": true,
+    "supportsHiyoku": true,
+    "supportsShirox": true,
+    "supportsEclipse": true
+}
