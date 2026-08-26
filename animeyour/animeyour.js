@@ -3,7 +3,7 @@
  * Author: Varomine
  * Site: https://anime-your.com/
  * Stream Type: Multi-Server Master HLS 1080p (Server 1 & Server 2)
- * Version: 1.0.1
+ * Version: 1.0.2
  */
 
 const DEFAULT_HEADERS = {
