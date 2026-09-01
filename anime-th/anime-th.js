@@ -2,8 +2,8 @@
  * Anime-TH Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://anime-th.com/
- * Stream Type: Single Server Master HLS / Web Player
- * Version: 1.0.3
+ * Stream Type: Deep Abyss CDN Player Resolution
+ * Version: 1.0.4
  */
 
 const DEFAULT_HEADERS = {
@@ -249,7 +249,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (Single Clean Server Endpoint) ───
+// ─── Extract Stream URL (Deep Abyss CDN Resolution) ───
 async function extractStreamUrl(url) {
     try {
         const baseUrl = url.split("?")[0];
@@ -271,39 +271,48 @@ async function extractStreamUrl(url) {
 
         const pbMatch = baseHtml.match(/playback\/[a-z]\/([a-zA-Z0-9_-]+)/);
         let finalStreamUrl = "";
-        let finalReferer = "https://player.marimo.me/";
 
         if (pbMatch) {
             const pbUrl = `${webmainapp}${pbMatch[0]}/`;
             const pbHtml = await httpGet(pbUrl, playerBaseUrl);
-            const marimoIframe = pbHtml ? (pbHtml.match(/<iframe[^>]+src=["'](https:\/\/[^"']+)["']/i)) : null;
+            const iframeMatch = pbHtml ? pbHtml.match(/<iframe[^>]+src=["'](https:\/\/[^"']+)["']/i) : null;
 
-            if (marimoIframe) {
-                let mUrl = marimoIframe[1];
-                let mHtml = await httpGet(mUrl, pbUrl);
-                const abyssIframe = mHtml ? mHtml.match(/<iframe[^>]+src=["'](https:\/\/abysscdn\.com\/[^"']+)["']/i) : null;
-                if (abyssIframe) {
-                    finalStreamUrl = abyssIframe[1];
-                    finalReferer = "https://player.marimo.me/";
+            if (iframeMatch) {
+                let frameUrl = iframeMatch[1];
+                let frameHtml = await httpGet(frameUrl, pbUrl);
+
+                let abyssMatch = frameHtml ? frameHtml.match(/<iframe[^>]+src=["'](https:\/\/abysscdn\.com\/[^"']+)["']/i) : null;
+                if (abyssMatch) {
+                    finalStreamUrl = abyssMatch[1];
                 } else {
-                    finalStreamUrl = mUrl;
-                    finalReferer = pbUrl;
+                    let marimoMatch = frameHtml ? frameHtml.match(/https:\/\/player\.marimo\.me\/demo\/[^"'\s\)]+/i) : null;
+                    if (marimoMatch) {
+                        let marimoUrl = (marimoMatch[1] || marimoMatch[0]).replace(/["'\\]+$/, '');
+                        let marimoHtml = await httpGet(marimoUrl, frameUrl);
+                        let abyssInsideMarimo = marimoHtml ? marimoHtml.match(/<iframe[^>]+src=["'](https:\/\/abysscdn\.com\/[^"']+)["']/i) : null;
+                        if (abyssInsideMarimo) {
+                            finalStreamUrl = abyssInsideMarimo[1];
+                        } else {
+                            finalStreamUrl = marimoUrl;
+                        }
+                    } else {
+                        finalStreamUrl = frameUrl;
+                    }
                 }
             } else {
                 finalStreamUrl = pbUrl;
-                finalReferer = playerBaseUrl;
             }
         }
 
         const streams = [];
         if (finalStreamUrl) {
             streams.push({
-                title: "Anime-TH • Main Server",
+                title: "Anime-TH • Abyss CDN Stream",
                 streamUrl: finalStreamUrl,
                 url: finalStreamUrl,
                 headers: {
                     "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                    "Referer": finalReferer
+                    "Referer": "https://player.marimo.me/"
                 }
             });
         }
