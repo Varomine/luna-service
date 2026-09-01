@@ -3,7 +3,7 @@
  * Author: Varomine
  * Site: https://animeruka.com/
  * Stream Type: Direct HLS (.m3u8/.txt) Stream (100% Native, NO Cloudflare Workers needed!)
- * Version: 1.0.8
+ * Version: 1.0.2
  */
 
 const DEFAULT_HEADERS = {
