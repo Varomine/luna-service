@@ -2,8 +2,8 @@
  * Anime-TH Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://anime-th.com/
- * Stream Type: Web Embed Stream (Requires Web Player mode in Luna settings)
- * Version: 1.0.5
+ * Stream Type: Cloudflare SAPIS Proxy + Multi-Server Support
+ * Version: 1.0.6
  */
 
 const DEFAULT_HEADERS = {
@@ -249,7 +249,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (Multi-Server Support for Luna Web Player) ───
+// ─── Extract Stream URL (Cloudflare Worker Proxy + Multi-Server) ───
 async function extractStreamUrl(url) {
     try {
         const baseUrl = url.split("?")[0];
@@ -275,19 +275,7 @@ async function extractStreamUrl(url) {
         if (pbMatch) {
             const pbId = pbMatch[1];
 
-            // Server 1: Ad-Free Main Player
-            const serverFUrl = `${webmainapp}playback/f/${pbId}/`;
-            streams.push({
-                title: "Anime-TH • Main Player (Web Player)",
-                streamUrl: serverFUrl,
-                url: serverFUrl,
-                headers: {
-                    "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                    "Referer": playerBaseUrl
-                }
-            });
-
-            // Server 2: Abyss CDN Player
+            // 1. SAPIS Cloudflare Worker Proxy Stream (Compatible with Luna / Sora / MPV)
             const pbUrl = `${webmainapp}${pbMatch[0]}/`;
             const pbHtml = await httpGet(pbUrl, playerBaseUrl);
             const iframeMatch = pbHtml ? pbHtml.match(/<iframe[^>]+src=["'](https:\/\/[^"']+)["']/i) : null;
@@ -311,10 +299,23 @@ async function extractStreamUrl(url) {
                     }
                     let abyssInsideMarimo = marimoHtml ? marimoHtml.match(/<iframe[^>]+src=["'](https:\/\/abysscdn\.com\/[^"']+)["']/i) : null;
                     if (abyssInsideMarimo) {
+                        const abyssUrl = abyssInsideMarimo[1];
+                        const workerProxyUrl = `https://animeruka-worker.sapis.workers.dev/proxy?url=${encodeURIComponent(abyssUrl)}`;
+
                         streams.push({
-                            title: "Anime-TH • Abyss CDN (Web Player)",
-                            streamUrl: abyssInsideMarimo[1],
-                            url: abyssInsideMarimo[1],
+                            title: "Anime-TH • SAPIS Cloudflare Proxy (Luna Stream)",
+                            streamUrl: workerProxyUrl,
+                            url: workerProxyUrl,
+                            headers: {
+                                "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                                "Referer": "https://player.marimo.me/"
+                            }
+                        });
+
+                        streams.push({
+                            title: "Anime-TH • Abyss CDN Player",
+                            streamUrl: abyssUrl,
+                            url: abyssUrl,
                             headers: {
                                 "User-Agent": DEFAULT_HEADERS["User-Agent"],
                                 "Referer": "https://player.marimo.me/"
@@ -323,6 +324,18 @@ async function extractStreamUrl(url) {
                     }
                 }
             }
+
+            // 2. Ad-Free Main Player
+            const serverFUrl = `${webmainapp}playback/f/${pbId}/`;
+            streams.push({
+                title: "Anime-TH • Main Player (Ad-Free)",
+                streamUrl: serverFUrl,
+                url: serverFUrl,
+                headers: {
+                    "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                    "Referer": playerBaseUrl
+                }
+            });
         }
 
         const primaryStream = streams.length > 0 ? streams[0].streamUrl : "";
