@@ -2,8 +2,8 @@
  * Anime-TH Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://anime-th.com/
- * Stream Type: Multi-Server Master HLS 1080p
- * Version: 1.0.2
+ * Stream Type: Single Server Master HLS / Web Player
+ * Version: 1.0.3
  */
 
 const DEFAULT_HEADERS = {
@@ -249,7 +249,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (Multi-Server Player Support) ───
+// ─── Extract Stream URL (Single Clean Server Endpoint) ───
 async function extractStreamUrl(url) {
     try {
         const baseUrl = url.split("?")[0];
@@ -266,85 +266,52 @@ async function extractStreamUrl(url) {
             return JSON.stringify({ streams: [], subtitle: "" });
         }
 
-        const streams = [];
-        const seenUrls = new Set();
-
         const mainAppMatch = baseHtml.match(/var\s+webmainapp\s*=\s*["']([^"']+)["']/i);
         const webmainapp = mainAppMatch ? mainAppMatch[1] : "https://streaming.tonytonychopper.com/";
 
-        const playbackMatches = [...baseHtml.matchAll(/playback\/[a-z]\/([a-zA-Z0-9_-]+)/g)];
-        const pbPaths = [...new Set(playbackMatches.map(m => m[0]))];
+        const pbMatch = baseHtml.match(/playback\/[a-z]\/([a-zA-Z0-9_-]+)/);
+        let finalStreamUrl = "";
+        let finalReferer = "https://player.marimo.me/";
 
-        for (const pbPath of pbPaths) {
-            const pbUrl = `${webmainapp}${pbPath}/`;
+        if (pbMatch) {
+            const pbUrl = `${webmainapp}${pbMatch[0]}/`;
             const pbHtml = await httpGet(pbUrl, playerBaseUrl);
-            if (!pbHtml || pbHtml === "undefined") continue;
+            const marimoIframe = pbHtml ? (pbHtml.match(/<iframe[^>]+src=["'](https:\/\/[^"']+)["']/i)) : null;
 
-            const marimoIframe = pbHtml.match(/<iframe[^>]+src=["'](https:\/\/player\.marimo\.me\/[^"']+)["']/i) ||
-                                 pbHtml.match(/<iframe[^>]+src=["'](https:\/\/anime\.tonytonychopper\.net\/[^"']+)["']/i);
             if (marimoIframe) {
-                let marimoUrl = marimoIframe[1];
-                let marimoHtml = await httpGet(marimoUrl, pbUrl);
-
-                if (marimoUrl.includes('tonytonychopper.net')) {
-                    const innerMarimo = marimoHtml ? marimoHtml.match(/<iframe[^>]+src=["'](https:\/\/player\.marimo\.me\/[^"']+)["']/i) : null;
-                    if (innerMarimo) {
-                        marimoUrl = innerMarimo[1];
-                        marimoHtml = await httpGet(marimoUrl, marimoIframe[1]);
-                    }
-                }
-
-                const abyssIframe = marimoHtml ? marimoHtml.match(/<iframe[^>]+src=["'](https:\/\/abysscdn\.com\/[^"']+)["']/i) : null;
+                let mUrl = marimoIframe[1];
+                let mHtml = await httpGet(mUrl, pbUrl);
+                const abyssIframe = mHtml ? mHtml.match(/<iframe[^>]+src=["'](https:\/\/abysscdn\.com\/[^"']+)["']/i) : null;
                 if (abyssIframe) {
-                    const abyssUrl = abyssIframe[1];
-                    if (!seenUrls.has(abyssUrl)) {
-                        seenUrls.add(abyssUrl);
-                        streams.push({
-                            title: `Anime-TH • Abyss Server (Web Player)`,
-                            streamUrl: abyssUrl,
-                            url: abyssUrl,
-                            headers: {
-                                "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                                "Referer": "https://player.marimo.me/"
-                            }
-                        });
-                    }
+                    finalStreamUrl = abyssIframe[1];
+                    finalReferer = "https://player.marimo.me/";
+                } else {
+                    finalStreamUrl = mUrl;
+                    finalReferer = pbUrl;
                 }
-
-                if (!seenUrls.has(marimoUrl)) {
-                    seenUrls.add(marimoUrl);
-                    streams.push({
-                        title: `Anime-TH • Marimo Server`,
-                        streamUrl: marimoUrl,
-                        url: marimoUrl,
-                        headers: {
-                            "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                            "Referer": pbUrl
-                        }
-                    });
-                }
-            }
-
-            if (!seenUrls.has(pbUrl)) {
-                seenUrls.add(pbUrl);
-                streams.push({
-                    title: `Anime-TH • Chopper Server (${pbPath})`,
-                    streamUrl: pbUrl,
-                    url: pbUrl,
-                    headers: {
-                        "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                        "Referer": playerBaseUrl
-                    }
-                });
+            } else {
+                finalStreamUrl = pbUrl;
+                finalReferer = playerBaseUrl;
             }
         }
 
-        const primaryStream = streams.length > 0 ? streams[0].streamUrl : "";
+        const streams = [];
+        if (finalStreamUrl) {
+            streams.push({
+                title: "Anime-TH • Main Server",
+                streamUrl: finalStreamUrl,
+                url: finalStreamUrl,
+                headers: {
+                    "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                    "Referer": finalReferer
+                }
+            });
+        }
 
         return JSON.stringify({
             streams: streams,
-            url: primaryStream,
-            streamUrl: primaryStream,
+            url: finalStreamUrl,
+            streamUrl: finalStreamUrl,
             subtitle: ""
         });
     } catch (error) {
