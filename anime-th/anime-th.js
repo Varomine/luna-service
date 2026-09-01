@@ -2,8 +2,8 @@
  * Anime-TH Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://anime-th.com/
- * Stream Type: Cloudflare SAPIS Proxy + Multi-Server Support
- * Version: 1.0.6
+ * Stream Type: Direct HLS (.m3u8) Stream from TonyTonyChopper Main Player
+ * Version: 1.0.7
  */
 
 const DEFAULT_HEADERS = {
@@ -249,7 +249,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (Cloudflare Worker Proxy + Multi-Server) ───
+// ─── Extract Stream URL (Single Direct HLS Server from streaming.tonytonychopper.com) ───
 async function extractStreamUrl(url) {
     try {
         const baseUrl = url.split("?")[0];
@@ -274,68 +274,29 @@ async function extractStreamUrl(url) {
 
         if (pbMatch) {
             const pbId = pbMatch[1];
-
-            // 1. SAPIS Cloudflare Worker Proxy Stream (Compatible with Luna / Sora / MPV)
-            const pbUrl = `${webmainapp}${pbMatch[0]}/`;
+            const pbUrl = `${webmainapp}playback/v/${pbId}/`;
             const pbHtml = await httpGet(pbUrl, playerBaseUrl);
-            const iframeMatch = pbHtml ? pbHtml.match(/<iframe[^>]+src=["'](https:\/\/[^"']+)["']/i) : null;
 
+            const iframeMatch = pbHtml ? pbHtml.match(/<iframe[^>]+src=["'](https:\/\/anime\.tonytonychopper\.net\/v2\/[a-zA-Z0-9_-]+)["']/i) : null;
             if (iframeMatch) {
-                let frameUrl = iframeMatch[1];
-                let frameRef = pbUrl;
-                if (frameUrl.includes('tonytonychopper.net')) {
-                    frameRef = 'https://streaming.tonytonychopper.com/';
-                }
-                let frameHtml = await httpGet(frameUrl, frameRef);
+                const v2Url = iframeMatch[1];
+                const codeMatch = v2Url.match(/\/v2\/([a-zA-Z0-9_-]+)/);
+                if (codeMatch) {
+                    const code = codeMatch[1];
+                    const hlsMasterUrl = `https://anime.tonytonychopper.net/file2/${code}/`;
 
-                let marimoIframe = frameHtml ? (frameHtml.match(/<iframe[^>]+src=["'](https:\/\/player\.marimo\.me\/[^"']+)["']/i) ||
-                                     frameHtml.match(/https:\/\/player\.marimo\.me\/demo\/[^"'\s\)]+/i)) : null;
-
-                let marimoUrl = marimoIframe ? (marimoIframe[1] || marimoIframe[0]).replace(/["'\\]+$/, '') : '';
-                if (marimoUrl) {
-                    let marimoHtml = await httpGet(marimoUrl, 'https://anime-th.com/');
-                    if (!marimoHtml || !marimoHtml.includes('abysscdn.com')) {
-                        marimoHtml = await httpGet(marimoUrl, 'https://anime.tonytonychopper.net/');
-                    }
-                    let abyssInsideMarimo = marimoHtml ? marimoHtml.match(/<iframe[^>]+src=["'](https:\/\/abysscdn\.com\/[^"']+)["']/i) : null;
-                    if (abyssInsideMarimo) {
-                        const abyssUrl = abyssInsideMarimo[1];
-                        const workerProxyUrl = `https://animeruka-worker.sapis.workers.dev/proxy?url=${encodeURIComponent(abyssUrl)}`;
-
-                        streams.push({
-                            title: "Anime-TH • SAPIS Cloudflare Proxy (Luna Stream)",
-                            streamUrl: workerProxyUrl,
-                            url: workerProxyUrl,
-                            headers: {
-                                "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                                "Referer": "https://player.marimo.me/"
-                            }
-                        });
-
-                        streams.push({
-                            title: "Anime-TH • Abyss CDN Player",
-                            streamUrl: abyssUrl,
-                            url: abyssUrl,
-                            headers: {
-                                "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                                "Referer": "https://player.marimo.me/"
-                            }
-                        });
-                    }
+                    // Single Main Server Stream
+                    streams.push({
+                        title: "Anime-TH • Main Player (HLS 1080p)",
+                        streamUrl: hlsMasterUrl,
+                        url: hlsMasterUrl,
+                        headers: {
+                            "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                            "Referer": "https://anime.tonytonychopper.net/"
+                        }
+                    });
                 }
             }
-
-            // 2. Ad-Free Main Player
-            const serverFUrl = `${webmainapp}playback/f/${pbId}/`;
-            streams.push({
-                title: "Anime-TH • Main Player (Ad-Free)",
-                streamUrl: serverFUrl,
-                url: serverFUrl,
-                headers: {
-                    "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                    "Referer": playerBaseUrl
-                }
-            });
         }
 
         const primaryStream = streams.length > 0 ? streams[0].streamUrl : "";
