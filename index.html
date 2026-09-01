@@ -159,7 +159,7 @@
                 <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                     <i class="fa-solid fa-cubes text-indigo-400"></i>
                     <span data-i18n="availableServices">Services ที่พร้อมใช้งาน</span>
-                    <span id="serviceCount" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">9</span>
+                    <span id="serviceCount" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">10</span>
                 </h2>
                 <button onclick="switchTab('troubleshoot')" class="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1.5 font-medium transition self-start sm:self-auto">
                     <i class="fa-solid fa-circle-question text-xs flex-shrink-0"></i>
@@ -292,6 +292,45 @@
                             <span data-i18n="reportBtn">แจ้งปัญหา</span>
                         </button>
                         <a href="https://anime-your.com/" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 rounded-xl transition text-xs font-medium flex items-center justify-center flex-shrink-0" title="ไปยังเว็บไซต์ต้นทาง (Visit Website)">
+                            <i class="fa-solid fa-globe text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Anime-TH Service Card -->
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 service-card" data-name="anime-th animeth thai anime dub sub hls 1080p post query ajax">
+                    <div>
+                        <div class="flex items-start justify-between gap-3 mb-4">
+                            <div class="flex items-center space-x-3 min-w-0">
+                                <img src="https://raw.githubusercontent.com/Varomine/luna-service/main/anime-th/icon.png" alt="Anime-TH Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700 flex-shrink-0" onerror="this.src='https://anime-th.com/assets/image/screen.jpg'">
+                                <div class="min-w-0">
+                                    <h3 class="text-lg font-bold text-white leading-snug truncate">Anime-TH</h3>
+                                    <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex-shrink-0">v1.0.0</span>
+                        </div>
+                        <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="animethDesc">
+                            บริการอนิเมะซับไทย/พากย์ไทย สำหรับ anime-th.com พร้อมระบบค้นหาผ่าน AJAX POST และดึงสตรีม Master HLS 1080p
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-1.5 mb-6">
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">HLS 1080p</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Thai (TH)</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Anime</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-1.5 sm:gap-2">
+                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/anime-th/anime-th.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-2.5 sm:px-3 rounded-xl transition flex items-center justify-center space-x-1.5 text-xs shadow-lg shadow-indigo-600/20 whitespace-nowrap">
+                            <i class="fa-regular fa-copy"></i>
+                            <span data-i18n="copyBtn">คัดลอก Manifest</span>
+                        </button>
+                        <button onclick="openReportModal('Anime-TH')" class="px-2.5 sm:px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5 whitespace-nowrap flex-shrink-0" title="แจ้งปัญหา Service นี้">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
+                            <span data-i18n="reportBtn">แจ้งปัญหา</span>
+                        </button>
+                        <a href="https://anime-th.com/" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 rounded-xl transition text-xs font-medium flex items-center justify-center flex-shrink-0" title="ไปยังเว็บไซต์ต้นทาง (Visit Website)">
                             <i class="fa-solid fa-globe text-sm"></i>
                         </a>
                     </div>
@@ -781,6 +820,7 @@
                         <option value="AnimeGoJo">AnimeGoJo</option>
                         <option value="Hanime">Hanime</option>
                         <option value="Animeyour">Animeyour</option>
+                        <option value="Anime-TH">Anime-TH</option>
                         <option value="Anime-Hit">Anime-Hit</option>
                         <option value="Anime-Suba">Anime-Suba</option>
                         <option value="Anifume">Anifume</option>
@@ -1022,6 +1062,7 @@
                 havingIssuesLink: "Playback issues? View Fix Guide",
                 animegojoDesc: "Thai anime service for animegojoo.com featuring direct 1080p Master HLS stream extraction.",
                 animeyourDesc: "Thai anime service for anime-your.com featuring multi-server (Server 1 & 2) 1080p Master HLS stream extraction.",
+                animethDesc: "Thai anime service for anime-th.com featuring AJAX POST search engine & 1080p Master HLS stream extraction.",
                 animehitDesc: "Thai anime service for anime-hit.com featuring direct 1080p Master HLS stream extraction.",
                 animesubaDesc: "Thai anime service for suba-anime.com featuring direct 720p MP4 stream extraction.",
                 anifumeDesc: "Thai anime service for anifume.com featuring direct MP4 video stream extraction.",

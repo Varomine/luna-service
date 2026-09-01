@@ -11,6 +11,7 @@ Welcome to the **Luna Extension Service** repository. This repository hosts prov
 | **AnimeGoJo** | Anime | Master HLS 1080p | Thai (Sub/Dub) | `https://raw.githubusercontent.com/Varomine/luna-service/main/animegojo/animegojo.json` |
 | **Hanime** | Anime / Hentai | HLS 1080p | English | `https://raw.githubusercontent.com/Varomine/luna-service/main/hanime/hanime.json` |
 | **Animeyour** | Anime | Multi-Server (Server 1 & 2) 1080p | Thai (Sub/Dub) | `https://raw.githubusercontent.com/Varomine/luna-service/main/animeyour/animeyour.json` |
+| **Anime-TH** | Anime | Multi-Server HLS 1080p | Thai (Sub/Dub) | `https://raw.githubusercontent.com/Varomine/luna-service/main/anime-th/anime-th.json` |
 | **Anime-Hit** | Anime | Master HLS 1080p | Thai (Sub/Dub) | `https://raw.githubusercontent.com/Varomine/luna-service/main/anime-hit/anime-hit.json` |
 | **Anime-Suba** | Anime | Direct MP4 720p HD | Thai (Sub/Dub) | `https://raw.githubusercontent.com/Varomine/luna-service/main/anime-suba/anime-suba.json` |
 | **Anifume** | Anime | Direct MP4 High Quality | Thai (Sub/Dub) | `https://raw.githubusercontent.com/Varomine/luna-service/main/anifume/anifume.json` |
