@@ -3,7 +3,7 @@
  * Author: Varomine
  * Site: https://anime-th.com/
  * Stream Type: Multi-Server Master HLS 1080p
- * Version: 1.0.0
+ * Version: 1.0.1
  */
 
 const DEFAULT_HEADERS = {
@@ -269,59 +269,65 @@ async function extractStreamUrl(url) {
         const streams = [];
         const seenUrls = new Set();
 
-        const playbackMatches = [...baseHtml.matchAll(/webmainapp\s*\+\s*["'](playback\/[a-z]\/[a-zA-Z0-9_-]+\/?)["']/gi)]
-            .concat([...baseHtml.matchAll(/["'](https:\/\/streaming\.tonytonychopper\.com\/playback\/[a-z]\/[a-zA-Z0-9_-]+\/?)["']/gi)]);
+        const mainAppMatch = baseHtml.match(/var\s+webmainapp\s*=\s*["']([^"']+)["']/i);
+        const webmainapp = mainAppMatch ? mainAppMatch[1] : "https://streaming.tonytonychopper.com/";
 
-        for (const m of playbackMatches) {
-            const pbPath = m[1];
-            const pbUrl = pbPath.startsWith("http") ? pbPath : `https://streaming.tonytonychopper.com/${pbPath}`;
+        const playbackMatches = [...baseHtml.matchAll(/playback\/[a-z]\/([a-zA-Z0-9_-]+)/g)];
+        const pbPaths = [...new Set(playbackMatches.map(m => m[0]))];
 
-            const pbHtml = await httpGet(pbUrl, "https://anime-th.com/");
+        for (const pbPath of pbPaths) {
+            const pbUrl = `${webmainapp}${pbPath}/`;
+            const pbHtml = await httpGet(pbUrl, playerBaseUrl);
             if (!pbHtml || pbHtml === "undefined") continue;
 
             const marimoIframe = pbHtml.match(/<iframe[^>]+src=["'](https:\/\/player\.marimo\.me\/[^"']+)["']/i);
             if (marimoIframe) {
                 const marimoUrl = marimoIframe[1];
-                const marimoHtml = await httpGet(marimoUrl, "https://streaming.tonytonychopper.com/");
+                const marimoHtml = await httpGet(marimoUrl, pbUrl);
 
                 const abyssIframe = marimoHtml ? marimoHtml.match(/<iframe[^>]+src=["'](https:\/\/abysscdn\.com\/[^"']+)["']/i) : null;
                 if (abyssIframe) {
                     const abyssUrl = abyssIframe[1];
-                    const abyssHtml = await httpGet(abyssUrl, "https://player.marimo.me/");
-
-                    if (abyssHtml && abyssHtml !== "undefined") {
-                        const streamMatch = abyssHtml.match(/var\s+playerlink\s*=\s*["']([^"']+)["']/i) ||
-                                            abyssHtml.match(/player\.src\(\{\s*src:\s*["']([^"']+)["']/i) ||
-                                            abyssHtml.match(/["'](https?:[^\s"'<>]+\.(?:m3u8|mp4)[^\s"'>]*)["']/i) ||
-                                            abyssHtml.match(/file:\s*["']([^"']+)["']/i);
-                        if (streamMatch) {
-                            const streamUrl = streamMatch[1];
-                            if (!seenUrls.has(streamUrl)) {
-                                seenUrls.add(streamUrl);
-                                streams.push({
-                                    title: `Anime-TH • Server ${streams.length + 1} (HLS 1080p)`,
-                                    streamUrl: streamUrl,
-                                    url: streamUrl,
-                                    headers: {
-                                        "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                                        "Referer": "https://abysscdn.com/"
-                                    }
-                                });
+                    if (!seenUrls.has(abyssUrl)) {
+                        seenUrls.add(abyssUrl);
+                        streams.push({
+                            title: `Anime-TH • Abyss Server ${streams.length + 1} (HLS 1080p)`,
+                            streamUrl: abyssUrl,
+                            url: abyssUrl,
+                            headers: {
+                                "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                                "Referer": "https://player.marimo.me/"
                             }
-                        }
+                        });
                     }
                 }
-            }
-        }
 
-        // Embed Player Frame fallback for Web Viewers
-        if (streams.length === 0) {
-            streams.push({
-                title: "Anime-TH • Main Player (HLS/Embed)",
-                streamUrl: playerBaseUrl,
-                url: playerBaseUrl,
-                headers: DEFAULT_HEADERS
-            });
+                if (!seenUrls.has(marimoUrl)) {
+                    seenUrls.add(marimoUrl);
+                    streams.push({
+                        title: `Anime-TH • Marimo Server ${streams.length + 1}`,
+                        streamUrl: marimoUrl,
+                        url: marimoUrl,
+                        headers: {
+                            "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                            "Referer": pbUrl
+                        }
+                    });
+                }
+            }
+
+            if (!seenUrls.has(pbUrl)) {
+                seenUrls.add(pbUrl);
+                streams.push({
+                    title: `Anime-TH • Chopper Server ${streams.length + 1}`,
+                    streamUrl: pbUrl,
+                    url: pbUrl,
+                    headers: {
+                        "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                        "Referer": playerBaseUrl
+                    }
+                });
+            }
         }
 
         const primaryStream = streams.length > 0 ? streams[0].streamUrl : "";
