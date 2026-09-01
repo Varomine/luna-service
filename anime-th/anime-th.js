@@ -3,7 +3,7 @@
  * Author: Varomine
  * Site: https://anime-th.com/
  * Stream Type: Multi-Server Master HLS 1080p
- * Version: 1.0.1
+ * Version: 1.0.2
  */
 
 const DEFAULT_HEADERS = {
@@ -249,7 +249,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (Multi-Server Support) ───
+// ─── Extract Stream URL (Multi-Server Player Support) ───
 async function extractStreamUrl(url) {
     try {
         const baseUrl = url.split("?")[0];
@@ -280,10 +280,19 @@ async function extractStreamUrl(url) {
             const pbHtml = await httpGet(pbUrl, playerBaseUrl);
             if (!pbHtml || pbHtml === "undefined") continue;
 
-            const marimoIframe = pbHtml.match(/<iframe[^>]+src=["'](https:\/\/player\.marimo\.me\/[^"']+)["']/i);
+            const marimoIframe = pbHtml.match(/<iframe[^>]+src=["'](https:\/\/player\.marimo\.me\/[^"']+)["']/i) ||
+                                 pbHtml.match(/<iframe[^>]+src=["'](https:\/\/anime\.tonytonychopper\.net\/[^"']+)["']/i);
             if (marimoIframe) {
-                const marimoUrl = marimoIframe[1];
-                const marimoHtml = await httpGet(marimoUrl, pbUrl);
+                let marimoUrl = marimoIframe[1];
+                let marimoHtml = await httpGet(marimoUrl, pbUrl);
+
+                if (marimoUrl.includes('tonytonychopper.net')) {
+                    const innerMarimo = marimoHtml ? marimoHtml.match(/<iframe[^>]+src=["'](https:\/\/player\.marimo\.me\/[^"']+)["']/i) : null;
+                    if (innerMarimo) {
+                        marimoUrl = innerMarimo[1];
+                        marimoHtml = await httpGet(marimoUrl, marimoIframe[1]);
+                    }
+                }
 
                 const abyssIframe = marimoHtml ? marimoHtml.match(/<iframe[^>]+src=["'](https:\/\/abysscdn\.com\/[^"']+)["']/i) : null;
                 if (abyssIframe) {
@@ -291,7 +300,7 @@ async function extractStreamUrl(url) {
                     if (!seenUrls.has(abyssUrl)) {
                         seenUrls.add(abyssUrl);
                         streams.push({
-                            title: `Anime-TH • Abyss Server ${streams.length + 1} (HLS 1080p)`,
+                            title: `Anime-TH • Abyss Server (Web Player)`,
                             streamUrl: abyssUrl,
                             url: abyssUrl,
                             headers: {
@@ -305,7 +314,7 @@ async function extractStreamUrl(url) {
                 if (!seenUrls.has(marimoUrl)) {
                     seenUrls.add(marimoUrl);
                     streams.push({
-                        title: `Anime-TH • Marimo Server ${streams.length + 1}`,
+                        title: `Anime-TH • Marimo Server`,
                         streamUrl: marimoUrl,
                         url: marimoUrl,
                         headers: {
@@ -319,7 +328,7 @@ async function extractStreamUrl(url) {
             if (!seenUrls.has(pbUrl)) {
                 seenUrls.add(pbUrl);
                 streams.push({
-                    title: `Anime-TH • Chopper Server ${streams.length + 1}`,
+                    title: `Anime-TH • Chopper Server (${pbPath})`,
                     streamUrl: pbUrl,
                     url: pbUrl,
                     headers: {
