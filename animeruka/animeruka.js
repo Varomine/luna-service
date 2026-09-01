@@ -2,11 +2,13 @@
  * AnimeRuka Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://animeruka.com/
- * Cloudflare HLS Master Resolver: https://animeruka-worker.sapis.workers.dev
+ * Stream Type: Direct HLS (.m3u8/.txt) Stream (100% Native, NO Cloudflare Workers needed!)
+ * Version: 1.0.8
  */
 
 const DEFAULT_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1",
+    "Referer": "https://animeruka.com/"
 };
 
 async function httpGet(url, headers = DEFAULT_HEADERS) {
@@ -31,6 +33,7 @@ async function httpGet(url, headers = DEFAULT_HEADERS) {
     }
 }
 
+// ─── Search Results ───
 async function searchResults(keyword) {
     try {
         const query = keyword ? keyword.trim() : "";
@@ -74,6 +77,7 @@ async function searchResults(keyword) {
     }
 }
 
+// ─── Extract Details ───
 async function extractDetails(url) {
     try {
         const html = await httpGet(url);
@@ -108,6 +112,7 @@ async function extractDetails(url) {
     }
 }
 
+// ─── Extract Episodes ───
 async function extractEpisodes(url) {
     try {
         const baseUrl = url.split('?')[0];
@@ -154,6 +159,7 @@ async function extractEpisodes(url) {
     }
 }
 
+// ─── Extract Stream URL (100% Native Direct HLS Extraction - NO Workers) ───
 async function extractStreamUrl(url) {
     try {
         const baseUrl = url.split('?')[0];
@@ -168,32 +174,51 @@ async function extractStreamUrl(url) {
         const streams = [];
 
         if (postId) {
-            // Server 1 (AnimeMami) - Primary High Performance Server
-            const apiResult = await httpGet(`https://animeruka.com/wp-json/dooplayer/v2/${postId}/tv/1`) ||
-                              await httpGet(`https://animeruka.com/wp-json/dooplayer/v2/${postId}/movie/1`);
+            let apiResult = await httpGet(`https://animeruka.com/wp-json/dooplayer/v2/${postId}/tv/1`, baseUrl);
+            if (!apiResult || !apiResult.includes("embed_url")) {
+                apiResult = await httpGet(`https://animeruka.com/wp-json/dooplayer/v2/${postId}/movie/1`, baseUrl);
+            }
 
             if (apiResult) {
                 try {
                     const data = JSON.parse(apiResult);
                     if (data && data.embed_url) {
                         const embedUrl = data.embed_url;
-                        const masterHlsUrl = `https://animeruka-worker.sapis.workers.dev/hls?url=${encodeURIComponent(embedUrl)}&ext=.m3u8`;
+                        const embedHtml = await httpGet(embedUrl, baseUrl);
 
-                        streams.push({
-                            title: "AnimeRuka • Server 1 (1080p HD)",
-                            streamUrl: masterHlsUrl,
-                            url: masterHlsUrl,
-                            headers: {
-                                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+                        if (embedHtml) {
+                            const dataPageMatch = embedHtml.match(/data-page="([^"]+)"/);
+                            if (dataPageMatch) {
+                                const decoded = dataPageMatch[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+                                const pageObj = JSON.parse(decoded);
+
+                                if (pageObj && pageObj.props && pageObj.props.video && pageObj.props.video.url) {
+                                    const directHlsUrl = pageObj.props.video.url;
+                                    streams.push({
+                                        title: "AnimeRuka • Main Server (1080p HD Direct)",
+                                        streamUrl: directHlsUrl,
+                                        url: directHlsUrl,
+                                        headers: {
+                                            "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                                            "Referer": "https://animemami.xyz/"
+                                        }
+                                    });
+                                }
                             }
-                        });
+                        }
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.error("[AnimeRuka] parse error: " + e.message);
+                }
             }
         }
 
+        const primaryStream = streams.length > 0 ? streams[0].streamUrl : "";
+
         return JSON.stringify({
             streams: streams,
+            url: primaryStream,
+            streamUrl: primaryStream,
             subtitle: ""
         });
     } catch (error) {
