@@ -2,8 +2,8 @@
  * AnimeRuka Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://animeruka.com/
- * Stream Type: Direct HLS (.m3u8/.txt) Stream (100% Native, NO Cloudflare Workers needed!)
- * Version: 1.0.2
+ * Stream Type: Direct HLS (.m3u8/.txt) Stream (100% Native, Ultra-Resilient Parser)
+ * Version: 1.0.3
  */
 
 const DEFAULT_HEADERS = {
@@ -159,7 +159,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (100% Native Direct HLS Extraction - NO Workers) ───
+// ─── Extract Stream URL (Ultra-Resilient 100% Native Parser) ───
 async function extractStreamUrl(url) {
     try {
         const baseUrl = url.split('?')[0];
@@ -174,14 +174,22 @@ async function extractStreamUrl(url) {
         const streams = [];
 
         if (postId) {
-            let apiResult = await httpGet(`https://animeruka.com/wp-json/dooplayer/v2/${postId}/tv/1`, baseUrl);
-            if (!apiResult || !apiResult.includes("embed_url")) {
-                apiResult = await httpGet(`https://animeruka.com/wp-json/dooplayer/v2/${postId}/movie/1`, baseUrl);
-            }
+            const apiEndpoints = [
+                `https://animeruka.com/wp-json/dooplayer/v2/${postId}/tv/1`,
+                `https://animeruka.com/wp-json/dooplayer/v2/${postId}/movie/1`,
+                `https://animeruka.com/wp-json/dooplayer/v2/${postId}/tv/2`,
+                `https://animeruka.com/wp-json/dooplayer/v2/${postId}/movie/2`
+            ];
 
-            if (apiResult) {
+            for (const apiUrl of apiEndpoints) {
+                const apiResult = await httpGet(apiUrl, baseUrl);
+                if (!apiResult || !apiResult.includes("embed_url")) continue;
+
                 try {
-                    const data = JSON.parse(apiResult);
+                    const cleanJsonStr = apiResult.trim();
+                    if (!cleanJsonStr.startsWith("{")) continue;
+
+                    const data = JSON.parse(cleanJsonStr);
                     if (data && data.embed_url) {
                         const embedUrl = data.embed_url;
                         const embedHtml = await httpGet(embedUrl, baseUrl);
@@ -203,6 +211,7 @@ async function extractStreamUrl(url) {
                                             "Referer": "https://animemami.xyz/"
                                         }
                                     });
+                                    break; // Successfully extracted main stream!
                                 }
                             }
                         }
