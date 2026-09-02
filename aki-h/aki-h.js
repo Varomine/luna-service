@@ -3,7 +3,7 @@
  * Author: Varomine
  * Site: https://aki-h.com/
  * Stream Type: Direct HLS (.m3u8) Stream from Aki Stream Engine
- * Version: 1.0.1
+ * Version: 1.0.2
  */
 
 const DEFAULT_HEADERS = {
@@ -73,7 +73,7 @@ async function httpPost(url, payload, headers = DEFAULT_HEADERS) {
     }
 }
 
-// ─── Search Results (POST Form Query with Image Thumbnails) ───
+// ─── Search Results (POST Search with Full Split Parsing) ───
 async function searchResults(keyword) {
     try {
         const query = keyword ? keyword.trim() : "";
@@ -93,32 +93,35 @@ async function searchResults(keyword) {
         const results = [];
         const seen = new Set();
 
-        // 1. Primary flw-item card parsing
-        const items = [...html.matchAll(/<div class="flw-item">([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/gi)].map(m => m[1]);
+        // 1. Primary flw-item card splitting (Robust multi-item extraction)
+        const parts = html.split('<div class="flw-item">');
+        if (parts.length > 1) {
+            for (let i = 1; i < parts.length; i++) {
+                const itemHtml = parts[i];
+                
+                const linkMatch = itemHtml.match(/href=["'](https:\/\/aki-h\.com\/[^"']+)["']/i);
+                if (!linkMatch) continue;
 
-        for (const itemHtml of items) {
-            const linkMatch = itemHtml.match(/href=["'](https:\/\/aki-h\.com\/[^"']+)["']/i);
-            if (!linkMatch) continue;
+                const href = linkMatch[1];
+                if (seen.has(href)) continue;
 
-            const href = linkMatch[1];
-            if (seen.has(href)) continue;
+                const titleMatch = itemHtml.match(/class=["'][^"']*film-name[^"']*["'][^>]*>([\s\S]*?)<\/(?:h3|h2|div|a)>/i) ||
+                                   itemHtml.match(/title=["']([^"']+)["']/i);
+                
+                let title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : '';
+                if (!title || title === "Watch Now" || title === "Random" || title === "Popular" || title.toLowerCase().includes("filter")) continue;
 
-            const titleMatch = itemHtml.match(/class=["'][^"']*film-name[^"']*["'][^>]*>([\s\S]*?)<\/(?:h3|h2|div|a)>/i) ||
-                               itemHtml.match(/title=["']([^"']+)["']/i);
-            
-            let title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : '';
-            if (!title || title === "Watch Now" || title === "Random" || title === "Popular") continue;
+                const imgMatch = itemHtml.match(/data-src=["']([^"']+)["']/i) ||
+                                 itemHtml.match(/src=["']([^"']+)["']/i);
+                let image = imgMatch ? imgMatch[1] : '';
+                if (image.startsWith('//')) image = 'https:' + image;
 
-            const imgMatch = itemHtml.match(/data-src=["']([^"']+)["']/i) ||
-                             itemHtml.match(/src=["']([^"']+)["']/i);
-            let image = imgMatch ? imgMatch[1] : '';
-            if (image.startsWith('//')) image = 'https:' + image;
-
-            seen.add(href);
-            results.push({ title, image, href });
+                seen.add(href);
+                results.push({ title, image, href });
+            }
         }
 
-        // 2. Fallback card parsing if flw-item structure wasn't present
+        // 2. Fallback card parsing if flw-item splitting produced no items
         if (results.length === 0) {
             const cardRegex = /<a[^>]+href=["'](https:\/\/aki-h\.com\/(?!genre|random|popular|tag|category|page|filter|az-list|terms|dmca|contact|latest|solow-sub|episode|videos)[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
             let match;
