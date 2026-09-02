@@ -2,14 +2,16 @@
  * Anime-Seven Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://www.anime-seven.com/
- * Stream Type: Pure Direct HLS Master Stream (.m3u8) Only - NO EMBEDS (0% Worker Dependency)
- * Version: 1.0.7
+ * Stream Type: Dual Server Engine (Cloudflare Worker Deobfuscated & Direct Raw m3u8)
+ * Version: 1.0.8
  */
 
 const DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1",
     "Referer": "https://www.anime-seven.com/"
 };
+
+const WORKER_PROXY_BASE = "https://animeseven-worker.sapis.workers.dev";
 
 async function httpGet(url, customHeaders = DEFAULT_HEADERS) {
     try {
@@ -182,7 +184,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (Pure Direct HLS Stream Only - NO EMBEDS & NO WORKERS) ───
+// ─── Extract Stream URL (Dual Server: Cloudflare Worker & Direct Raw m3u8) ───
 async function extractStreamUrl(url) {
     try {
         let playervyUrl = null;
@@ -221,10 +223,18 @@ async function extractStreamUrl(url) {
                     const statusData = JSON.parse(statusJsonStr);
                     if (statusData && statusData.manifestUrl) {
                         const directHlsUrl = statusData.manifestUrl;
+                        const proxiedStreamUrl = `${WORKER_PROXY_BASE}/m3u8?url=${encodeURIComponent(directHlsUrl)}`;
+
                         return JSON.stringify({
                             streams: [
                                 {
-                                    title: "Anime-Seven • Direct HLS Master Stream (m3u8)",
+                                    title: "Anime-Seven • Cloudflare Worker Stream (Deobfuscated 1080p HD)",
+                                    streamUrl: proxiedStreamUrl,
+                                    url: proxiedStreamUrl,
+                                    headers: {}
+                                },
+                                {
+                                    title: "Anime-Seven • Direct Nya Master Stream (Raw m3u8)",
                                     streamUrl: directHlsUrl,
                                     url: directHlsUrl,
                                     headers: {
@@ -233,8 +243,8 @@ async function extractStreamUrl(url) {
                                     }
                                 }
                             ],
-                            url: directHlsUrl,
-                            streamUrl: directHlsUrl,
+                            url: proxiedStreamUrl,
+                            streamUrl: proxiedStreamUrl,
                             subtitle: ""
                         });
                     }
