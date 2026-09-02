@@ -3,7 +3,7 @@
  * Author: Varomine
  * Site: https://aki-h.com/
  * Stream Type: Direct HLS (.m3u8) Stream from Aki Stream Engine
- * Version: 1.0.0
+ * Version: 1.0.1
  */
 
 const DEFAULT_HEADERS = {
@@ -43,55 +43,115 @@ async function httpGet(url, customHeaders = DEFAULT_HEADERS) {
     }
 }
 
-// ─── Search Results ───
+async function httpPost(url, payload, headers = DEFAULT_HEADERS) {
+    try {
+        const postHeaders = Object.assign({}, headers, {
+            "Content-Type": "application/x-www-form-urlencoded"
+        });
+
+        let res;
+        if (typeof fetchv2 !== "undefined") {
+            res = await fetchv2(url, postHeaders, "POST", payload);
+        } else if (typeof fetch !== "undefined") {
+            res = await fetch(url, {
+                method: "POST",
+                headers: postHeaders,
+                body: payload
+            });
+        }
+        if (!res) return null;
+
+        if (typeof res.text === "function") {
+            return await res.text();
+        } else if (typeof res === "string") {
+            return res;
+        }
+        return null;
+    } catch (err) {
+        console.error("[Aki-H] httpPost error for " + url + ": " + err.message);
+        return null;
+    }
+}
+
+// ─── Search Results (POST Form Query with Image Thumbnails) ───
 async function searchResults(keyword) {
     try {
         const query = keyword ? keyword.trim() : "";
-        const targetUrl = query !== "" ? `https://aki-h.com/?s=${encodeURIComponent(query)}` : "https://aki-h.com/";
+        let html;
 
-        const html = await httpGet(targetUrl);
+        if (query !== "") {
+            const payload = `q=${encodeURIComponent(query)}`;
+            html = await httpPost("https://aki-h.com/search/", payload);
+        } else {
+            html = await httpGet("https://aki-h.com/");
+        }
+
         if (!html || html === "undefined") {
             return JSON.stringify([]);
         }
 
         const results = [];
         const seen = new Set();
-        
-        // Regex to parse content links on Aki-H
-        const cardRegex = /<a[^>]+href=["'](https:\/\/aki-h\.com\/(?!genre|random|popular|tag|category|page|filter|az-list|terms|dmca|contact|latest|solow-sub|episode|videos)[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
-        let match;
 
-        while ((match = cardRegex.exec(html)) !== null) {
-            const href = match[1];
-            const inner = match[2];
+        // 1. Primary flw-item card parsing
+        const items = [...html.matchAll(/<div class="flw-item">([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/gi)].map(m => m[1]);
 
+        for (const itemHtml of items) {
+            const linkMatch = itemHtml.match(/href=["'](https:\/\/aki-h\.com\/[^"']+)["']/i);
+            if (!linkMatch) continue;
+
+            const href = linkMatch[1];
             if (seen.has(href)) continue;
 
-            // Extract title
-            const titleMatch = inner.match(/class=["'][^"']*title[^"']*["'][^>]*>([\s\S]*?)<\/(?:a|h2|h3|span)>/i) ||
-                               inner.match(/alt=["']([^"']+)["']/i) ||
-                               inner.match(/title=["']([^"']+)["']/i);
-
-            let title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, "").trim() : "";
+            const titleMatch = itemHtml.match(/class=["'][^"']*film-name[^"']*["'][^>]*>([\s\S]*?)<\/(?:h3|h2|div|a)>/i) ||
+                               itemHtml.match(/title=["']([^"']+)["']/i);
             
-            // Fallback title from slug if title element is empty
-            if (!title) {
-                const slugMatch = href.match(/https:\/\/aki-h\.com\/([^/]+)\/?/);
-                if (slugMatch && slugMatch[1]) {
-                    title = slugMatch[1].replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
-                }
-            }
-
+            let title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : '';
             if (!title || title === "Watch Now" || title === "Random" || title === "Popular") continue;
 
-            // Extract thumbnail
-            const imgMatch = inner.match(/data-src=["']([^"']+)["']/i) ||
-                             inner.match(/src=["']([^"']+)["']/i);
-            let image = imgMatch ? imgMatch[1] : "";
-            if (image.startsWith("//")) image = "https:" + image;
+            const imgMatch = itemHtml.match(/data-src=["']([^"']+)["']/i) ||
+                             itemHtml.match(/src=["']([^"']+)["']/i);
+            let image = imgMatch ? imgMatch[1] : '';
+            if (image.startsWith('//')) image = 'https:' + image;
 
             seen.add(href);
             results.push({ title, image, href });
+        }
+
+        // 2. Fallback card parsing if flw-item structure wasn't present
+        if (results.length === 0) {
+            const cardRegex = /<a[^>]+href=["'](https:\/\/aki-h\.com\/(?!genre|random|popular|tag|category|page|filter|az-list|terms|dmca|contact|latest|solow-sub|episode|videos)[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+            let match;
+
+            while ((match = cardRegex.exec(html)) !== null) {
+                const href = match[1];
+                const inner = match[2];
+
+                if (seen.has(href)) continue;
+
+                const titleMatch = inner.match(/class=["'][^"']*title[^"']*["'][^>]*>([\s\S]*?)<\/(?:a|h2|h3|span)>/i) ||
+                                   inner.match(/alt=["']([^"']+)["']/i) ||
+                                   inner.match(/title=["']([^"']+)["']/i);
+
+                let title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, "").trim() : "";
+                
+                if (!title) {
+                    const slugMatch = href.match(/https:\/\/aki-h\.com\/([^/]+)\/?/);
+                    if (slugMatch && slugMatch[1]) {
+                        title = slugMatch[1].replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+                    }
+                }
+
+                if (!title || title === "Watch Now" || title === "Random" || title === "Popular" || title.toLowerCase().includes("filter")) continue;
+
+                const imgMatch = inner.match(/data-src=["']([^"']+)["']/i) ||
+                                 inner.match(/src=["']([^"']+)["']/i);
+                let image = imgMatch ? imgMatch[1] : "";
+                if (image.startsWith("//")) image = "https:" + image;
+
+                seen.add(href);
+                results.push({ title, image, href });
+            }
         }
 
         return JSON.stringify(results);
@@ -140,7 +200,7 @@ async function extractDetails(url) {
     }
 }
 
-// ─── Extract Episodes ───
+// ─── Extract Episodes (Thai Sub Priority with English Fallback) ───
 async function extractEpisodes(url) {
     try {
         const baseUrl = url.split("?")[0];
@@ -158,38 +218,57 @@ async function extractEpisodes(url) {
             }
         }
 
-        const episodes = [];
-        const seenHrefs = new Set();
+        const items = [...html.matchAll(/<div class="item">([\s\S]*?)<\/div>\s*<\/div>\s*<div class="clearfix"><\/div>\s*<\/div>/gi)].map(m => m[1]);
+        const parsed = [];
 
-        const videoLinkRegex = /<a[^>]+href=["'](https:\/\/aki-h\.com\/videos\/[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
-        let match;
+        for (const itemHtml of items) {
+            const hrefMatch = itemHtml.match(/href=["'](https:\/\/aki-h\.com\/videos\/[^"']+)["']/i);
+            if (!hrefMatch) continue;
 
-        while ((match = videoLinkRegex.exec(html)) !== null) {
-            const href = match[1];
-            const inner = match[2];
-
-            if (seenHrefs.has(href)) continue;
-
-            const epTitleMatch = inner.match(/title=["']([^"']+)["']/i) ||
-                                 inner.match(/class=["'][^"']*live-name[^"']*["'][^>]*>([\s\S]*?)<\/(?:a|h3)>/i);
-            const text = epTitleMatch ? epTitleMatch[1].replace(/<[^>]+>/g, "").trim() : inner.replace(/<[^>]+>/g, "").trim();
+            const href = hrefMatch[1];
+            const titleMatch = itemHtml.match(/class=["'][^"']*dynamic-name[^"']*["'][^>]*>([\s\S]*?)<\/a>/i) ||
+                               itemHtml.match(/title=["']([^"']+)["']/i);
+            
+            let text = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : '';
+            if (!text) continue;
 
             const numMatch = text.match(/Vol\s*(\d+)/i) ||
                              text.match(/ตอนที่\s*(\d+)/i) ||
                              text.match(/EP\.?\s*(\d+)/i) ||
                              text.match(/(\d+)/);
-            const number = numMatch ? parseInt(numMatch[1], 10) : (episodes.length + 1);
+            const number = numMatch ? parseInt(numMatch[1], 10) : (parsed.length + 1);
 
-            seenHrefs.add(href);
-            episodes.push({ href, number });
+            const isThaiSub = text.includes('ซับไทย') || text.includes('Sub-Thai') || text.includes('Thai');
+            const isEngSub = text.includes('Sub-Eng') || text.includes('Eng');
+
+            parsed.push({ href, text, number, isThaiSub, isEngSub });
         }
 
-        if (episodes.length === 0) {
-            episodes.push({ href: baseUrl, number: 1 });
+        // Group by episode number
+        const grouped = {};
+        for (const ep of parsed) {
+            if (!grouped[ep.number]) grouped[ep.number] = [];
+            grouped[ep.number].push(ep);
         }
 
-        episodes.sort((a, b) => a.number - b.number);
-        return JSON.stringify(episodes);
+        const finalEpisodes = [];
+        for (const num of Object.keys(grouped).sort((a, b) => a - b)) {
+            const group = grouped[num];
+            // Priority 1: Thai Sub ("ซับไทย")
+            const thaiEp = group.find(e => e.isThaiSub);
+            if (thaiEp) {
+                finalEpisodes.push({ href: thaiEp.href, number: thaiEp.number });
+            } else {
+                // Priority 2: English / First available
+                finalEpisodes.push({ href: group[0].href, number: group[0].number });
+            }
+        }
+
+        if (finalEpisodes.length === 0) {
+            finalEpisodes.push({ href: baseUrl, number: 1 });
+        }
+
+        return JSON.stringify(finalEpisodes);
     } catch (error) {
         console.error("[Aki-H] extractEpisodes error: " + error.message);
         return JSON.stringify([{ href: url, number: 1 }]);
