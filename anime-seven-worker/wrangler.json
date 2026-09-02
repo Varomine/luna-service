@@ -1,0 +1,9 @@
+{
+  "name": "animeseven-worker",
+  "main": "index.js",
+  "compatibility_date": "2024-09-25",
+  "account_id": "f44fbad186e21605dd3882f67a50f3f3",
+  "observability": {
+    "enabled": true
+  }
+}

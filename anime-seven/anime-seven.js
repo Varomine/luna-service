@@ -2,14 +2,16 @@
  * Anime-Seven Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://www.anime-seven.com/
- * Stream Type: Direct Native HLS Master Stream & All-Seasons Engine
- * Version: 1.0.4
+ * Stream Type: Cloudflare Worker Deobfuscated Native MPEG-TS Stream (video/mp2t)
+ * Version: 1.0.5
  */
 
 const DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1",
     "Referer": "https://www.anime-seven.com/"
 };
+
+const WORKER_PROXY_BASE = "https://animeseven-worker.sapis.workers.dev";
 
 async function httpGet(url, customHeaders = DEFAULT_HEADERS) {
     try {
@@ -182,7 +184,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (Direct Native HLS Master Stream Extraction) ───
+// ─── Extract Stream URL (Deobfuscated Native MPEG-TS Stream via Cloudflare Worker) ───
 async function extractStreamUrl(url) {
     try {
         let playervyUrl = null;
@@ -221,21 +223,21 @@ async function extractStreamUrl(url) {
                     const statusData = JSON.parse(statusJsonStr);
                     if (statusData && statusData.manifestUrl) {
                         const directHlsUrl = statusData.manifestUrl;
+                        
+                        // Cloudflare Worker Deobfuscated Stream URL for Luna
+                        const proxiedStreamUrl = `${WORKER_PROXY_BASE}/m3u8?url=${encodeURIComponent(directHlsUrl)}`;
 
                         return JSON.stringify({
                             streams: [
                                 {
-                                    title: "Anime-Seven • Direct HLS Master Stream (m3u8)",
-                                    streamUrl: directHlsUrl,
-                                    url: directHlsUrl,
-                                    headers: {
-                                        "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                                        "Referer": "https://nya.animenani.com/"
-                                    }
+                                    title: "Anime-Seven • Main Stream (Nya Stream 1080p)",
+                                    streamUrl: proxiedStreamUrl,
+                                    url: proxiedStreamUrl,
+                                    headers: {}
                                 }
                             ],
-                            url: directHlsUrl,
-                            streamUrl: directHlsUrl,
+                            url: proxiedStreamUrl,
+                            streamUrl: proxiedStreamUrl,
                             subtitle: ""
                         });
                     }
