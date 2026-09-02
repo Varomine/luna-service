@@ -2,8 +2,8 @@
  * Anime-Seven Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://www.anime-seven.com/
- * Stream Type: Multi-Server (Nya Stream & DooDee Player Engine)
- * Version: 1.0.0
+ * Stream Type: Nya Stream Engine (1080p HD)
+ * Version: 1.0.1
  */
 
 const DEFAULT_HEADERS = {
@@ -43,51 +43,15 @@ async function httpGet(url, customHeaders = DEFAULT_HEADERS) {
     }
 }
 
-async function httpPost(url, payload, customHeaders = DEFAULT_HEADERS) {
-    try {
-        let headersObj = Object.assign({}, DEFAULT_HEADERS, {
-            "Content-Type": "application/x-www-form-urlencoded"
-        });
-
-        if (typeof customHeaders === "string") {
-            headersObj["Referer"] = customHeaders;
-        } else if (customHeaders && typeof customHeaders === "object") {
-            Object.assign(headersObj, customHeaders);
-        }
-
-        let res;
-        if (typeof fetchv2 !== "undefined") {
-            res = await fetchv2(url, headersObj, "POST", payload);
-        } else if (typeof fetch !== "undefined") {
-            res = await fetch(url, {
-                method: "POST",
-                headers: headersObj,
-                body: payload
-            });
-        }
-        if (!res) return null;
-
-        if (typeof res.text === "function") {
-            return await res.text();
-        } else if (typeof res === "string") {
-            return res;
-        }
-        return null;
-    } catch (err) {
-        console.error("[Anime-Seven] httpPost error for " + url + ": " + err.message);
-        return null;
-    }
-}
-
-// ─── Search Results ───
+// ─── Search Results (Tag Search + Title Filtering) ───
 async function searchResults(keyword) {
     try {
         const query = keyword ? keyword.trim() : "";
         let html;
 
         if (query !== "") {
-            const payload = `search=${encodeURIComponent(query)}`;
-            html = await httpPost("https://www.anime-seven.com/index.php", payload);
+            const targetUrl = `https://www.anime-seven.com/tag/${encodeURIComponent(query)}`;
+            html = await httpGet(targetUrl);
         } else {
             html = await httpGet("https://www.anime-seven.com/");
         }
@@ -98,6 +62,7 @@ async function searchResults(keyword) {
 
         const results = [];
         const seen = new Set();
+        const lowerQuery = query.toLowerCase();
 
         const cardMatches = [...html.matchAll(/<a[^>]+href=["'](https:\/\/www\.anime-seven\.com\/[0-9]+\/?)["'][^>]*>([\s\S]*?)<\/a>/gi)];
 
@@ -119,6 +84,11 @@ async function searchResults(keyword) {
             if (image.startsWith('//')) image = 'https:' + image;
 
             if (!title || title === "Anime-Seven" || title.toLowerCase().includes("filter")) continue;
+
+            // Strict title filtering when query is provided
+            if (lowerQuery !== "" && !title.toLowerCase().includes(lowerQuery)) {
+                continue;
+            }
 
             seen.add(href);
             results.push({ title, image, href });
@@ -213,7 +183,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (Multi-Server Stream Extraction) ───
+// ─── Extract Stream URL (Nya Stream Engine) ───
 async function extractStreamUrl(url) {
     try {
         let playervyUrl = null;
@@ -239,45 +209,42 @@ async function extractStreamUrl(url) {
         const pyHtml = await httpGet(playervyUrl, url);
         if (!pyHtml) return JSON.stringify({ streams: [], subtitle: "" });
 
-        const streams = [];
+        let nyaStreamUrl = null;
         const serverRegex = /class=["']linkserver["'][^>]*data-video=["']([^"']+)["']/gi;
         let sMatch;
-        let serverIndex = 1;
 
         while ((sMatch = serverRegex.exec(pyHtml)) !== null) {
-            const streamUrl = sMatch[1];
-            let name = `Anime-Seven • Server ${serverIndex}`;
-            if (streamUrl.includes('nya.animenani')) name = `Anime-Seven • Nya Stream (${serverIndex})`;
-            else if (streamUrl.includes('doodee-player')) name = `Anime-Seven • DooDee Player (${serverIndex})`;
-
-            streams.push({
-                title: name,
-                streamUrl: streamUrl,
-                url: streamUrl,
-                headers: {
-                    "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                    "Referer": playervyUrl
-                }
-            });
-            serverIndex++;
+            const link = sMatch[1];
+            if (link.includes('nya.animenani')) {
+                nyaStreamUrl = link;
+                break;
+            }
         }
 
-        if (streams.length === 0) {
-            streams.push({
-                title: "Anime-Seven • Playervy Embed",
-                streamUrl: playervyUrl,
-                url: playervyUrl,
-                headers: {
-                    "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                    "Referer": url
-                }
-            });
+        // Fallback to first available server or playervy embed
+        if (!nyaStreamUrl) {
+            const firstMatch = pyHtml.match(/data-video=["']([^"']+)["']/i);
+            if (firstMatch) {
+                nyaStreamUrl = firstMatch[1];
+            } else {
+                nyaStreamUrl = playervyUrl;
+            }
         }
+
+        const streams = [{
+            title: "Anime-Seven • Main Server (Nya Stream 1080p)",
+            streamUrl: nyaStreamUrl,
+            url: nyaStreamUrl,
+            headers: {
+                "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                "Referer": playervyUrl
+            }
+        }];
 
         return JSON.stringify({
             streams: streams,
-            url: streams[0].streamUrl,
-            streamUrl: streams[0].streamUrl,
+            url: nyaStreamUrl,
+            streamUrl: nyaStreamUrl,
             subtitle: ""
         });
     } catch (error) {
