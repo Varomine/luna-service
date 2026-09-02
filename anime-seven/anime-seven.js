@@ -2,16 +2,14 @@
  * Anime-Seven Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://www.anime-seven.com/
- * Stream Type: Cloudflare Worker Deobfuscated Native MPEG-TS Stream (video/mp2t)
- * Version: 1.0.5
+ * Stream Type: Pure Direct HLS Master Stream (.m3u8) & Native Embeds (0% Worker Dependency)
+ * Version: 1.0.6
  */
 
 const DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1",
     "Referer": "https://www.anime-seven.com/"
 };
-
-const WORKER_PROXY_BASE = "https://animeseven-worker.sapis.workers.dev";
 
 async function httpGet(url, customHeaders = DEFAULT_HEADERS) {
     try {
@@ -184,7 +182,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (Deobfuscated Native MPEG-TS Stream via Cloudflare Worker) ───
+// ─── Extract Stream URL (Pure Direct Extraction - 0% Worker Dependency) ───
 async function extractStreamUrl(url) {
     try {
         let playervyUrl = null;
@@ -210,6 +208,8 @@ async function extractStreamUrl(url) {
         const pyHtml = await httpGet(playervyUrl, url);
         if (!pyHtml) return JSON.stringify({ streams: [], subtitle: "" });
 
+        const streams = [];
+
         // Extract DocID from Nya Stream embed URL
         const nyaEmbedMatch = pyHtml.match(/https:\/\/nya\.animenani\.com\/embed\/([a-zA-Z0-9_-]+)/i);
         if (nyaEmbedMatch) {
@@ -223,31 +223,48 @@ async function extractStreamUrl(url) {
                     const statusData = JSON.parse(statusJsonStr);
                     if (statusData && statusData.manifestUrl) {
                         const directHlsUrl = statusData.manifestUrl;
-                        
-                        // Cloudflare Worker Deobfuscated Stream URL for Luna
-                        const proxiedStreamUrl = `${WORKER_PROXY_BASE}/m3u8?url=${encodeURIComponent(directHlsUrl)}`;
-
-                        return JSON.stringify({
-                            streams: [
-                                {
-                                    title: "Anime-Seven • Main Stream (Nya Stream 1080p)",
-                                    streamUrl: proxiedStreamUrl,
-                                    url: proxiedStreamUrl,
-                                    headers: {}
-                                }
-                            ],
-                            url: proxiedStreamUrl,
-                            streamUrl: proxiedStreamUrl,
-                            subtitle: ""
+                        streams.push({
+                            title: "Anime-Seven • Direct HLS Master Stream (m3u8)",
+                            streamUrl: directHlsUrl,
+                            url: directHlsUrl,
+                            headers: {
+                                "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                                "Referer": "https://nya.animenani.com/"
+                            }
                         });
                     }
                 } catch(e) {
                     console.error("[Anime-Seven] Failed to parse status API JSON: " + e.message);
                 }
             }
+
+            streams.push({
+                title: "Anime-Seven • Direct Nya Embed",
+                streamUrl: embedUrl,
+                url: embedUrl,
+                headers: {
+                    "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                    "Referer": playervyUrl
+                }
+            });
         }
 
-        return JSON.stringify({ streams: [], subtitle: "" });
+        streams.push({
+            title: "Anime-Seven • Direct Playervy Embed",
+            streamUrl: playervyUrl,
+            url: playervyUrl,
+            headers: {
+                "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                "Referer": url
+            }
+        });
+
+        return JSON.stringify({
+            streams: streams,
+            url: streams[0].streamUrl,
+            streamUrl: streams[0].streamUrl,
+            subtitle: ""
+        });
     } catch (error) {
         console.error("[Anime-Seven] extractStreamUrl error: " + error.message);
         return JSON.stringify({ streams: [], subtitle: "" });
