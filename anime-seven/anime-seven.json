@@ -1,0 +1,32 @@
+{
+    "sourceName": "Anime-Seven",
+    "iconUrl": "https://www.anime-seven.com/upload/icon.png?v=6",
+    "author": {
+        "name": "Varomine",
+        "icon": "https://avatars.githubusercontent.com/Varomine"
+    },
+    "version": "1.0.0",
+    "language": "Thai",
+    "languageType": [
+        "Subbed",
+        "Dubbed"
+    ],
+    "streamType": "Multi-Server",
+    "quality": "1080p",
+    "baseUrl": "https://www.anime-seven.com/",
+    "searchBaseUrl": "https://www.anime-seven.com/index.php?search=%s",
+    "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/anime-seven/anime-seven.js",
+    "type": "anime",
+    "asyncJS": true,
+    "softsub": true,
+    "downloadSupport": true,
+    "supportsSora": true,
+    "supportsLuna": true,
+    "supportsMojuru": true,
+    "supportsDartotsu": true,
+    "supportsAnymex": true,
+    "supportsTsumi": true,
+    "supportsHiyoku": true,
+    "supportsShirox": true,
+    "supportsEclipse": true
+}

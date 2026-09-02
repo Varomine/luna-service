@@ -159,7 +159,7 @@
                 <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                     <i class="fa-solid fa-cubes text-indigo-400"></i>
                     <span data-i18n="availableServices">Services ที่พร้อมใช้งาน</span>
-                    <span id="serviceCount" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">11</span>
+                    <span id="serviceCount" class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700">12</span>
                 </h2>
                 <button onclick="switchTab('troubleshoot')" class="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1.5 font-medium transition self-start sm:self-auto">
                     <i class="fa-solid fa-circle-question text-xs flex-shrink-0"></i>
@@ -614,6 +614,45 @@
                     </div>
                 </div>
 
+                <!-- Anime-Seven Service Card -->
+                <div class="glass-card rounded-2xl p-6 flex flex-col justify-between transition duration-300 service-card" data-name="anime-seven animeseven thai anime dub sub doodee nya">
+                    <div>
+                        <div class="flex items-start justify-between gap-3 mb-4">
+                            <div class="flex items-center space-x-3 min-w-0">
+                                <img src="https://www.anime-seven.com/upload/icon.png?v=6" alt="Anime-Seven Icon" class="w-12 h-12 rounded-xl object-cover bg-slate-800 p-1 border border-slate-700 flex-shrink-0" onerror="this.src='https://www.anime-seven.com/upload/logoAS2.png?v=6'">
+                                <div class="min-w-0">
+                                    <h3 class="text-lg font-bold text-white leading-snug truncate">Anime-Seven</h3>
+                                    <p class="text-xs text-slate-400">By <span class="text-indigo-400 font-medium">Varomine</span></p>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex-shrink-0">v1.0.0</span>
+                        </div>
+                        <p class="text-slate-300 text-sm mb-4 leading-relaxed" data-i18n="sevenDesc">
+                            บริการอนิเมะซับไทย/พากย์ไทย สำหรับ anime-seven.com ดึงสตรีมมัลติเซิร์ฟเวอร์ (Nya Stream & DooDee Player)
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-1.5 mb-6">
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Multi-Server</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Thai (TH)</span>
+                            <span class="text-xs px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700/50">Anime</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-800/80 flex items-center gap-1.5 sm:gap-2">
+                        <button onclick="copyToClipboard('https://raw.githubusercontent.com/Varomine/luna-service/main/anime-seven/anime-seven.json', this)" class="flex-grow bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-2.5 sm:px-3 rounded-xl transition flex items-center justify-center space-x-1.5 text-xs shadow-lg shadow-indigo-600/20 whitespace-nowrap">
+                            <i class="fa-regular fa-copy"></i>
+                            <span data-i18n="copyBtn">คัดลอก Manifest</span>
+                        </button>
+                        <button onclick="openReportModal('Anime-Seven')" class="px-2.5 sm:px-3 py-2.5 bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 border border-slate-700 hover:border-rose-500/40 rounded-xl transition text-xs font-medium flex items-center gap-1.5 whitespace-nowrap flex-shrink-0" title="แจ้งปัญหา Service นี้">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
+                            <span data-i18n="reportBtn">แจ้งปัญหา</span>
+                        </button>
+                        <a href="https://www.anime-seven.com/" target="_blank" rel="noopener noreferrer" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 rounded-xl transition text-xs font-medium flex items-center justify-center flex-shrink-0" title="ไปยังเว็บไซต์ต้นทาง (Visit Website)">
+                            <i class="fa-solid fa-globe text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </section>
 
@@ -1015,6 +1054,7 @@
                 alphaDesc: "บริการ Hentai Uncensored ซับไทย สำหรับ alpha-hen.com พร้อมระบบดึงสตรีม HLS คุณภาพสูง",
                 akihDesc: "บริการ Hentai Uncensored ซับไทย สำหรับ aki-h.com พร้อมระบบดึงสตรีม Master HLS 1080p คุณภาพสูง",
                 rukaDesc: "บริการอนิเมะซับไทย/พากย์ไทย สำหรับ animeruka.com ดึงสตรีมมัลติเซิร์ฟเวอร์ (AnimeMami & Abyss Player)",
+                sevenDesc: "บริการอนิเมะซับไทย/พากย์ไทย สำหรับ anime-seven.com ดึงสตรีมมัลติเซิร์ฟเวอร์ (Nya Stream & DooDee Player)",
                 hanimeDesc: "บริการสแกนและดึงสตรีม HLS 1080p คุณภาพสูง สำหรับ Hanime",
                 copyBtn: "คัดลอก Manifest",
                 copiedBtn: "คัดลอกสำเร็จ!",
@@ -1115,6 +1155,7 @@
                 alphaDesc: "Uncensored Hentai Subthai service for alpha-hen.com with direct HLS stream extraction.",
                 akihDesc: "Uncensored Hentai Subthai service for aki-h.com with direct 1080p Master HLS stream extraction.",
                 rukaDesc: "Thai anime service for animeruka.com featuring multi-server DooPlayer stream extraction.",
+                sevenDesc: "Thai anime service for anime-seven.com featuring multi-server Nya & DooDee Player stream extraction.",
                 hanimeDesc: "High-performance scraper service for Hanime with 1080p HLS stream extraction.",
                 copyBtn: "Copy Manifest",
                 copiedBtn: "Copied!",
