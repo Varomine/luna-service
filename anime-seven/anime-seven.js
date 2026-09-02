@@ -2,8 +2,8 @@
  * Anime-Seven Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://www.anime-seven.com/
- * Stream Type: Pure Direct HLS Master Stream (.m3u8) & Native Embeds (0% Worker Dependency)
- * Version: 1.0.6
+ * Stream Type: Pure Direct HLS Master Stream (.m3u8) Only - NO EMBEDS (0% Worker Dependency)
+ * Version: 1.0.7
  */
 
 const DEFAULT_HEADERS = {
@@ -182,7 +182,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (Pure Direct Extraction - 0% Worker Dependency) ───
+// ─── Extract Stream URL (Pure Direct HLS Stream Only - NO EMBEDS & NO WORKERS) ───
 async function extractStreamUrl(url) {
     try {
         let playervyUrl = null;
@@ -208,8 +208,6 @@ async function extractStreamUrl(url) {
         const pyHtml = await httpGet(playervyUrl, url);
         if (!pyHtml) return JSON.stringify({ streams: [], subtitle: "" });
 
-        const streams = [];
-
         // Extract DocID from Nya Stream embed URL
         const nyaEmbedMatch = pyHtml.match(/https:\/\/nya\.animenani\.com\/embed\/([a-zA-Z0-9_-]+)/i);
         if (nyaEmbedMatch) {
@@ -223,48 +221,30 @@ async function extractStreamUrl(url) {
                     const statusData = JSON.parse(statusJsonStr);
                     if (statusData && statusData.manifestUrl) {
                         const directHlsUrl = statusData.manifestUrl;
-                        streams.push({
-                            title: "Anime-Seven • Direct HLS Master Stream (m3u8)",
-                            streamUrl: directHlsUrl,
+                        return JSON.stringify({
+                            streams: [
+                                {
+                                    title: "Anime-Seven • Direct HLS Master Stream (m3u8)",
+                                    streamUrl: directHlsUrl,
+                                    url: directHlsUrl,
+                                    headers: {
+                                        "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                                        "Referer": "https://nya.animenani.com/"
+                                    }
+                                }
+                            ],
                             url: directHlsUrl,
-                            headers: {
-                                "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                                "Referer": "https://nya.animenani.com/"
-                            }
+                            streamUrl: directHlsUrl,
+                            subtitle: ""
                         });
                     }
                 } catch(e) {
                     console.error("[Anime-Seven] Failed to parse status API JSON: " + e.message);
                 }
             }
-
-            streams.push({
-                title: "Anime-Seven • Direct Nya Embed",
-                streamUrl: embedUrl,
-                url: embedUrl,
-                headers: {
-                    "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                    "Referer": playervyUrl
-                }
-            });
         }
 
-        streams.push({
-            title: "Anime-Seven • Direct Playervy Embed",
-            streamUrl: playervyUrl,
-            url: playervyUrl,
-            headers: {
-                "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                "Referer": url
-            }
-        });
-
-        return JSON.stringify({
-            streams: streams,
-            url: streams[0].streamUrl,
-            streamUrl: streams[0].streamUrl,
-            subtitle: ""
-        });
+        return JSON.stringify({ streams: [], subtitle: "" });
     } catch (error) {
         console.error("[Anime-Seven] extractStreamUrl error: " + error.message);
         return JSON.stringify({ streams: [], subtitle: "" });
