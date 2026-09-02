@@ -2,8 +2,8 @@
  * Anime-Seven Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://www.anime-seven.com/
- * Stream Type: Nya Stream Engine (1080p HD)
- * Version: 1.0.1
+ * Stream Type: Direct Web Embed Stream (Nya Stream & Playervy Engine)
+ * Version: 1.0.2
  */
 
 const DEFAULT_HEADERS = {
@@ -140,7 +140,7 @@ async function extractDetails(url) {
     }
 }
 
-// ─── Extract Episodes ───
+// ─── Extract Episodes (Clean Deduplication & Backup Removal) ───
 async function extractEpisodes(url) {
     try {
         const baseUrl = url.split("?")[0];
@@ -149,25 +149,37 @@ async function extractEpisodes(url) {
             return JSON.stringify([{ href: baseUrl, number: 1 }]);
         }
 
+        const matches = [...html.matchAll(/<a[^>]+href=["'](https:\/\/www\.anime-seven\.com\/play\/[0-9]+\/([^"']+)\.html)["'][^>]*>([\s\S]*?)<\/a>/gi)];
+        
         const episodes = [];
-        const seen = new Set();
-        const epRegex = /href=["'](https:\/\/www\.anime-seven\.com\/play\/([0-9]+)\/([^"']+)\.html)["'][^>]*>([\s\S]*?)<\/a>/gi;
-        let match;
+        const seenNumbers = new Set();
+        const seenHrefs = new Set();
 
-        while ((match = epRegex.exec(html)) !== null) {
-            const href = match[1];
-            const slug = match[3];
-            const text = match[4].replace(/<[^>]+>/g, '').trim();
+        for (const m of matches) {
+            const href = m[1];
+            const slug = m[2];
+            const text = m[3].replace(/<[^>]+>/g, '').trim();
 
-            if (seen.has(href)) continue;
+            if (seenHrefs.has(href)) continue;
+            seenHrefs.add(href);
 
-            const numMatch = slug.match(/-(\d+)(?:\.html)?$/) ||
-                             text.match(/ตอนที่\s*(\d+)/i) ||
+            // Skip backup episode links ("สำรองตอนที่ ...")
+            if (text.includes('สำรอง') || slug.match(/^\d+$/)) {
+                continue;
+            }
+
+            const numMatch = text.match(/ตอนที่\s*(\d+)/i) ||
                              text.match(/EP\.?\s*(\d+)/i) ||
+                             slug.match(/-(\d+)(?:\.html)?$/) ||
                              text.match(/(\d+)/);
-            const number = numMatch ? parseInt(numMatch[1], 10) : (episodes.length + 1);
 
-            seen.add(href);
+            if (!numMatch) continue;
+
+            const number = parseInt(numMatch[1], 10);
+
+            if (seenNumbers.has(number)) continue;
+            seenNumbers.add(number);
+
             episodes.push({ href, number });
         }
 
@@ -183,7 +195,7 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (Nya Stream Engine) ───
+// ─── Extract Stream URL (Nya Stream Embed & Playervy Engine) ───
 async function extractStreamUrl(url) {
     try {
         let playervyUrl = null;
@@ -221,30 +233,35 @@ async function extractStreamUrl(url) {
             }
         }
 
-        // Fallback to first available server or playervy embed
         if (!nyaStreamUrl) {
-            const firstMatch = pyHtml.match(/data-video=["']([^"']+)["']/i);
-            if (firstMatch) {
-                nyaStreamUrl = firstMatch[1];
-            } else {
-                nyaStreamUrl = playervyUrl;
-            }
+            nyaStreamUrl = playervyUrl;
         }
 
-        const streams = [{
-            title: "Anime-Seven • Main Server (Nya Stream 1080p)",
-            streamUrl: nyaStreamUrl,
-            url: nyaStreamUrl,
-            headers: {
-                "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                "Referer": playervyUrl
+        const streams = [
+            {
+                title: "Anime-Seven • Nya Stream Server (Embed)",
+                streamUrl: nyaStreamUrl,
+                url: nyaStreamUrl,
+                headers: {
+                    "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                    "Referer": playervyUrl
+                }
+            },
+            {
+                title: "Anime-Seven • Playervy Native Player",
+                streamUrl: playervyUrl,
+                url: playervyUrl,
+                headers: {
+                    "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                    "Referer": url
+                }
             }
-        }];
+        ];
 
         return JSON.stringify({
             streams: streams,
-            url: nyaStreamUrl,
-            streamUrl: nyaStreamUrl,
+            url: streams[0].streamUrl,
+            streamUrl: streams[0].streamUrl,
             subtitle: ""
         });
     } catch (error) {
