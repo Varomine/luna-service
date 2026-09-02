@@ -1,0 +1,31 @@
+{
+    "sourceName": "Aki-H",
+    "iconUrl": "https://aki-h.com/touch-icon-192x192.png",
+    "author": {
+        "name": "Varomine",
+        "icon": "https://avatars.githubusercontent.com/Varomine"
+    },
+    "version": "1.0.0",
+    "language": "Thai",
+    "languageType": [
+        "Subbed"
+    ],
+    "streamType": "HLS",
+    "quality": "1080p",
+    "baseUrl": "https://aki-h.com/",
+    "searchBaseUrl": "https://aki-h.com/?s=%s",
+    "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/aki-h/aki-h.js",
+    "type": "anime",
+    "asyncJS": true,
+    "softsub": true,
+    "downloadSupport": true,
+    "supportsSora": true,
+    "supportsLuna": true,
+    "supportsMojuru": true,
+    "supportsDartotsu": true,
+    "supportsAnymex": true,
+    "supportsTsumi": true,
+    "supportsHiyoku": true,
+    "supportsShirox": true,
+    "supportsEclipse": true
+}
