@@ -2,21 +2,15 @@
  * MioAnime Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Powered by User's MioAnime Scraper API Worker (https://mioanime-scraper-worker.sapis.workers.dev)
- * Version: 1.0.4
+ * Version: 1.0.5
  */
 
 const API_BASE = "https://mioanime-scraper-worker.sapis.workers.dev";
 
 const DEFAULT_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1",
+    "Referer": "https://www.mioz-anime.com/"
 };
-
-function extractAnimeId(url) {
-    if (!url) return "";
-    const cleanUrl = url.split("?")[0].replace(/\/$/, "");
-    const parts = cleanUrl.split("/");
-    return parts[parts.length - 1] || "";
-}
 
 async function httpGet(url, customHeaders = DEFAULT_HEADERS) {
     try {
@@ -42,17 +36,19 @@ async function httpGet(url, customHeaders = DEFAULT_HEADERS) {
             return await res.text();
         } else if (typeof res === "string") {
             return res;
-        } else if (typeof res.json === "function") {
-            const jsonObj = await res.json();
-            return JSON.stringify(jsonObj);
-        } else if (typeof res === "object") {
-            return JSON.stringify(res);
         }
         return null;
     } catch (err) {
         console.error("[MioAnime] httpGet error for " + url + ": " + err.message);
         return null;
     }
+}
+
+function extractAnimeSlug(url) {
+    if (!url) return "";
+    const cleanUrl = url.split("?")[0].replace(/\/$/, "");
+    const parts = cleanUrl.split("/");
+    return parts[parts.length - 1] || "";
 }
 
 // ─── Search Results ───
@@ -63,15 +59,16 @@ async function searchResults(keyword) {
         const jsonStr = await httpGet(targetUrl);
         if (!jsonStr) return JSON.stringify([]);
 
-        const data = JSON.parse(jsonStr);
+        let data;
+        try { data = JSON.parse(jsonStr); } catch (e) { return JSON.stringify([]); }
         if (!data || !Array.isArray(data)) return JSON.stringify([]);
 
         const results = data.map(item => {
-            const animeId = item.id || extractAnimeId(item.url || "");
+            const itemUrl = item.url || `https://www.mioz-anime.com/${item.id || ''}/`;
             return {
                 title: item.title || "MioAnime",
                 image: item.image || "https://www.mioanime.net/icon/favicon.png",
-                href: `https://www.mioanime.net/${animeId}/`
+                href: itemUrl
             };
         });
 
@@ -85,79 +82,84 @@ async function searchResults(keyword) {
 // ─── Extract Details ───
 async function extractDetails(url) {
     try {
-        const id = extractAnimeId(url);
-        if (!id) {
-            return JSON.stringify([{ description: "No details available.", aliases: "MioAnime", airdate: "N/A" }]);
+        const slug = extractAnimeSlug(url);
+        let title = "MioAnime";
+        let description = "Anime Subthai & Dubbed on MioAnime";
+
+        if (slug) {
+            const jsonStr = await httpGet(`${API_BASE}/api/anime/${encodeURIComponent(slug)}`);
+            if (jsonStr) {
+                try {
+                    const data = JSON.parse(jsonStr);
+                    if (data && data.title) {
+                        title = data.title;
+                        description = data.title;
+                    }
+                } catch(e){}
+            }
         }
 
-        const jsonStr = await httpGet(`${API_BASE}/api/anime/${id}`);
-        if (!jsonStr) {
-            return JSON.stringify([{ description: "No details available.", aliases: "MioAnime", airdate: "N/A" }]);
-        }
-
-        const data = JSON.parse(jsonStr);
-        if (!data) {
-            return JSON.stringify([{ description: "No details available.", aliases: "MioAnime", airdate: "N/A" }]);
-        }
-
-        const title = data.title || "MioAnime";
         const yearMatch = title.match(/\b(202\d|201\d)\b/);
         const airdate = yearMatch ? yearMatch[1] : "N/A";
 
         return JSON.stringify([{
             title: title,
-            description: title,
+            description: description,
             aliases: "MioAnime",
             airdate: airdate
         }]);
     } catch (error) {
         console.error("[MioAnime] extractDetails error: " + error.message);
-        return JSON.stringify([{ description: "Error loading description", aliases: "MioAnime", airdate: "N/A" }]);
+        return JSON.stringify([{ description: "MioAnime", aliases: "MioAnime", airdate: "N/A" }]);
     }
 }
 
 // ─── Extract Episodes ───
 async function extractEpisodes(url) {
     try {
-        const id = extractAnimeId(url);
-        if (!id) return JSON.stringify([{ href: url, number: 1, title: "Episode 1" }]);
+        const targetUrl = `${API_BASE}/api/season?url=${encodeURIComponent(url)}`;
+        const jsonStr = await httpGet(targetUrl);
+        if (!jsonStr) return JSON.stringify([{ href: url, number: 1, title: "Episode 1" }]);
 
-        const animeJsonStr = await httpGet(`${API_BASE}/api/anime/${id}`);
-        if (!animeJsonStr) return JSON.stringify([{ href: url, number: 1, title: "Episode 1" }]);
+        let seasonData;
+        try { seasonData = JSON.parse(jsonStr); } catch(e){}
 
-        const animeData = JSON.parse(animeJsonStr);
-        if (!animeData || !animeData.seasons || animeData.seasons.length === 0) {
+        if (!seasonData || !seasonData.episodes || !Array.isArray(seasonData.episodes) || seasonData.episodes.length === 0) {
+            // Fallback to /api/anime/{slug}
+            const slug = extractAnimeSlug(url);
+            if (slug) {
+                const animeJsonStr = await httpGet(`${API_BASE}/api/anime/${encodeURIComponent(slug)}`);
+                if (animeJsonStr) {
+                    try {
+                        const animeData = JSON.parse(animeJsonStr);
+                        if (animeData && animeData.seasons && animeData.seasons.length > 0) {
+                            const firstSeasonUrl = animeData.seasons[0].url;
+                            const s2JsonStr = await httpGet(`${API_BASE}/api/season?url=${encodeURIComponent(firstSeasonUrl)}`);
+                            if (s2JsonStr) {
+                                seasonData = JSON.parse(s2JsonStr);
+                            }
+                        }
+                    } catch(e){}
+                }
+            }
+        }
+
+        if (!seasonData || !seasonData.episodes || !Array.isArray(seasonData.episodes) || seasonData.episodes.length === 0) {
             return JSON.stringify([{ href: url, number: 1, title: "Episode 1" }]);
         }
 
         const episodes = [];
-        for (const season of animeData.seasons) {
-            const seasonUrl = season.url || `https://www.mioanime.net/${id}/`;
-            const seasonJsonStr = await httpGet(`${API_BASE}/api/season?url=${encodeURIComponent(seasonUrl)}`);
+        seasonData.episodes.forEach((ep, idx) => {
+            const epTitle = ep.title || "";
+            const numMatch = epTitle.match(/ตอนที่\s*(\d+)/i) || epTitle.match(/ep\s*(\d+)/i) || epTitle.match(/\b(\d+)\b/);
+            const number = numMatch ? parseInt(numMatch[1], 10) : (idx + 1);
 
-            if (seasonJsonStr) {
-                try {
-                    const seasonData = JSON.parse(seasonJsonStr);
-                    if (seasonData && seasonData.episodes && Array.isArray(seasonData.episodes)) {
-                        seasonData.episodes.forEach(ep => {
-                            const epTitle = ep.title || "";
-                            const numMatch = epTitle.match(/ตอนที่\s*(\d+)/i) || epTitle.match(/ep\s*(\d+)/i) || epTitle.match(/\b(\d+)\b/);
-                            const number = numMatch ? parseInt(numMatch[1], 10) : (episodes.length + 1);
-
-                            episodes.push({
-                                href: ep.url,
-                                number: isNaN(number) ? (episodes.length + 1) : number,
-                                title: epTitle || `Episode ${episodes.length + 1}`
-                            });
-                        });
-                    }
-                } catch(e){}
-            }
-        }
-
-        if (episodes.length === 0) {
-            episodes.push({ href: url, number: 1, title: "Episode 1" });
-        }
+            episodes.push({
+                href: ep.url,
+                number: isNaN(number) ? (idx + 1) : number,
+                title: epTitle || `Episode ${idx + 1}`
+            });
+        });
 
         return JSON.stringify(episodes);
     } catch (error) {
@@ -166,13 +168,15 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (User API Proxy Resolution) ───
+// ─── Extract Stream URL ───
 async function extractStreamUrl(url) {
     try {
-        const streamJsonStr = await httpGet(`${API_BASE}/api/episode?url=${encodeURIComponent(url)}`);
-        if (!streamJsonStr) return JSON.stringify({ streams: [], subtitle: "" });
+        const targetUrl = `${API_BASE}/api/episode?url=${encodeURIComponent(url)}`;
+        const jsonStr = await httpGet(targetUrl);
+        if (!jsonStr) return JSON.stringify({ streams: [], subtitle: "" });
 
-        const streamData = JSON.parse(streamJsonStr);
+        let streamData;
+        try { streamData = JSON.parse(jsonStr); } catch(e){}
         if (!streamData) return JSON.stringify({ streams: [], subtitle: "" });
 
         const streams = [];
@@ -204,10 +208,12 @@ async function extractStreamUrl(url) {
             });
         }
 
+        const mainUrl = streams.length > 0 ? streams[0].streamUrl : "";
+
         return JSON.stringify({
             streams: streams,
-            url: streams.length > 0 ? streams[0].streamUrl : "",
-            streamUrl: streams.length > 0 ? streams[0].streamUrl : "",
+            url: mainUrl,
+            streamUrl: mainUrl,
             subtitle: ""
         });
     } catch (error) {
