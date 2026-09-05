@@ -2,6 +2,7 @@
  * MioAnime Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Powered by User's MioAnime Scraper API Worker (https://mioanime-scraper-worker.sapis.workers.dev)
+ * Version: 1.0.3
  */
 
 const API_BASE = "https://mioanime-scraper-worker.sapis.workers.dev";
@@ -9,6 +10,13 @@ const API_BASE = "https://mioanime-scraper-worker.sapis.workers.dev";
 const DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 };
+
+function extractAnimeId(url) {
+    if (!url) return "";
+    const cleanUrl = url.split("?")[0].replace(/\/$/, "");
+    const parts = cleanUrl.split("/");
+    return parts[parts.length - 1] || "";
+}
 
 async function httpGet(url, headers = DEFAULT_HEADERS) {
     try {
@@ -42,7 +50,7 @@ async function searchResults(keyword) {
         if (!data || !Array.isArray(data)) return JSON.stringify([]);
 
         const results = data.map(item => {
-            const animeId = item.id || "";
+            const animeId = item.id || extractAnimeId(item.url || "");
             return {
                 title: item.title || "MioAnime",
                 image: item.image || "https://www.mioanime.net/icon/favicon.png",
@@ -60,8 +68,7 @@ async function searchResults(keyword) {
 // ─── Extract Details ───
 async function extractDetails(url) {
     try {
-        const idMatch = url.match(/\/(\d+)\/?/);
-        const id = idMatch ? idMatch[1] : "";
+        const id = extractAnimeId(url);
         if (!id) {
             return JSON.stringify([{ description: "No details available.", aliases: "MioAnime", airdate: "N/A" }]);
         }
@@ -90,8 +97,7 @@ async function extractDetails(url) {
 // ─── Extract Episodes ───
 async function extractEpisodes(url) {
     try {
-        const idMatch = url.match(/\/(\d+)\/?/);
-        const id = idMatch ? idMatch[1] : "";
+        const id = extractAnimeId(url);
         if (!id) return JSON.stringify([{ href: url, number: 1, title: "Episode 1" }]);
 
         const animeData = await httpGet(`${API_BASE}/api/anime/${id}`);
