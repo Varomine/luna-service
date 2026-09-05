@@ -839,6 +839,50 @@
                     </div>
                 </div>
 
+                <!-- Problem 4: Can't fetch episodes / Only 1 episode showing (iPhone / iOS) -->
+                <div class="glass-card rounded-3xl p-6 md:p-8 accordion-item" id="problem4">
+                    <button type="button" onclick="toggleAccordion('problem4')" class="w-full flex items-center justify-between text-left focus:outline-none cursor-pointer">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-lg flex-shrink-0">
+                                <i class="fa-solid fa-list-ol"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30" data-i18n="p4Badge">ปัญหา #4</span>
+                                <h3 class="text-lg md:text-xl font-bold text-white mt-1" data-i18n="p4Title">
+                                    ขึ้นรายการแค่ 1 ตอน (Episode 1) หรือ "Failed to fetch streaming URL" บน iPhone / iOS
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center accordion-chevron transition-transform duration-300 flex-shrink-0 ml-3">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </div>
+                    </button>
+
+                    <!-- Collapsible Content -->
+                    <div class="accordion-content">
+                        <div class="space-y-4 pt-2 text-sm text-slate-300 leading-relaxed">
+                            <p data-i18n="p4Desc1">
+                                <strong>อาการที่พบ:</strong> เมื่อกดดูอนิเมะบน iPhone หรือ iPad ในแอปขึ้นรายการตอนเพียง 1 ตอน (Episode 1) หรือเมื่อกดเล่นขึ้นข้อความ <strong>"Failed to fetch streaming URL"</strong>
+                            </p>
+                            <p data-i18n="p4Desc2">
+                                <strong>สาเหตุหลัก:</strong> แอป Luna บน iOS เวอร์ชันเก่าทำการเรียก API ซ้อนกันล้มเหลว หรือเซิร์ฟเวอร์ผู้ให้บริการมีการปรับปรุงระบบป้องกันการดึงข้อมูลโดยตรง
+                            </p>
+
+                            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 mt-4">
+                                <h4 class="text-sm font-bold text-indigo-400 mb-2 flex items-center gap-2">
+                                    <i class="fa-solid fa-wrench text-emerald-400"></i>
+                                    <span data-i18n="p4SolHeading">วิธีแก้ไขที่แนะนำ (แก้ไข 100%):</span>
+                                </h4>
+                                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-emerald-300 font-mono space-y-2">
+                                    <div data-i18n="p4Step1">1. เปิดแอป Luna &gt; Settings (ตั้งค่า) &gt; Services (บริการ) &gt; กดลบ Service เดิม</div>
+                                    <div data-i18n="p4Step2">2. คัดลอก Manifest URL ล่าสุดจากหน้าเว็บนี้ แล้วกด Import (นำเข้า) ใหม่อีกครั้งเพื่อใช้ JavaScript เวอร์ชันล่าสุด (v1.0.5+) ที่ดึงข้อมูลผ่าน Cloudflare Worker API ตรงในขั้นตอนเดียว</div>
+                                    <div data-i18n="p4Step3">3. ตรวจสอบว่าไม่ได้เปิดใช้ DNS บล็อกโฆษณา หรือแอป AdBlock ที่บล็อกโดเมน *.workers.dev</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Still Having Issues Support Notice Card -->
@@ -1129,6 +1173,16 @@
                 p3Step2: "2. เลือกเมนู Player (เครื่องเล่นวิดีโอ)",
                 p3Step3: "3. สลับจาก MPV เป็น Native Player (Apple) หรือ Normal",
 
+                // Problem 4
+                p4Badge: "ปัญหา #4",
+                p4Title: "ขึ้นรายการแค่ 1 ตอน (Episode 1) หรือ \"Failed to fetch streaming URL\" บน iPhone / iOS",
+                p4Desc1: "อาการที่พบ: เมื่อกดดูอนิเมะบน iPhone หรือ iPad ในแอปขึ้นรายการตอนเพียง 1 ตอน (Episode 1) หรือเมื่อกดเล่นขึ้นข้อความ \"Failed to fetch streaming URL\"",
+                p4Desc2: "สาเหตุหลัก: แอป Luna บน iOS เวอร์ชันเก่าทำการเรียก API ซ้อนกันล้มเหลว หรือเซิร์ฟเวอร์ผู้ให้บริการมีการปรับปรุงระบบป้องกันการดึงข้อมูลโดยตรง",
+                p4SolHeading: "วิธีแก้ไขที่แนะนำ (แก้ไข 100%):",
+                p4Step1: "1. เปิดแอป Luna > Settings (ตั้งค่า) > Services (บริการ) > กดลบ Service เดิม",
+                p4Step2: "2. คัดลอก Manifest URL ล่าสุดจากหน้าเว็บนี้ แล้วกด Import (นำเข้า) ใหม่อีกครั้งเพื่อใช้ JavaScript เวอร์ชันล่าสุด (v1.0.5+) ที่ดึงข้อมูลผ่าน Cloudflare Worker API ตรงในขั้นตอนเดียว",
+                p4Step3: "3. ตรวจสอบว่าไม่ได้เปิดใช้ DNS บล็อกโฆษณา หรือแอป AdBlock ที่บล็อกโดเมน *.workers.dev",
+
                 // Troubleshooting Footer
                 tbFooterTitle: "ยังพบปัญหาหลังจากทำตามวิธีทั้งหมดแล้ว?",
                 tbFooterDesc: "หากคุณลองเปลี่ยน DNS / ใช้ WARP 1.1.1.1 และเปลี่ยน Player เป็น Native แล้วแต่ยังใช้งานไม่ได้ โปรดกดปุ่มด้านล่างเพื่อแจ้งปัญหาให้เราตรวจสอบ",
@@ -1229,6 +1283,16 @@
                 p3Step1: "1. Open Luna app > Go to Settings tab",
                 p3Step2: "2. Select Player menu",
                 p3Step3: "3. Switch from MPV to Native Player (Apple) or Normal",
+
+                // Problem 4
+                p4Badge: "Issue #4",
+                p4Title: "Shows Only 1 Episode or \"Failed to fetch streaming URL\" on iPhone / iOS",
+                p4Desc1: "Symptom: On iPhone or iPad, an anime shows only 1 episode (Episode 1) or fails to load streams with \"Failed to fetch streaming URL\".",
+                p4Desc2: "Root Cause: Older extension versions performed nested API calls that fail in iOS JavaScript runtime, or the target site updated anti-scraping protections.",
+                p4SolHeading: "Recommended Solution (100% Fixed):",
+                p4Step1: "1. Open Luna app > Settings > Services > Delete the existing Service",
+                p4Step2: "2. Copy the latest Manifest URL from this site and Import it again to load the updated JS code (v1.0.5+) utilizing Cloudflare Worker API direct resolution",
+                p4Step3: "3. Ensure your ad-blocker or DNS settings do not block Cloudflare Worker API domain (*.workers.dev)",
 
                 // Troubleshooting Footer
                 tbFooterTitle: "Still having issues after trying all steps?",
