@@ -2,35 +2,74 @@
  * Miko-Anime Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://miko-anime.com/
- * Auto-selects Highest Quality (1080p > 720p) HLS Stream
+ * Version: 1.0.1
  */
 
 const DEFAULT_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1",
     "Referer": "https://miko-anime.com/"
 };
 
-async function soraFetch(url, options = {}) {
-    const headers = { ...DEFAULT_HEADERS, ...(options.headers || {}) };
-    const method = options.method || 'GET';
-    const body = options.body || null;
+async function httpGet(url, customHeaders = DEFAULT_HEADERS) {
     try {
+        let headersObj = DEFAULT_HEADERS;
+        if (typeof customHeaders === "string") {
+            headersObj = {
+                "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                "Referer": customHeaders
+            };
+        } else if (customHeaders && typeof customHeaders === "object") {
+            headersObj = Object.assign({}, DEFAULT_HEADERS, customHeaders);
+        }
+
+        let res;
         if (typeof fetchv2 !== "undefined") {
-            return await fetchv2(url, headers, method, body);
+            res = await fetchv2(url, headersObj);
         } else if (typeof fetch !== "undefined") {
-            const fetchOpts = { method, headers };
-            if (body) fetchOpts.body = body;
-            return await fetch(url, fetchOpts);
+            res = await fetch(url, { headers: headersObj });
+        }
+        if (!res) return null;
+
+        if (typeof res.text === "function") {
+            return await res.text();
+        } else if (typeof res === "string") {
+            return res;
         }
         return null;
-    } catch (e) {
-        try {
-            const fetchOpts = { method, headers: options.headers || {} };
-            if (body) fetchOpts.body = body;
-            return await fetch(url, fetchOpts);
-        } catch (error) {
-            return null;
+    } catch (err) {
+        console.error("[Miko-Anime] httpGet error for " + url + ": " + err.message);
+        return null;
+    }
+}
+
+async function httpPost(url, payload, customHeaders = DEFAULT_HEADERS) {
+    try {
+        const postHeaders = Object.assign({}, DEFAULT_HEADERS, customHeaders, {
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "X-Requested-With": "XMLHttpRequest"
+        });
+
+        let res;
+        if (typeof fetchv2 !== "undefined") {
+            res = await fetchv2(url, postHeaders, "POST", payload);
+        } else if (typeof fetch !== "undefined") {
+            res = await fetch(url, {
+                method: "POST",
+                headers: postHeaders,
+                body: payload
+            });
         }
+        if (!res) return null;
+
+        if (typeof res.text === "function") {
+            return await res.text();
+        } else if (typeof res === "string") {
+            return res;
+        }
+        return null;
+    } catch (err) {
+        console.error("[Miko-Anime] httpPost error for " + url + ": " + err.message);
+        return null;
     }
 }
 
@@ -38,25 +77,17 @@ async function soraFetch(url, options = {}) {
 async function searchResults(keyword) {
     try {
         const query = keyword ? keyword.trim() : "";
-        let html = "";
+        let html = null;
 
         if (query !== "") {
-            const body = new URLSearchParams({ name: query }).toString();
-            const res = await soraFetch("https://miko-anime.com/library/search.php", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                    "X-Requested-With": "XMLHttpRequest",
-                    "Referer": "https://miko-anime.com/search/"
-                },
-                body: body
+            const body = "name=" + encodeURIComponent(query);
+            html = await httpPost("https://miko-anime.com/library/search.php", body, {
+                "Referer": "https://miko-anime.com/search/"
             });
-            if (res) html = await res.text();
         }
 
         if (!html || html.trim() === "" || html.includes("ไม่พบข้อมูล")) {
-            const res = await soraFetch("https://miko-anime.com/archives/");
-            if (res) html = await res.text();
+            html = await httpGet("https://miko-anime.com/archives/");
         }
 
         if (!html) return JSON.stringify([]);
@@ -91,11 +122,12 @@ async function searchResults(keyword) {
             }
 
             if (title && image) {
+                const finalHref = href.endsWith("/") ? href : href + "/";
                 seenHrefs.add(href);
                 results.push({
                     title: title,
                     image: image,
-                    href: href.endsWith("/") ? href : href + "/"
+                    href: finalHref
                 });
             }
         }
@@ -111,11 +143,7 @@ async function searchResults(keyword) {
 async function extractDetails(url) {
     try {
         const targetUrl = url.split("?")[0];
-        const res = await soraFetch(targetUrl);
-        if (!res) {
-            return JSON.stringify([{ description: "No details available.", aliases: "Miko-Anime", airdate: "N/A" }]);
-        }
-        const html = await res.text();
+        const html = await httpGet(targetUrl);
         if (!html) {
             return JSON.stringify([{ description: "No details available.", aliases: "Miko-Anime", airdate: "N/A" }]);
         }
@@ -141,9 +169,7 @@ async function extractDetails(url) {
 async function extractEpisodes(url) {
     try {
         const baseUrl = url.split("?")[0];
-        const res = await soraFetch(baseUrl);
-        if (!res) return JSON.stringify([{ href: baseUrl, number: 1, title: "Episode 1" }]);
-        const html = await res.text();
+        const html = await httpGet(baseUrl);
         if (!html) return JSON.stringify([{ href: baseUrl, number: 1, title: "Episode 1" }]);
 
         const episodes = [];
@@ -189,11 +215,7 @@ async function extractStreamUrl(url) {
             epUrl = "https://miko-anime.com" + (epUrl.startsWith("/") ? "" : "/") + epUrl;
         }
 
-        const epRes = await soraFetch(epUrl, {
-            headers: { "Referer": "https://miko-anime.com/" }
-        });
-        if (!epRes) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
-        const epHtml = await epRes.text();
+        const epHtml = await httpGet(epUrl, { "Referer": "https://miko-anime.com/" });
         if (!epHtml) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
 
         const iframeMatch = epHtml.match(/<iframe[^>]+src=["'](https?:\/\/miko-anime\.com\/play\/[^"']+|\/play\/[^"']+)["']/i);
@@ -207,12 +229,7 @@ async function extractStreamUrl(url) {
         if (!playerUrl) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
         if (!playerUrl.startsWith("http")) playerUrl = "https://miko-anime.com" + playerUrl;
 
-        const playerRes = await soraFetch(playerUrl, {
-            headers: { "Referer": epUrl }
-        });
-
-        if (!playerRes) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
-        const playerHtml = await playerRes.text();
+        const playerHtml = await httpGet(playerUrl, { "Referer": epUrl });
         if (!playerHtml) return JSON.stringify({ streams: [], url: "", streamUrl: "", subtitle: "" });
 
         const videoDataMatch = playerHtml.match(/const\s+video_data\s*=\s*(\{[\s\S]*?\});/);
@@ -235,40 +252,35 @@ async function extractStreamUrl(url) {
             if (vidMatch) {
                 const vid = vidMatch[1];
                 const masterM3u8Url = `https://overlay.stream-s.sbs/file/${vid}/`;
-                const masterRes = await soraFetch(masterM3u8Url, {
-                    headers: {
-                        "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                        "Referer": fileUrl
-                    }
+                const masterText = await httpGet(masterM3u8Url, {
+                    "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                    "Referer": fileUrl
                 });
 
-                if (masterRes) {
-                    const masterText = await masterRes.text();
-                    if (masterText) {
-                        const lines = masterText.split("\n");
-                        let highestRes = 0;
-                        let bestUrl = null;
+                if (masterText) {
+                    const lines = masterText.split("\n");
+                    let highestRes = 0;
+                    let bestUrl = null;
 
-                        for (let i = 0; i < lines.length; i++) {
-                            const line = lines[i].trim();
-                            if (line.startsWith("#EXT-X-STREAM-INF:")) {
-                                const resMatch = line.match(/RESOLUTION=(\d+)x(\d+)/i);
-                                const height = resMatch ? parseInt(resMatch[2], 10) : 0;
-                                const nextLine = (lines[i + 1] || "").trim();
-                                if (nextLine && !nextLine.startsWith("#")) {
-                                    if (height >= highestRes) {
-                                        highestRes = height;
-                                        bestUrl = nextLine;
-                                    }
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (line.startsWith("#EXT-X-STREAM-INF:")) {
+                            const resMatch = line.match(/RESOLUTION=(\d+)x(\d+)/i);
+                            const height = resMatch ? parseInt(resMatch[2], 10) : 0;
+                            const nextLine = (lines[i + 1] || "").trim();
+                            if (nextLine && !nextLine.startsWith("#")) {
+                                if (height >= highestRes) {
+                                    highestRes = height;
+                                    bestUrl = nextLine;
                                 }
                             }
                         }
+                    }
 
-                        if (bestUrl) {
-                            finalStreamUrl = bestUrl;
-                        } else {
-                            finalStreamUrl = masterM3u8Url;
-                        }
+                    if (bestUrl) {
+                        finalStreamUrl = bestUrl;
+                    } else {
+                        finalStreamUrl = masterM3u8Url;
                     }
                 }
 
