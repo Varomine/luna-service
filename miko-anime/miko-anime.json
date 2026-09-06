@@ -1,0 +1,32 @@
+{
+    "sourceName": "Miko-Anime",
+    "iconUrl": "https://ui-library.pexels.lol/assets/image/miko/favicon.ico",
+    "author": {
+        "name": "Varomine",
+        "icon": "https://avatars.githubusercontent.com/Varomine"
+    },
+    "version": "1.0.0",
+    "language": "Thai",
+    "languageType": [
+        "Dubbed",
+        "Subbed"
+    ],
+    "streamType": "HLS",
+    "quality": "1080p",
+    "baseUrl": "https://miko-anime.com/",
+    "searchBaseUrl": "https://miko-anime.com/search/?q=%s",
+    "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/miko-anime/miko-anime.js",
+    "type": "anime",
+    "asyncJS": true,
+    "softsub": true,
+    "downloadSupport": true,
+    "supportsSora": true,
+    "supportsLuna": true,
+    "supportsMojuru": true,
+    "supportsDartotsu": true,
+    "supportsAnymex": true,
+    "supportsTsumi": true,
+    "supportsHiyoku": true,
+    "supportsShirox": true,
+    "supportsEclipse": true
+}
