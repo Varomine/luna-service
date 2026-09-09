@@ -1,4 +1,4 @@
-# 🌙 Luna Service - Provider Extension Modules Repository
+# 🌙 Luna discontinue - use shirox : https://discord.gg/xAnvwzgAns
 
 Welcome to the **Luna Extension Service** repository. This repository hosts provider modules for **Luna**, **Sora**, **Dartotsu**, **Mojuru**, **Anymex**, and other compatible anime/media streaming applications.
 
