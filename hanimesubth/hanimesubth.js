@@ -311,31 +311,37 @@ async function extractStreamUrl(url) {
                             "Accept": "*/*"
                         };
 
-                        // Quality Variant 1: 1080p Full HD Direct HLS
-                        const stream1080 = `https://overlay.hanimesubth.com/quality/${overlayVid}/1080/`;
+                        // Option 1: Direct Single Video Stream (Combined Cloudflare Worker - 1 link for entire video)
+                        const combinedStream = `https://hanime-combiner.sapis.workers.dev/video?id=${overlayVid}`;
                         streams.push({
-                            title: "HanimeSubTH • Main Server (1080p HLS)",
-                            streamUrl: stream1080,
-                            url: stream1080,
-                            headers: overlayHeaders
+                            title: "HanimeSubTH • Full Video (Single Link)",
+                            streamUrl: combinedStream,
+                            url: combinedStream,
+                            headers: {
+                                "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                                "Accept": "*/*"
+                            }
                         });
 
-                        // Quality Variant 2: 720p HD Direct HLS
-                        const stream720 = `https://overlay.hanimesubth.com/quality/${overlayVid}/720/`;
-                        streams.push({
-                            title: "HanimeSubTH • Main Server (720p HLS)",
-                            streamUrl: stream720,
-                            url: stream720,
-                            headers: overlayHeaders
-                        });
-
-                        // Quality Variant 3: Auto Adaptive Master HLS
+                        // Option 2: Auto Adaptive Master HLS
                         const streamAuto = `https://overlay.hanimesubth.com/file/${overlayVid}/`;
                         streams.push({
                             title: "HanimeSubTH • Main Server (Auto Master HLS)",
                             streamUrl: streamAuto,
                             url: streamAuto,
                             headers: overlayHeaders
+                        });
+
+                        // Option 3: StreamRelay Proxied HLS
+                        const proxiedHls = `https://streamrelay.sapis.workers.dev/proxy?url=${encodeURIComponent(streamAuto)}`;
+                        streams.push({
+                            title: "HanimeSubTH • StreamRelay CDN (HLS)",
+                            streamUrl: proxiedHls,
+                            url: proxiedHls,
+                            headers: {
+                                "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                                "Accept": "*/*"
+                            }
                         });
                     }
                 }
