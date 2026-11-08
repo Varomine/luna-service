@@ -5,7 +5,7 @@
         "name": "Varomine",
         "icon": "https://avatars.githubusercontent.com/Varomine"
     },
-    "version": "1.0.0",
+    "version": "1.0.1",
     "language": "Thai",
     "languageType": [
         "Dubbed",
@@ -13,8 +13,8 @@
     ],
     "streamType": "HLS",
     "quality": "1080p",
-    "baseUrl": "https://anime-hit.com/",
-    "searchBaseUrl": "https://anime-hit.com/",
+    "baseUrl": "https://hit-anime.com/",
+    "searchBaseUrl": "https://hit-anime.com/",
     "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/anime-hit/anime-hit.js",
     "type": "anime",
     "asyncJS": true,

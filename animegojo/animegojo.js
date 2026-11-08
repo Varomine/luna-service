@@ -3,7 +3,7 @@
  * Author: Varomine
  * Site: https://animegojoo.com/
  * Stream Type: Master HLS 1080p
- * Version: 1.0.2
+ * Version: 1.0.3
  */
 
 const DEFAULT_HEADERS = {
@@ -33,6 +33,29 @@ async function httpGet(url, headers = DEFAULT_HEADERS) {
     }
 }
 
+// Helper: Decode Caesar cipher encoded scripts from animegojoo HTML
+function extractPvepsFromHtml(html) {
+    if (!html) return null;
+    const obfScripts = [...html.matchAll(/var\s+([_a-zA-Z0-9]+a)\s*=\s*(\[[0-9,\s]+\])[\s\S]*?([_a-zA-Z0-9]+k)\s*=\s*(\d+)[\s\S]*?String\.fromCharCode/gi)];
+    for (const script of obfScripts) {
+        try {
+            const arr = JSON.parse(script[2]);
+            const key = parseInt(script[4]);
+            let decoded = "";
+            for (let j = 0; j < arr.length; j++) {
+                decoded += String.fromCharCode(arr[j] - key);
+            }
+            if (decoded.includes("PVEPS")) {
+                const pvepsMatch = decoded.match(/var\s+PVEPS\s*=\s*(\{[\s\S]*?\});/);
+                if (pvepsMatch) {
+                    return JSON.parse(pvepsMatch[1]);
+                }
+            }
+        } catch (e) {}
+    }
+    return null;
+}
+
 // ─── Search Results ───
 async function searchResults(keyword) {
     try {
@@ -40,7 +63,7 @@ async function searchResults(keyword) {
         let targetUrl = "https://animegojoo.com/";
 
         if (query !== "") {
-            // Note: animegojoo.com server WAF rejects '%20' with HTTP 403 in the search path.
+            // animegojoo.com server WAF rejects '%20' with HTTP 403 in the search path.
             // Using '+' for spaces ensures HTTP 200 and matches multi-word queries accurately.
             const formattedQuery = encodeURIComponent(query).replace(/%20/g, "+");
             targetUrl = `https://animegojoo.com/search/${formattedQuery}/`;
@@ -111,7 +134,7 @@ async function searchResults(keyword) {
 // ─── Extract Details ───
 async function extractDetails(url) {
     try {
-        const baseUrl = url.split("?")[0];
+        const baseUrl = url.split("?")[0].split("#")[0];
         const html = await httpGet(baseUrl);
         if (!html || html === "undefined") {
             return JSON.stringify([{
@@ -150,12 +173,13 @@ async function extractDetails(url) {
 // ─── Extract Episodes ───
 async function extractEpisodes(url) {
     try {
-        let baseUrl = url.split("?")[0];
+        let baseUrl = url.split("?")[0].split("#")[0];
         let html = await httpGet(baseUrl);
         if (!html || html === "undefined") {
             return JSON.stringify([{
                 href: baseUrl,
-                number: 1
+                number: 1,
+                title: "Episode 1"
             }]);
         }
 
@@ -172,32 +196,93 @@ async function extractEpisodes(url) {
             }
         }
 
+        // Parse PVEPS object from the page if available
+        const pveps = extractPvepsFromHtml(html);
+
         const episodes = [];
-        const seenHrefs = new Set();
-        const epRegex = /<a\s+class="ep-item"\s+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
+        const seenNumbers = new Set();
+        const epRegex = /<a\s+[^>]*class=["'][^"']*ep-item[^"']*["'][^>]*>([\s\S]*?)<\/a>/gi;
         let match;
 
         while ((match = epRegex.exec(html)) !== null) {
-            const relHref = match[1];
-            const epText = match[2].replace(/<[^>]+>/g, "").trim();
-            const href = relHref.startsWith("http") ? relHref : `https://animegojoo.com${relHref.startsWith("/") ? "" : "/"}${relHref}`;
+            const aTag = match[0];
+            const epText = match[1].replace(/<[^>]+>/g, "").trim();
 
-            if (seenHrefs.has(href)) continue;
-            seenHrefs.add(href);
+            const dataNoMatch = aTag.match(/data-no=["'](\d+)["']/i);
+            const dataNo = dataNoMatch ? dataNoMatch[1] : "";
 
             const numMatch = epText.match(/ตอนที่\s*([0-9.]+)/i) || epText.match(/EP\s*([0-9.]+)/i) || epText.match(/([0-9.]+)/);
-            const number = numMatch ? parseFloat(numMatch[1]) : (episodes.length + 1);
+            let number = numMatch ? parseFloat(numMatch[1]) : (episodes.length + 1);
+
+            let epUid = "";
+            let epType = "playg";
+
+            if (dataNo && pveps && pveps[dataNo]) {
+                const pvep = pveps[dataNo];
+                if (pvep.l && !isNaN(parseFloat(pvep.l))) {
+                    number = parseFloat(pvep.l);
+                }
+                if (pvep.u) {
+                    const l2 = pvep.u.match(/link2=([^&"']*)/i);
+                    const l1 = pvep.u.match(/link=([^&"']*)/i);
+                    if (l2 && l2[1]) {
+                        epUid = l2[1];
+                        epType = "playg";
+                    } else if (l1 && l1[1]) {
+                        epUid = l1[1];
+                        epType = "play2";
+                    }
+                }
+            }
+
+            if (seenNumbers.has(number)) continue;
+            seenNumbers.add(number);
+
+            let epHref = `${baseUrl}#ep-${number}`;
+            if (dataNo) epHref += `&no=${dataNo}`;
+            if (epUid) epHref += `&uid=${epUid}&type=${epType}`;
 
             episodes.push({
-                href: href,
-                number: number
+                href: epHref,
+                number: number,
+                title: `ตอนที่ ${number}`
             });
+        }
+
+        // If no ep-items matched, check PVEPS directly
+        if (episodes.length === 0 && pveps) {
+            for (const [no, item] of Object.entries(pveps)) {
+                const number = parseFloat(item.l || (episodes.length + 1));
+                let epUid = "";
+                let epType = "playg";
+                if (item.u) {
+                    const l2 = item.u.match(/link2=([^&"']*)/i);
+                    const l1 = item.u.match(/link=([^&"']*)/i);
+                    if (l2 && l2[1]) {
+                        epUid = l2[1];
+                        epType = "playg";
+                    } else if (l1 && l1[1]) {
+                        epUid = l1[1];
+                        epType = "play2";
+                    }
+                }
+
+                let epHref = `${baseUrl}#ep-${number}&no=${no}`;
+                if (epUid) epHref += `&uid=${epUid}&type=${epType}`;
+
+                episodes.push({
+                    href: epHref,
+                    number: number,
+                    title: `ตอนที่ ${number}`
+                });
+            }
         }
 
         if (episodes.length === 0) {
             episodes.push({
                 href: baseUrl,
-                number: 1
+                number: 1,
+                title: "ตอนที่ 1"
             });
         }
 
@@ -208,7 +293,8 @@ async function extractEpisodes(url) {
         console.error("[AnimeGoJo] extractEpisodes error: " + error.message);
         return JSON.stringify([{
             href: url,
-            number: 1
+            number: 1,
+            title: "ตอนที่ 1"
         }]);
     }
 }
@@ -216,49 +302,68 @@ async function extractEpisodes(url) {
 // ─── Extract Stream URL ───
 async function extractStreamUrl(url) {
     try {
-        const baseUrl = url.split("?")[0];
-        const html = await httpGet(baseUrl);
-        if (!html || html === "undefined") {
-            return JSON.stringify({ streams: [], subtitle: "" });
-        }
-
-        let link1 = "";
-        let link2 = "";
-
-        // Check raw HTML
-        const rawPlayerMatch = html.match(/playeradsg\.php\?link=([^&"']*)&link2=([^&"']*)/i);
-        if (rawPlayerMatch) {
-            link1 = rawPlayerMatch[1];
-            link2 = rawPlayerMatch[2];
-        }
-
-        // If not found, check Caesar cipher obfuscated scripts
-        if (!link1 && !link2) {
-            const obfScripts = [...html.matchAll(/var\s+([_a-zA-Z0-9]+a)\s*=\s*(\[[0-9,\s]+\])[\s\S]*?([_a-zA-Z0-9]+k)\s*=\s*(\d+)[\s\S]*?String\.fromCharCode/gi)];
-            for (const script of obfScripts) {
-                try {
-                    const arr = JSON.parse(script[2]);
-                    const key = parseInt(script[4]);
-                    let decoded = "";
-                    for (let j = 0; j < arr.length; j++) {
-                        decoded += String.fromCharCode(arr[j] - key);
-                    }
-                    const decMatch = decoded.match(/playeradsg\.php\?link=([^&"']*)&link2=([^&"']*)/i);
-                    if (decMatch) {
-                        link1 = decMatch[1];
-                        link2 = decMatch[2];
-                        break;
-                    }
-                } catch (err) {}
-            }
-        }
-
         let streamUrl = "";
 
-        if (link2) {
-            streamUrl = `https://youtube.anccplayer.cyou/playg.php?uid=${link2}`;
-        } else if (link1) {
-            streamUrl = `https://youtube.anccplayer.cyou/play2.php?uid=${link1}`;
+        // 1. Direct uid & type embedded in the episode href
+        const uidMatch = url.match(/[?&#]uid=([^&#]+)/i);
+        const typeMatch = url.match(/[?&#]type=([^&#]+)/i);
+        if (uidMatch && uidMatch[1]) {
+            const uid = uidMatch[1];
+            const type = (typeMatch && typeMatch[1]) ? typeMatch[1] : "playg";
+            streamUrl = `https://youtube.anccplayer.cyou/${type}.php?uid=${uid}`;
+        }
+
+        // 2. If not embedded, fetch the series page and find the episode in PVEPS
+        if (!streamUrl) {
+            const baseUrl = url.split("?")[0].split("#")[0];
+            const html = await httpGet(baseUrl);
+            if (html && html !== "undefined") {
+                const pveps = extractPvepsFromHtml(html);
+                if (pveps) {
+                    const noMatch = url.match(/[?&#]no=(\d+)/i);
+                    const epMatch = url.match(/#ep-([0-9.]+)/i);
+
+                    let targetPvep = null;
+                    if (noMatch && pveps[noMatch[1]]) {
+                        targetPvep = pveps[noMatch[1]];
+                    } else if (epMatch) {
+                        const targetEpNum = epMatch[1];
+                        for (const item of Object.values(pveps)) {
+                            if (item.l === targetEpNum) {
+                                targetPvep = item;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!targetPvep) {
+                        const keys = Object.keys(pveps);
+                        if (keys.length > 0) targetPvep = pveps[keys[0]];
+                    }
+
+                    if (targetPvep && targetPvep.u) {
+                        const l2 = targetPvep.u.match(/link2=([^&"']*)/i);
+                        const l1 = targetPvep.u.match(/link=([^&"']*)/i);
+                        if (l2 && l2[1]) {
+                            streamUrl = `https://youtube.anccplayer.cyou/playg.php?uid=${l2[1]}`;
+                        } else if (l1 && l1[1]) {
+                            streamUrl = `https://youtube.anccplayer.cyou/play2.php?uid=${l1[1]}`;
+                        }
+                    }
+                }
+
+                // 3. Fallback to raw playeradsg match
+                if (!streamUrl) {
+                    const rawPlayerMatch = html.match(/playeradsg\.php\?link=([^&"']*)&link2=([^&"']*)/i);
+                    if (rawPlayerMatch) {
+                        if (rawPlayerMatch[2]) {
+                            streamUrl = `https://youtube.anccplayer.cyou/playg.php?uid=${rawPlayerMatch[2]}`;
+                        } else if (rawPlayerMatch[1]) {
+                            streamUrl = `https://youtube.anccplayer.cyou/play2.php?uid=${rawPlayerMatch[1]}`;
+                        }
+                    }
+                }
+            }
         }
 
         if (!streamUrl) {

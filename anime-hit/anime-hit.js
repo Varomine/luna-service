@@ -1,14 +1,16 @@
 /**
  * Anime-Hit Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
- * Site: https://anime-hit.com/
+ * Site: https://hit-anime.com/ (formerly anime-hit.com)
  * Stream Type: Master HLS 1080p
- * Version: 1.0.0
+ * Version: 1.0.1
  */
+
+const BASE_URL = "https://hit-anime.com/";
 
 const DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-    "Referer": "https://anime-hit.com/"
+    "Referer": "https://hit-anime.com/"
 };
 
 async function httpGet(url, headers = DEFAULT_HEADERS) {
@@ -37,11 +39,11 @@ async function httpGet(url, headers = DEFAULT_HEADERS) {
 async function searchResults(keyword) {
     try {
         const query = keyword ? keyword.trim() : "";
-        let targetUrl = "https://anime-hit.com/";
+        let targetUrl = BASE_URL;
 
         if (query !== "") {
             const formattedQuery = encodeURIComponent(query).replace(/%20/g, "+");
-            targetUrl = `https://anime-hit.com/?s=${formattedQuery}`;
+            targetUrl = `https://hit-anime.com/?s=${formattedQuery}`;
         }
 
         const html = await httpGet(targetUrl);
@@ -58,13 +60,17 @@ async function searchResults(keyword) {
             const articleHtml = match[0];
             const inner = match[1];
 
-            // Extract anime detail URL
-            const linkMatch = articleHtml.match(/<a[^>]+class=["'][^"']*indy-post-link[^"']*["'][^>]+href=["'](https:\/\/anime-hit\.com\/[^"']+)["']/i) ||
-                              articleHtml.match(/<h2 class=["']entry-title[^"']*["']>[\s\S]*?<a[^>]+href=["'](https:\/\/anime-hit\.com\/[^"']+)["']/i) ||
-                              articleHtml.match(/<a[^>]+href=["'](https:\/\/anime-hit\.com\/(?!category|lang|air|contact|page)[^"']+)["']/i);
+            // Extract anime detail URL (supports both hit-anime.com and anime-hit.com, or relative links)
+            const linkMatch = articleHtml.match(/<a[^>]+class=["'][^"']*indy-post-link[^"']*["'][^>]+href=["'](https?:\/\/(?:hit-anime|anime-hit)\.com\/[^"']+)["']/i) ||
+                              articleHtml.match(/<h2 class=["']entry-title[^"']*["']>[\s\S]*?<a[^>]+href=["'](https?:\/\/(?:hit-anime|anime-hit)\.com\/[^"']+)["']/i) ||
+                              articleHtml.match(/<a[^>]+href=["'](https?:\/\/(?:hit-anime|anime-hit)\.com\/(?!category|lang|air|contact|page)[^"']+)["']/i) ||
+                              articleHtml.match(/<a[^>]+class=["'][^"']*indy-post-link[^"']*["'][^>]+href=["'](\/[^"']+)["']/i);
             if (!linkMatch) continue;
 
-            const href = linkMatch[1];
+            let href = linkMatch[1];
+            if (href.startsWith("/")) {
+                href = `https://hit-anime.com${href}`;
+            }
             if (seenHrefs.has(href)) continue;
 
             // Extract Title
@@ -80,6 +86,11 @@ async function searchResults(keyword) {
             if (imgMatch) {
                 image = imgMatch[1];
                 if (image.startsWith("//")) image = "https:" + image;
+                // If it's a 1x1 data svg or blank placeholder, try data-src
+                if (image.startsWith("data:") && articleHtml.includes("data-src=")) {
+                    const dsMatch = articleHtml.match(/data-src=["']([^"']+)["']/i);
+                    if (dsMatch) image = dsMatch[1];
+                }
             }
 
             if (image) {
@@ -145,14 +156,15 @@ async function extractEpisodes(url) {
         if (!html || html === "undefined") {
             return JSON.stringify([{
                 href: baseUrl,
-                number: 1
+                number: 1,
+                title: "Episode 1"
             }]);
         }
 
         // If this is a video episode page (/video/...), check if there is a series link back to the anime page
         if (baseUrl.includes("/video/")) {
-            const seriesLinkMatch = html.match(/<a[^>]+href=["'](https:\/\/anime-hit\.com\/(?!video|category|lang|air|contact|page)[a-zA-Z0-9_-]+\/?)["'][^>]*>[\s\S]*?ตอนทั้งหมด/i) ||
-                                    html.match(/<ol class="breadcrumb[^"]*"[\s\S]*?<a href=["'](https:\/\/anime-hit\.com\/[^"']+)["']/i);
+            const seriesLinkMatch = html.match(/<a[^>]+href=["'](https?:\/\/(?:hit-anime|anime-hit)\.com\/(?!video|category|lang|air|contact|page)[a-zA-Z0-9_-]+\/?)["'][^>]*>[\s\S]*?ตอนทั้งหมด/i) ||
+                                    html.match(/<ol class="breadcrumb[^"]*"[\s\S]*?<a href=["'](https?:\/\/(?:hit-anime|anime-hit)\.com\/[^"']+)["']/i);
             if (seriesLinkMatch) {
                 const seriesUrl = seriesLinkMatch[1];
                 const seriesHtml = await httpGet(seriesUrl);
@@ -165,11 +177,14 @@ async function extractEpisodes(url) {
 
         const episodes = [];
         const seenHrefs = new Set();
-        const epRegex = /<a[^>]+href=["'](https:\/\/anime-hit\.com\/video\/[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+        const epRegex = /<a[^>]+href=["'](https?:\/\/(?:hit-anime|anime-hit)\.com\/video\/[^"']+|\/video\/[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
         let match;
 
         while ((match = epRegex.exec(html)) !== null) {
-            const href = match[1];
+            let href = match[1];
+            if (href.startsWith("/")) {
+                href = `https://hit-anime.com${href}`;
+            }
             const epText = match[2].replace(/<[^>]+>/g, "").trim();
 
             if (seenHrefs.has(href)) continue;
@@ -186,14 +201,16 @@ async function extractEpisodes(url) {
 
             episodes.push({
                 href: href,
-                number: number
+                number: number,
+                title: `ตอนที่ ${number}`
             });
         }
 
         if (episodes.length === 0) {
             episodes.push({
                 href: baseUrl,
-                number: 1
+                number: 1,
+                title: "ตอนที่ 1"
             });
         }
 
@@ -204,7 +221,8 @@ async function extractEpisodes(url) {
         console.error("[Anime-Hit] extractEpisodes error: " + error.message);
         return JSON.stringify([{
             href: url,
-            number: 1
+            number: 1,
+            title: "ตอนที่ 1"
         }]);
     }
 }
