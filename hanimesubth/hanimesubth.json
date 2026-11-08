@@ -1,0 +1,31 @@
+{
+    "sourceName": "HanimeSubTH",
+    "iconUrl": "https://hanimesubth.com/assets/image/logo.png",
+    "author": {
+        "name": "Varomine",
+        "icon": "https://avatars.githubusercontent.com/Varomine"
+    },
+    "version": "1.0.0",
+    "language": "Thai",
+    "languageType": [
+        "Subbed"
+    ],
+    "streamType": "HLS",
+    "quality": "1080p",
+    "baseUrl": "https://hanimesubth.com/",
+    "searchBaseUrl": "https://hanimesubth.com/search/?q=%s",
+    "scriptUrl": "https://raw.githubusercontent.com/Varomine/luna-service/main/hanimesubth/hanimesubth.js",
+    "type": "anime",
+    "asyncJS": true,
+    "softsub": true,
+    "downloadSupport": true,
+    "supportsSora": true,
+    "supportsLuna": true,
+    "supportsMojuru": true,
+    "supportsDartotsu": true,
+    "supportsAnymex": true,
+    "supportsTsumi": true,
+    "supportsHiyoku": true,
+    "supportsShirox": true,
+    "supportsEclipse": true
+}
