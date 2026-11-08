@@ -2,8 +2,8 @@
  * HanimeSubTH Extension Module for Luna / Sora / Dartotsu / Mojuru / Anymex
  * Author: Varomine
  * Site: https://hanimesubth.com/
- * Stream Type: Multi-Server (Overlay Player & Abyss CDN 1080p Player)
- * Version: 1.0.0
+ * Stream Type: Direct Master HLS 1080p (Main Server)
+ * Version: 1.0.1
  */
 
 const DEFAULT_HEADERS = {
@@ -55,85 +55,128 @@ async function httpGet(url, customHeaders = DEFAULT_HEADERS) {
     }
 }
 
-// ─── Search Results (Keyword Search & Home Fallback) ───
+async function httpPost(url, body, customHeaders = {}) {
+    try {
+        const headersObj = Object.assign({
+            "User-Agent": DEFAULT_HEADERS["User-Agent"],
+            "Referer": "https://hanimesubth.com/",
+            "Origin": "https://hanimesubth.com",
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "X-Requested-With": "XMLHttpRequest",
+            "Accept": "*/*"
+        }, customHeaders);
+
+        let res;
+        if (typeof fetchv2 !== "undefined") {
+            res = await fetchv2(url, {
+                method: "POST",
+                headers: headersObj,
+                body: body
+            });
+        } else if (typeof fetch !== "undefined") {
+            res = await fetch(url, {
+                method: "POST",
+                headers: headersObj,
+                body: body
+            });
+        }
+        if (!res) return null;
+
+        if (typeof res.text === "function") {
+            return await res.text();
+        } else if (typeof res === "string") {
+            return res;
+        }
+        return null;
+    } catch (err) {
+        console.error("[HanimeSubTH] httpPost error for " + url + ": " + err.message);
+        return null;
+    }
+}
+
+// ─── Search Results (Live AJAX Search with Home Catalog Fallback) ───
 async function searchResults(keyword) {
     try {
         const query = keyword ? keyword.trim() : "";
-        const targetUrl = query !== "" 
-            ? `https://hanimesubth.com/search/?q=${encodeURIComponent(query)}` 
-            : "https://hanimesubth.com/";
-        const html = await httpGet(targetUrl);
-        if (!html || html === "undefined") {
-            return JSON.stringify([]);
-        }
-
         const results = [];
         const seen = new Set();
 
         if (query !== "") {
-            // Search result items (<li class="media">)
-            const mediaRegex = /<li[^>]+class="media"[^>]*>([\s\S]*?)<\/li>/gi;
-            let match;
-            while ((match = mediaRegex.exec(html)) !== null) {
-                const itemHtml = match[1];
-                const linkMatch = itemHtml.match(/href="(https:\/\/hanimesubth\.com\/\d+\/[^"]+)"/i);
-                if (!linkMatch) continue;
-                const href = linkMatch[1];
-                if (seen.has(href)) continue;
+            // Live AJAX search query on hanimesubth.com
+            const payload = `sValue=${encodeURIComponent(query)}`;
+            const searchHtml = await httpPost("https://hanimesubth.com/include/searchquery.php", payload);
 
-                const titleMatch = itemHtml.match(/<span class="media-heading">([\s\S]*?)<\/span>/i) ||
-                                   itemHtml.match(/alt="([^"]+)"/i);
-                let title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : "Untitled";
+            if (searchHtml && searchHtml !== "undefined") {
+                const cardRegex = /<a[^>]+class=["'][^"']*iw_col[^"']*["'][^>]+href=["'](https:\/\/hanimesubth\.com\/\d+\/[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+                let match;
+                while ((match = cardRegex.exec(searchHtml)) !== null) {
+                    const href = match[1];
+                    const inner = match[2];
+                    if (seen.has(href)) continue;
 
-                const imgMatch = itemHtml.match(/<img[^>]+src="([^"]+)"/i);
-                let image = imgMatch ? imgMatch[1].trim() : "";
+                    const titleMatch = inner.match(/<div class=["']iw_title["']>([\s\S]*?)<\/div>/i) ||
+                                       inner.match(/alt=["']([^"']+)["']/i);
+                    let title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : "Untitled";
 
-                seen.add(href);
-                results.push({ title, image, href });
+                    const imgMatch = inner.match(/<img[^>]+src=["']([^"']+)["']/i);
+                    let image = imgMatch ? imgMatch[1].trim() : "";
+                    if (image.startsWith("/")) image = "https://hanimesubth.com" + image;
+
+                    seen.add(href);
+                    results.push({ title, image, href });
+                }
             }
         }
 
-        // Fallback / Home page cards (<a class="iw_col" ...>)
+        // Fallback: If empty query or search query returned 0 items, load home catalog
         if (results.length === 0) {
-            const cardRegex = /<a[^>]+class="iw_col"[^>]+href="(https:\/\/hanimesubth\.com\/\d+\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-            let match;
-            while ((match = cardRegex.exec(html)) !== null) {
-                const href = match[1];
-                const inner = match[2];
-                if (seen.has(href)) continue;
+            const html = await httpGet("https://hanimesubth.com/");
+            if (html && html !== "undefined") {
+                const cardRegex = /<a[^>]+class=["'][^"']*iw_col[^"']*["'][^>]+href=["'](https:\/\/hanimesubth\.com\/\d+\/[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+                let match;
+                while ((match = cardRegex.exec(html)) !== null) {
+                    const href = match[1];
+                    const inner = match[2];
+                    if (seen.has(href)) continue;
 
-                const titleMatch = inner.match(/<div class="iw_title">([\s\S]*?)<\/div>/i) ||
-                                   inner.match(/alt="([^"]+)"/i);
-                let title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : "Untitled";
+                    const titleMatch = inner.match(/<div class=["']iw_title["']>([\s\S]*?)<\/div>/i) ||
+                                       inner.match(/alt=["']([^"']+)["']/i);
+                    let title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : "Untitled";
 
-                const imgMatch = inner.match(/<img[^>]+src="([^"]+)"/i);
-                let image = imgMatch ? imgMatch[1].trim() : "";
+                    const imgMatch = inner.match(/<img[^>]+src=["']([^"']+)["']/i);
+                    let image = imgMatch ? imgMatch[1].trim() : "";
+                    if (image.startsWith("/")) image = "https://hanimesubth.com" + image;
 
-                seen.add(href);
-                results.push({ title, image, href });
+                    seen.add(href);
+                    results.push({ title, image, href });
+                }
             }
         }
 
         // Broad fallback: any anime detail links
         if (results.length === 0) {
-            const linkRegex = /<a[^>]+href="(https:\/\/hanimesubth\.com\/(\d+)\/([^"]+))"[^>]*>([\s\S]*?)<\/a>/gi;
-            let match;
-            while ((match = linkRegex.exec(html)) !== null) {
-                const href = match[1];
-                const inner = match[4];
-                if (seen.has(href) || href.includes('/category/') || href.includes('/schedule/')) continue;
+            const html = await httpGet("https://hanimesubth.com/");
+            if (html && html !== "undefined") {
+                const linkRegex = /<a[^>]+href=["'](https:\/\/hanimesubth\.com\/(\d+)\/([^"']+))["'][^>]*>([\s\S]*?)<\/a>/gi;
+                let match;
+                while ((match = linkRegex.exec(html)) !== null) {
+                    const href = match[1];
+                    const inner = match[4];
+                    if (seen.has(href) || href.includes('/category/') || href.includes('/schedule/')) continue;
 
-                const titleMatch = inner.match(/<div class="iw_title">([\s\S]*?)<\/div>/i) ||
-                                   inner.match(/<span class="media-heading">([\s\S]*?)<\/span>/i) ||
-                                   inner.match(/alt="([^"]+)"/i);
-                const title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : "";
-                if (!title) continue;
+                    const titleMatch = inner.match(/<div class=["']iw_title["']>([\s\S]*?)<\/div>/i) ||
+                                       inner.match(/<span class=["']media-heading["']>([\s\S]*?)<\/span>/i) ||
+                                       inner.match(/alt=["']([^"']+)["']/i);
+                    const title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : "";
+                    if (!title) continue;
 
-                const imgMatch = inner.match(/<img[^>]+src="([^"]+)"/i);
-                const image = imgMatch ? imgMatch[1].trim() : "";
+                    const imgMatch = inner.match(/<img[^>]+src=["']([^"']+)["']/i);
+                    let image = imgMatch ? imgMatch[1].trim() : "";
+                    if (image.startsWith("/")) image = "https://hanimesubth.com" + image;
 
-                seen.add(href);
-                results.push({ title, image, href });
+                    seen.add(href);
+                    results.push({ title, image, href });
+                }
             }
         }
 
@@ -241,110 +284,72 @@ async function extractEpisodes(url) {
     }
 }
 
-// ─── Extract Stream URL (Dual Server: Overlay & Abyss CDN Player) ───
+// ─── Extract Stream URL (Direct Master HLS from Main Server) ───
 async function extractStreamUrl(url) {
     try {
         const baseUrl = url.split("?")[0];
         const html = await httpGet(baseUrl);
         const streams = [];
-        const seenStreams = new Set();
 
         // 1. Resolve player ID from URL or page content
         const idMatch = baseUrl.match(/\/play\/([a-zA-Z0-9_-]+)/i) || (html && html.match(/player\/([a-zA-Z0-9_-]+)/i));
         const playId = idMatch ? idMatch[1] : null;
 
         if (playId) {
-            // Server 1: Overlay Player
             try {
                 const p1Url = `https://hanimesubth.com/player/${playId}`;
                 const p1Html = await httpGet(p1Url, baseUrl);
                 if (p1Html) {
-                    const overlayFrameMatch = p1Html.match(/<iframe[^>]+src="(https:\/\/overlay\.hanimesubth\.com\/v\/[a-zA-Z0-9_-]+)"/i) ||
-                                              p1Html.match(/src="(https:\/\/overlay\.hanimesubth\.com\/v\/[a-zA-Z0-9_-]+)"/i);
+                    const overlayFrameMatch = p1Html.match(/<iframe[^>]+src=["']https:\/\/overlay\.hanimesubth\.com\/v\/([a-zA-Z0-9_-]+)["']/i) ||
+                                              p1Html.match(/src=["']https:\/\/overlay\.hanimesubth\.com\/v\/([a-zA-Z0-9_-]+)["']/i);
                     if (overlayFrameMatch) {
-                        const overlayUrl = overlayFrameMatch[1];
-                        if (!seenStreams.has(overlayUrl)) {
-                            seenStreams.add(overlayUrl);
-                            streams.push({
-                                title: "HanimeSubTH • Overlay Player (Server 1)",
-                                streamUrl: overlayUrl,
-                                url: overlayUrl,
-                                headers: {
-                                    "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                                    "Referer": "https://hanimesubth.com/"
-                                }
-                            });
-                        }
+                        const overlayVid = overlayFrameMatch[1];
+                        const overlayHeaders = {
+                            "User-Agent": DEFAULT_HEADERS["User-Agent"],
+                            "Referer": "https://overlay.hanimesubth.com/",
+                            "Origin": "https://overlay.hanimesubth.com",
+                            "Accept": "*/*"
+                        };
+
+                        // Quality Variant 1: 1080p Full HD Direct HLS
+                        const stream1080 = `https://overlay.hanimesubth.com/quality/${overlayVid}/1080/`;
+                        streams.push({
+                            title: "HanimeSubTH • Main Server (1080p HLS)",
+                            streamUrl: stream1080,
+                            url: stream1080,
+                            headers: overlayHeaders
+                        });
+
+                        // Quality Variant 2: 720p HD Direct HLS
+                        const stream720 = `https://overlay.hanimesubth.com/quality/${overlayVid}/720/`;
+                        streams.push({
+                            title: "HanimeSubTH • Main Server (720p HLS)",
+                            streamUrl: stream720,
+                            url: stream720,
+                            headers: overlayHeaders
+                        });
+
+                        // Quality Variant 3: Auto Adaptive Master HLS
+                        const streamAuto = `https://overlay.hanimesubth.com/file/${overlayVid}/`;
+                        streams.push({
+                            title: "HanimeSubTH • Main Server (Auto Master HLS)",
+                            streamUrl: streamAuto,
+                            url: streamAuto,
+                            headers: overlayHeaders
+                        });
                     }
                 }
             } catch (err1) {
                 console.error("[HanimeSubTH] Player 1 error: " + err1.message);
             }
-
-            // Server 2: Abyss CDN Player (via Marimo)
-            try {
-                const p2Url = `https://hanimesubth.com/player2/${playId}`;
-                const p2Html = await httpGet(p2Url, baseUrl);
-                if (p2Html) {
-                    const marimoFrameMatch = p2Html.match(/<iframe[^>]+src="([^"]+)"/i) ||
-                                             p2Html.match(/src="(https:\/\/player\.marimo\.me\/demo\/[^"]+)"/i);
-                    if (marimoFrameMatch) {
-                        let marimoUrl = marimoFrameMatch[1].replace(/&amp;/g, '&');
-                        const marimoHtml = await httpGet(marimoUrl, "https://hanimesubth.com/");
-                        if (marimoHtml) {
-                            const abyssFrameMatch = marimoHtml.match(/<iframe[^>]+src="(https:\/\/abysscdn\.com\/[^"]+)"/i);
-                            if (abyssFrameMatch) {
-                                const abyssUrl = abyssFrameMatch[1];
-                                if (!seenStreams.has(abyssUrl)) {
-                                    seenStreams.add(abyssUrl);
-                                    streams.push({
-                                        title: "HanimeSubTH • Abyss CDN Player (Server 2 - 1080p)",
-                                        streamUrl: abyssUrl,
-                                        url: abyssUrl,
-                                        headers: {
-                                            "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                                            "Referer": "https://player.marimo.me/"
-                                        }
-                                    });
-                                }
-                            }
-                        }
-
-                        // Also add Marimo player as alternative/backup
-                        if (!seenStreams.has(marimoUrl)) {
-                            seenStreams.add(marimoUrl);
-                            streams.push({
-                                title: "HanimeSubTH • Marimo Player (Backup)",
-                                streamUrl: marimoUrl,
-                                url: marimoUrl,
-                                headers: {
-                                    "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                                    "Referer": "https://hanimesubth.com/"
-                                }
-                            });
-                        }
-                    }
-                }
-            } catch (err2) {
-                console.error("[HanimeSubTH] Player 2 error: " + err2.message);
-            }
         }
 
-        // Direct fallback if no players resolved
-        if (streams.length === 0 && playId) {
-            streams.push({
-                title: "HanimeSubTH • Main Player",
-                streamUrl: `https://hanimesubth.com/player/${playId}`,
-                url: `https://hanimesubth.com/player/${playId}`,
-                headers: {
-                    "User-Agent": DEFAULT_HEADERS["User-Agent"],
-                    "Referer": baseUrl
-                }
-            });
-        }
+        const primaryStream = streams.length > 0 ? streams[0].streamUrl : "";
 
         return JSON.stringify({
-            streams,
+            streams: streams,
+            url: primaryStream,
+            streamUrl: primaryStream,
             subtitle: ""
         });
     } catch (error) {
