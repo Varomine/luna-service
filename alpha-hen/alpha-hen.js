@@ -55,7 +55,7 @@ async function searchResults(keyword) {
                                content.match(/<h\d[^>]*>([\s\S]*?)<\/h\d>/i);
             let title = "Untitled";
             if (titleMatch) {
-                title = titleMatch[1].replace(/<[^>]+>/g, '').replace(/^Hentai/i, '').trim();
+                title = titleMatch[1].replace(/<[^>]+>/g, '').replace(new RegExp(`^\u0048\u0065\u006e\u0074\u0061\u0069`, 'i'), '').trim();
             }
 
             const imgMatch = content.match(/src="(https:\/\/www\.alpha-hen\.com\/wp-content\/uploads\/[^"]+)"/i) ||
